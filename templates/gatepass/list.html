@@ -1,0 +1,271 @@
+{% extends 'base.html' %}
+{% block title %}Material Gate Passes • Security Dept HQ{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Top Header & Quick Actions -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-navy-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div>
+            <div class="flex items-center gap-2">
+                <span class="text-xl">🎫</span>
+                <h1 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                    Material Gate Pass Register
+                </h1>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Gate cargo log for returnable equipment (🟢 Green Card) and permanent exits (🔴 Red Card).
+            </p>
+        </div>
+        <div class="flex items-center gap-2.5 flex-wrap">
+            <a href="{% url 'gatepass_create' %}?type=GREEN" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-900/20 flex items-center gap-2 transition">
+                <span class="w-2.5 h-2.5 rounded-full bg-white animate-pulse"></span>
+                <span>🟢 + Issue Green Card (Returnable)</span>
+            </a>
+            <a href="{% url 'gatepass_create' %}?type=RED" class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-md shadow-rose-900/20 flex items-center gap-2 transition">
+                <span class="w-2.5 h-2.5 rounded-full bg-white"></span>
+                <span>🔴 + Issue Red Card (Permanent Out)</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats Metric Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <!-- 1. Active Green Cards -->
+        <a href="{% url 'gatepass_list' %}?card=GREEN&status=active" class="bg-white dark:bg-navy-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-emerald-500 transition group">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Green Cards In-Transit
+                </span>
+                <span class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs font-bold">🔄</span>
+            </div>
+            <div class="mt-2 flex items-baseline gap-2">
+                <span class="text-2xl font-black font-mono text-slate-900 dark:text-white">{{ green_active_count }}</span>
+                <span class="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">Awaiting Return</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">Tools, motors, loan assets out for repair</p>
+        </a>
+
+        <!-- 2. Overdue Green Cards -->
+        <a href="{% url 'gatepass_list' %}?card=GREEN&status=overdue" class="bg-white dark:bg-navy-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-rose-500 transition group {% if green_overdue_count > 0 %}border-rose-300 dark:border-rose-900/60 bg-rose-50/20{% endif %}">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span> Overdue Returns
+                </span>
+                <span class="w-7 h-7 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xs font-bold">🚨</span>
+            </div>
+            <div class="mt-2 flex items-baseline gap-2">
+                <span class="text-2xl font-black font-mono text-rose-600 dark:text-rose-400">{{ green_overdue_count }}</span>
+                <span class="text-[11px] text-rose-500 font-semibold">Exceeded Deadline</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">Requires security follow-up via WhatsApp</p>
+        </a>
+
+        <!-- 3. Red Cards Permanent Out -->
+        <a href="{% url 'gatepass_list' %}?card=RED" class="bg-white dark:bg-navy-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-slate-400 transition group">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-rose-600"></span> Red Cards Dispatched
+                </span>
+                <span class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs font-bold">📦</span>
+            </div>
+            <div class="mt-2 flex items-baseline gap-2">
+                <span class="text-2xl font-black font-mono text-slate-900 dark:text-white">{{ red_total_count }}</span>
+                <span class="text-[11px] text-slate-400 font-semibold">Permanent Out</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">Scrap disposal, surplus sale, guest mail</p>
+        </a>
+    </div>
+
+    <!-- Filters & Search Toolbar -->
+    <div class="bg-white dark:bg-navy-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            
+            <!-- Filter Tabs -->
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+                <a href="{% url 'gatepass_list' %}" class="px-3 py-1.5 rounded-lg font-semibold transition shrink-0 {% if card_filter == 'all' and status_filter == 'all' %}bg-slate-900 dark:bg-white text-white dark:text-slate-900{% else %}bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200{% endif %}">
+                    All Passes
+                </a>
+                <a href="{% url 'gatepass_list' %}?card=GREEN" class="px-3 py-1.5 rounded-lg font-semibold transition shrink-0 {% if card_filter == 'GREEN' and status_filter != 'overdue' and status_filter != 'returned' %}bg-emerald-600 text-white shadow-sm{% else %}bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100{% endif %}">
+                    🟢 Green Cards (Returnable)
+                </a>
+                <a href="{% url 'gatepass_list' %}?card=GREEN&status=overdue" class="px-3 py-1.5 rounded-lg font-semibold transition shrink-0 {% if status_filter == 'overdue' %}bg-rose-600 text-white shadow-sm{% else %}bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 hover:bg-rose-100{% endif %}">
+                    🚨 Overdue ({{ green_overdue_count }})
+                </a>
+                <a href="{% url 'gatepass_list' %}?card=GREEN&status=returned" class="px-3 py-1.5 rounded-lg font-semibold transition shrink-0 {% if status_filter == 'returned' %}bg-teal-600 text-white shadow-sm{% else %}bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200{% endif %}">
+                    ✅ Fully Returned
+                </a>
+                <a href="{% url 'gatepass_list' %}?card=RED" class="px-3 py-1.5 rounded-lg font-semibold transition shrink-0 {% if card_filter == 'RED' %}bg-rose-600 text-white shadow-sm{% else %}bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 hover:bg-rose-100{% endif %}">
+                    🔴 Red Cards (Permanent Out)
+                </a>
+            </div>
+
+            <!-- Search Field -->
+            <form action="{% url 'gatepass_list' %}" method="GET" class="shrink-0">
+                {% if card_filter != 'all' %}<input type="hidden" name="card" value="{{ card_filter }}">{% endif %}
+                {% if status_filter != 'all' %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+                <div class="relative">
+                    <input type="text" name="q" value="{{ q }}" placeholder="Search pass #, carrier, plate, item..." class="w-full sm:w-64 pl-8 pr-3 py-1.5 rounded-lg text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Passes Table -->
+    <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                        <th class="py-3 px-4">Pass & Card Ref</th>
+                        <th class="py-3 px-4">Card Type</th>
+                        <th class="py-3 px-4">From → To</th>
+                        <th class="py-3 px-4">Carrier & Vehicle</th>
+                        <th class="py-3 px-4">Manifest Summary</th>
+                        <th class="py-3 px-4">Return Schedule</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
+                    {% for pass in passes %}
+                    <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition {% if pass.is_overdue %}bg-rose-50/30 dark:bg-rose-950/20{% endif %}">
+                        
+                        <!-- Pass # & Card Tag -->
+                        <td class="py-3 px-4">
+                            <a href="{% url 'gatepass_detail' pass.pk %}" class="font-mono font-bold text-xs hover:underline flex items-center gap-1.5 {% if pass.card_type == 'GREEN' %}text-emerald-600 dark:text-emerald-400{% else %}text-rose-600 dark:text-rose-400{% endif %}">
+                                <span>{{ pass.pass_number }}</span>
+                            </a>
+                            {% if pass.physical_card_ref %}
+                            <div class="text-[10px] font-mono text-slate-400 mt-0.5 flex items-center gap-1">
+                                <span>🪪 Tag:</span>
+                                <span class="font-bold text-slate-600 dark:text-slate-300">{{ pass.physical_card_ref }}</span>
+                            </div>
+                            {% endif %}
+                            <span class="text-[10px] text-slate-400">{{ pass.dispatched_at|date:"d M H:i" }}</span>
+                        </td>
+
+                        <!-- Card Type Pill -->
+                        <td class="py-3 px-4">
+                            {% if pass.card_type == 'GREEN' %}
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                                🟢 Green (Returnable)
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
+                                🔴 Red (Permanent Out)
+                            </span>
+                            {% endif %}
+                            <div class="text-[10px] text-slate-400 mt-0.5">{{ pass.get_purpose_display }}</div>
+                        </td>
+
+                        <!-- From -> To -->
+                        <td class="py-3 px-4 max-w-[200px]">
+                            <div class="font-semibold text-slate-900 dark:text-white truncate">
+                                🏢 {{ pass.from_department.name|default:'General' }}
+                            </div>
+                            <div class="text-[11px] text-slate-400 truncate flex items-center gap-1 mt-0.5">
+                                <span>↳ 📍 {{ pass.destination_entity }}</span>
+                            </div>
+                        </td>
+
+                        <!-- Carrier & Vehicle -->
+                        <td class="py-3 px-4">
+                            <div class="font-bold text-slate-900 dark:text-white">{{ pass.carrier_name }}</div>
+                            <div class="text-[11px] text-slate-400 font-mono">{{ pass.carrier_phone }}</div>
+                            {% if pass.vehicle_plate %}
+                            <div class="text-[10px] font-mono text-slate-500 dark:text-slate-400 font-bold mt-0.5">
+                                🚗 {{ pass.vehicle_plate }}
+                            </div>
+                            {% endif %}
+                        </td>
+
+                        <!-- Manifest Summary -->
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold font-mono text-[11px]">
+                                {{ pass.total_items_count }} items
+                            </span>
+                            <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 max-w-[180px] truncate">
+                                {% for itm in pass.items.all|slice:":2" %}
+                                {{ itm.quantity }}x {{ itm.item_name }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                                {% if pass.items.count > 2 %}...{% endif %}
+                            </div>
+                        </td>
+
+                        <!-- Return Schedule (Green Card) / Status -->
+                        <td class="py-3 px-4 font-mono">
+                            {% if pass.card_type == 'GREEN' %}
+                                {% if pass.status == 'fully_returned' %}
+                                <span class="text-teal-600 dark:text-teal-400 font-bold flex items-center gap-1">
+                                    ✓ Returned {{ pass.actual_return_date|date:"d M" }}
+                                </span>
+                                {% elif pass.is_overdue %}
+                                <span class="text-rose-600 dark:text-rose-400 font-bold animate-pulse flex items-center gap-1">
+                                    ⚠️ {{ pass.time_remaining_display }}
+                                </span>
+                                <div class="text-[10px] text-rose-500 font-medium">Due: {{ pass.expected_return_date|date:"d M H:i" }}</div>
+                                {% else %}
+                                <span class="text-slate-600 dark:text-slate-300 font-semibold">
+                                    ⏱️ {{ pass.time_remaining_display }}
+                                </span>
+                                <div class="text-[10px] text-slate-400">Due: {{ pass.expected_return_date|date:"d M" }}</div>
+                                {% endif %}
+                            {% else %}
+                            <span class="text-slate-400 text-[11px] italic">Permanent Exit</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Status Badge -->
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider
+                                {% if pass.status == 'active' %}bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300
+                                {% elif pass.status == 'fully_returned' %}bg-teal-100 text-teal-800 dark:bg-teal-950/60 dark:text-teal-300
+                                {% elif pass.status == 'partially_returned' %}bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300
+                                {% elif pass.status == 'dispatched_closed' %}bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300
+                                {% else %}bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300{% endif %}">
+                                {{ pass.get_status_display }}
+                            </span>
+                        </td>
+
+                        <!-- Actions -->
+                        <td class="py-3 px-4 text-right">
+                            <div class="flex items-center justify-end gap-1.5">
+                                <a href="{% url 'gatepass_detail' pass.pk %}" class="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition" title="View Pass Details">
+                                    👁️
+                                </a>
+
+                                {% if pass.card_type == 'GREEN' and pass.whatsapp_carrier_url %}
+                                <a href="{{ pass.whatsapp_carrier_url }}" target="_blank" class="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-600 dark:text-emerald-400 transition" title="1-Tap WhatsApp Reminder to Carrier">
+                                    💬
+                                </a>
+                                {% endif %}
+
+                                {% if pass.card_type == 'GREEN' and pass.status in 'active partially_returned' %}
+                                <a href="{% url 'gatepass_return' pass.pk %}" class="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] transition shadow-sm" title="Inward Return Check">
+                                    Inward Return 📥
+                                </a>
+                                {% endif %}
+
+                                <a href="{% url 'gatepass_print' pass.pk %}" target="_blank" class="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition" title="Print Gate Pass">
+                                    🖨️
+                                </a>
+                            </div>
+                        </td>
+
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="py-12 text-center text-slate-400">
+                            No gate passes matching this criteria. Click "+ Issue Green Card" or "+ Issue Red Card" above.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

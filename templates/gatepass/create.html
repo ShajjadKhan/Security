@@ -1,0 +1,412 @@
+{% extends 'base.html' %}
+{% block title %}Issue Material Gate Pass • Security Dept HQ{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+
+    <!-- Back Navigation & Title -->
+    <div class="flex items-center justify-between">
+        <a href="{% url 'gatepass_list' %}" class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition">
+            ← Back to Gate Pass Register
+        </a>
+        <div class="text-[11px] font-mono text-slate-400">
+            Station: <span class="font-bold text-slate-700 dark:text-slate-300">Gate 1 Alpha</span> • Shift Officer: <span class="font-bold text-emerald-500">{{ user.username }}</span>
+        </div>
+    </div>
+
+    <!-- Main Form Container -->
+    <form method="POST" enctype="multipart/form-data" id="gatePassForm" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Card Type Selector Hero Card -->
+        <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 sm:p-6">
+            <h2 class="text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-3">Step 1: Select Material Pass Classification</h2>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                
+                <!-- 🟢 Green Card Option -->
+                <label id="cardTypeGreenLabel" class="cursor-pointer relative flex flex-col p-5 rounded-2xl border-2 transition {% if initial_card == 'GREEN' %}border-emerald-500 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-md ring-2 ring-emerald-500/20{% else %}border-slate-200 dark:border-slate-800 hover:border-slate-300{% endif %}">
+                    <input type="radio" name="card_type" value="GREEN" class="sr-only" onchange="switchCardType('GREEN')" {% if initial_card == 'GREEN' %}checked{% endif %}>
+                    <div class="flex items-center justify-between">
+                        <span class="inline-flex items-center gap-2 text-base font-black text-emerald-700 dark:text-emerald-400">
+                            <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 flex items-center justify-center text-white text-[9px] font-bold">✓</span>
+                            🟢 GREEN CARD
+                        </span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300">
+                            MUST RETURN
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
+                        For returnable assets leaving premises: equipment/tools sent for external servicing, calibration, exhibition demo, or temporary loan.
+                    </p>
+                    <div class="mt-3 text-[11px] font-medium text-emerald-800 dark:text-emerald-300/90 bg-emerald-100/60 dark:bg-emerald-950/60 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800/40">
+                        ⚡ <strong>Requires Return Cutoff Date</strong> • Overdue alert & 1-tap WhatsApp notifications enabled.
+                    </div>
+                </label>
+
+                <!-- 🔴 Red Card Option -->
+                <label id="cardTypeRedLabel" class="cursor-pointer relative flex flex-col p-5 rounded-2xl border-2 transition {% if initial_card == 'RED' %}border-rose-500 bg-rose-50/40 dark:bg-rose-950/20 shadow-md ring-2 ring-rose-500/20{% else %}border-slate-200 dark:border-slate-800 hover:border-slate-300{% endif %}">
+                    <input type="radio" name="card_type" value="RED" class="sr-only" onchange="switchCardType('RED')" {% if initial_card == 'RED' %}checked{% endif %}>
+                    <div class="flex items-center justify-between">
+                        <span class="inline-flex items-center gap-2 text-base font-black text-rose-700 dark:text-rose-400">
+                            <span class="w-3.5 h-3.5 rounded-full bg-rose-500 flex items-center justify-center text-white text-[9px] font-bold">✓</span>
+                            🔴 RED CARD
+                        </span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-300">
+                            PERMANENT OUT
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
+                        For items permanently leaving facility: scrap disposal, sold surplus, donation, packaging disposal, or outbound guest couriers.
+                    </p>
+                    <div class="mt-3 text-[11px] font-medium text-rose-800 dark:text-rose-300/90 bg-rose-100/60 dark:bg-rose-950/60 p-2.5 rounded-xl border border-rose-200 dark:border-rose-800/40">
+                        ⛔ <strong>Non-Returnable</strong> • Passes straight into closed status once gate security dispatches.
+                    </div>
+                </label>
+
+            </div>
+
+            <!-- Physical Plastic Card Reference & Gate Authorization -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Physical Plastic Card Ref # <span class="text-slate-400 font-normal">(Optional)</span>
+                    </label>
+                    <input type="text" name="physical_card_ref" placeholder="e.g. Card #12 / Green Badge 04" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-mono text-xs focus:ring-2 focus:ring-emerald-500">
+                    <p class="text-[10px] text-slate-400 mt-0.5">Helps guard cross-reference physical laminated card handed to driver</p>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Gate Location <span class="text-rose-500">*</span>
+                    </label>
+                    <select name="gate_location" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold">
+                        <option value="Loading Dock Gate">Loading Dock Gate (Service Gate)</option>
+                        <option value="Main Gate Alpha">Main Gate Alpha</option>
+                        <option value="Basement Ramp Gate">Basement Ramp Gate</option>
+                        <option value="Staff Exit West">Staff Exit West</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Authorized By Manager <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="text" name="authorized_by_manager" required placeholder="e.g. Eng. Tariq Al-Mansoor (Chief Eng)" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold focus:ring-2 focus:ring-emerald-500">
+                    <p class="text-[10px] text-slate-400 mt-0.5">Dept Head / Director who signed dispatch approval</p>
+                </div>
+            </div>
+
+            <!-- Green Card Expected Return Duration (Hidden if RED) -->
+            <div id="greenCardReturnSchedule" class="mt-4 p-4 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 {% if initial_card == 'RED' %}hidden{% endif %}">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <label class="block font-extrabold text-xs text-emerald-900 dark:text-emerald-300">
+                            ⏱️ Expected Return Cutoff (Loan Duration) <span class="text-rose-500">*</span>
+                        </label>
+                        <p class="text-[11px] text-emerald-700 dark:text-emerald-400 mt-0.5">
+                            Overdue alarms and WhatsApp notices trigger automatically if pass is not returned by this cutoff.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <select name="return_days" id="returnDaysSelect" class="px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-700 font-mono font-bold text-xs text-emerald-900 dark:text-emerald-300">
+                            <option value="1">1 Day (Same / Next Day)</option>
+                            <option value="3">3 Days (Urgent Repair)</option>
+                            <option value="7" selected>7 Days (1 Week standard)</option>
+                            <option value="14">14 Days (2 Weeks)</option>
+                            <option value="30">30 Days (1 Month)</option>
+                            <option value="60">60 Days (Extended Loan)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Two Column Section: Origin & Destination -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Origin (FROM Department) -->
+            <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                <div class="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+                    <span class="text-base">🏢</span>
+                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">Origin: From Department</h3>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div class="sm:col-span-2">
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Department <span class="text-rose-500">*</span></label>
+                        <select name="from_department" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-semibold text-xs">
+                            <option value="">-- Select Dispatching Department --</option>
+                            {% for d in departments %}
+                            <option value="{{ d.id }}">{{ d.name }} ({{ d.floor_room }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Sender Staff Name <span class="text-rose-500">*</span></label>
+                        <input type="text" name="sender_name" required placeholder="Staff member dispatching" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Sender Phone / WhatsApp</label>
+                        <input type="tel" name="sender_phone" placeholder="+966 5X XXX XXXX" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-mono text-xs">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Sender Email <span class="text-slate-400 font-normal">(for automated dispatch receipt)</span></label>
+                        <input type="email" name="sender_email" placeholder="staff@hotel.com" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Destination (TO Recipient) -->
+            <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                <div class="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+                    <span class="text-base">📍</span>
+                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">Destination: Recipient / Workshop</h3>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div class="sm:col-span-2">
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Recipient Entity / Company Name <span class="text-rose-500">*</span></label>
+                        <input type="text" name="destination_entity" required placeholder="e.g. Al-Futtaim Technical Workshop, Carrier Riyadh HQ" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-semibold text-xs">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Destination Address / City</label>
+                        <input type="text" name="destination_address" placeholder="e.g. Industrial Area 2, Street 18, Riyadh" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Contact Person at Destination</label>
+                        <input type="text" name="destination_contact_name" placeholder="Workshop manager or recipient" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Contact Phone</label>
+                        <input type="tel" name="destination_phone" placeholder="+966 5X XXX XXXX" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-mono text-xs">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Carrier & Transport (Who is taking it) -->
+        <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+            <div class="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <span class="text-base">🚚</span>
+                <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">Carrier & Transport: Who is taking the items</h3>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Carrier / Driver Name <span class="text-rose-500">*</span></label>
+                    <input type="text" name="carrier_name" required placeholder="Driver or employee name" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-semibold text-xs">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Carrier Mobile / WhatsApp <span class="text-rose-500">*</span></label>
+                    <input type="tel" name="carrier_phone" required placeholder="e.g. +966501234567" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-mono text-xs focus:ring-2 focus:ring-emerald-500">
+                    <p class="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5">💬 Used for instant 1-tap WhatsApp gate reminders</p>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Driver ID / Iqama / License #</label>
+                    <input type="text" name="carrier_id_number" placeholder="National ID / Iqama" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-mono text-xs">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Transport Company / Service</label>
+                    <input type="text" name="carrier_company" placeholder="e.g. DHL, In-House, Vendor Fleet" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Vehicle License Plate #</label>
+                    <input type="text" name="vehicle_plate" placeholder="e.g. 4921 RKD" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-mono text-xs uppercase">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Vehicle Make / Model</label>
+                    <input type="text" name="vehicle_model" placeholder="e.g. White Isuzu Truck" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
+                </div>
+            </div>
+        </div>
+
+        <!-- Purpose & Movement Justification -->
+        <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+            <div class="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <span class="text-base">📝</span>
+                <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">Movement Purpose & Justification</h3>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Primary Purpose <span class="text-rose-500">*</span></label>
+                    <select name="purpose" id="purposeSelect" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-semibold text-xs">
+                        <option value="repair">External Repair & Servicing</option>
+                        <option value="calibration">Calibration & Testing</option>
+                        <option value="warranty">Warranty Replacement / Vendor Return</option>
+                        <option value="inter_branch">Inter-Branch / Sister Hotel Transfer</option>
+                        <option value="demo">Exhibition / Demonstration / Event Loan</option>
+                        <option value="scrap">Scrap Disposal / Recycling Waste (Permanent)</option>
+                        <option value="donation_sale">Sold Surplus / Donated Asset (Permanent)</option>
+                        <option value="guest_property">Guest Property Dispatched / Courier</option>
+                        <option value="other">Other Authorized Purpose</option>
+                    </select>
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Detailed Movement Notes / Instructions</label>
+                    <input type="text" name="purpose_notes" placeholder="e.g. Pump motor tripping breaker 4B; sent to workshop for rewinding." class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
+                </div>
+            </div>
+        </div>
+
+        <!-- Dynamic Multi-Item Cart Manifest -->
+        <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                    <span class="text-base">🛒</span>
+                    <div>
+                        <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">Items Manifest (Cargo Cart)</h3>
+                        <p class="text-[11px] text-slate-400">Add every item, quantity, serial tag, and initial condition</p>
+                    </div>
+                </div>
+                <button type="button" onclick="addItemRow()" class="px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 border border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-bold text-xs flex items-center gap-1.5 transition">
+                    <span>➕</span> Add Item to Manifest
+                </button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs" id="itemsTable">
+                    <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800">
+                        <tr>
+                            <th class="py-2.5 px-3 min-w-[200px]">Item Description <span class="text-rose-500">*</span></th>
+                            <th class="py-2.5 px-3 w-20">Qty <span class="text-rose-500">*</span></th>
+                            <th class="py-2.5 px-3 w-24">Unit</th>
+                            <th class="py-2.5 px-3 min-w-[160px]">Serial # / Asset Tag</th>
+                            <th class="py-2.5 px-3 min-w-[150px]">Condition Out</th>
+                            <th class="py-2.5 px-3 w-12 text-center">Remove</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsBody" class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                        <!-- Row 1 -->
+                        <tr class="item-row">
+                            <td class="py-2 px-3">
+                                <input type="text" name="item_name[]" required placeholder="e.g. Chiller Pump Motor 5HP" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold">
+                            </td>
+                            <td class="py-2 px-3">
+                                <input type="number" name="quantity[]" value="1" min="1" required class="w-full px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-mono font-bold text-center">
+                            </td>
+                            <td class="py-2 px-3">
+                                <select name="unit[]" class="w-full px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
+                                    <option value="pcs" selected>pcs</option>
+                                    <option value="sets">sets</option>
+                                    <option value="boxes">boxes</option>
+                                    <option value="kg">kg</option>
+                                    <option value="meters">meters</option>
+                                    <option value="drums">drums</option>
+                                </select>
+                            </td>
+                            <td class="py-2 px-3">
+                                <input type="text" name="serial_asset_tag[]" placeholder="ASSET-ENG-2940" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-mono text-xs">
+                            </td>
+                            <td class="py-2 px-3">
+                                <select name="condition_out[]" class="w-full px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
+                                    <option value="for_repair" selected>Faulty / For Repair</option>
+                                    <option value="good">Good Working Condition</option>
+                                    <option value="damaged">Damaged / Scrap</option>
+                                </select>
+                            </td>
+                            <td class="py-2 px-3 text-center">
+                                <button type="button" onclick="removeItemRow(this)" class="p-1 text-slate-400 hover:text-rose-500 transition" title="Delete Row">✕</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Gate Inspection Cargo Photo Upload -->
+            <div class="pt-3 border-t border-slate-100 dark:border-slate-800">
+                <label class="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">
+                    📸 Exit Gate Inspection Photo <span class="text-slate-400 font-normal">(Optional cargo photo before barrier opens)</span>
+                </label>
+                <input type="file" name="exit_cargo_photo" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-100 dark:file:bg-slate-800 file:text-slate-700 dark:file:text-slate-200 hover:file:bg-slate-200">
+            </div>
+        </div>
+
+        <!-- Submit Bar -->
+        <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-xs text-slate-500">
+                By clicking Authorize, security audit log entry will be generated and physical card assignment recorded.
+            </div>
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+                <a href="{% url 'gatepass_list' %}" class="w-1/2 sm:w-auto text-center px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-xs transition">
+                    Cancel
+                </a>
+                <button type="submit" id="submitPassBtn" class="w-1/2 sm:w-auto px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2 transition">
+                    <span>🚀 Authorize & Dispatch Pass</span>
+                </button>
+            </div>
+        </div>
+
+    </form>
+
+</div>
+
+<script>
+function switchCardType(type) {
+    const greenLabel = document.getElementById('cardTypeGreenLabel');
+    const redLabel = document.getElementById('cardTypeRedLabel');
+    const scheduleBox = document.getElementById('greenCardReturnSchedule');
+    const submitBtn = document.getElementById('submitPassBtn');
+
+    if (type === 'GREEN') {
+        greenLabel.className = "cursor-pointer relative flex flex-col p-5 rounded-2xl border-2 transition border-emerald-500 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-md ring-2 ring-emerald-500/20";
+        redLabel.className = "cursor-pointer relative flex flex-col p-5 rounded-2xl border-2 transition border-slate-200 dark:border-slate-800 hover:border-slate-300";
+        scheduleBox.classList.remove('hidden');
+        submitBtn.className = "w-1/2 sm:w-auto px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2 transition";
+    } else {
+        redLabel.className = "cursor-pointer relative flex flex-col p-5 rounded-2xl border-2 transition border-rose-500 bg-rose-50/40 dark:bg-rose-950/20 shadow-md ring-2 ring-rose-500/20";
+        greenLabel.className = "cursor-pointer relative flex flex-col p-5 rounded-2xl border-2 transition border-slate-200 dark:border-slate-800 hover:border-slate-300";
+        scheduleBox.classList.add('hidden');
+        submitBtn.className = "w-1/2 sm:w-auto px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs shadow-lg shadow-rose-900/30 flex items-center justify-center gap-2 transition";
+    }
+}
+
+function addItemRow() {
+    const tbody = document.getElementById('itemsBody');
+    const tr = document.createElement('tr');
+    tr.className = "item-row";
+    tr.innerHTML = `
+        <td class="py-2 px-3">
+            <input type="text" name="item_name[]" required placeholder="Item description" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold">
+        </td>
+        <td class="py-2 px-3">
+            <input type="number" name="quantity[]" value="1" min="1" required class="w-full px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-mono font-bold text-center">
+        </td>
+        <td class="py-2 px-3">
+            <select name="unit[]" class="w-full px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
+                <option value="pcs" selected>pcs</option>
+                <option value="sets">sets</option>
+                <option value="boxes">boxes</option>
+                <option value="kg">kg</option>
+                <option value="meters">meters</option>
+                <option value="drums">drums</option>
+            </select>
+        </td>
+        <td class="py-2 px-3">
+            <input type="text" name="serial_asset_tag[]" placeholder="Serial / Tag #" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-mono text-xs">
+        </td>
+        <td class="py-2 px-3">
+            <select name="condition_out[]" class="w-full px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
+                <option value="for_repair" selected>Faulty / For Repair</option>
+                <option value="good">Good Working Condition</option>
+                <option value="damaged">Damaged / Scrap</option>
+            </select>
+        </td>
+        <td class="py-2 px-3 text-center">
+            <button type="button" onclick="removeItemRow(this)" class="p-1 text-slate-400 hover:text-rose-500 transition" title="Delete Row">✕</button>
+        </td>
+    `;
+    tbody.appendChild(tr);
+}
+
+function removeItemRow(btn) {
+    const rows = document.querySelectorAll('.item-row');
+    if (rows.length > 1) {
+        btn.closest('tr').remove();
+    } else {
+        alert('Gate pass must contain at least 1 item in cargo manifest.');
+    }
+}
+</script>
+{% endblock %}

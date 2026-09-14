@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.db.models import Count, Q
 from visitors.models import Visitor, DepartmentHost
 from lostfound.models import LostFoundItem
+from gatepass.models import GatePass
 from .models import User, SecurityAuditLog
 
 def login_view(request):
@@ -35,7 +36,7 @@ def dashboard_view(request):
     now = timezone.now()
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     
-    # Live KPI counts
+    # 1. Live Visitor KPI counts
     active_visitors = Visitor.objects.filter(status='active').select_related('host_department', 'checked_in_by')
     active_count = active_visitors.count()
     
@@ -49,11 +50,26 @@ def dashboard_view(request):
     )
     overstay_count = overstay_visitors.count()
 
-    # Lost & Found metrics
+    # 2. Lost & Found metrics
     unclaimed_lf = LostFoundItem.objects.filter(status='unclaimed')
     unclaimed_count = unclaimed_lf.count()
     high_value_count = unclaimed_lf.filter(value_tier='high_value').count()
     today_lf_logged = LostFoundItem.objects.filter(created_at__gte=today_start).count()
+
+    # 3. Material Gate Pass metrics (Green / Red Cards)
+    active_greencards = GatePass.objects.filter(
+        card_type='GREEN',
+        status__in=['active', 'partially_returned']
+    ).select_related('from_department')
+    active_greencards_count = active_greencards.count()
+    
+    overdue_greencards = active_greencards.filter(
+        expected_return_date__isnull=False,
+        expected_return_date__lt=now
+    )
+    overdue_greencards_count = overdue_greencards.count()
+    total_redcards_count = GatePass.objects.filter(card_type='RED').count()
+    recent_gatepasses = GatePass.objects.select_related('from_department').all()[:6]
 
     # Recent activity
     recent_visitors = Visitor.objects.all()[:8]
@@ -81,6 +97,13 @@ def dashboard_view(request):
         'contractor_count': contractor_count,
         'delivery_count': delivery_count,
         'guest_count': guest_count,
+        # Gate Pass context
+        'active_greencards_count': active_greencards_count,
+        'overdue_greencards_count': overdue_greencards_count,
+        'total_redcards_count': total_redcards_count,
+        'overdue_greencards': overdue_greencards[:5],
+        'active_greencards': active_greencards[:6],
+        'recent_gatepasses': recent_gatepasses,
     }
     return render(request, 'dashboard.html', context)
 
@@ -94,6 +117,7 @@ def universal_search_view(request):
     q = request.GET.get('q', '').strip()
     visitors = []
     lostfound_items = []
+    gatepasses = []
     
     if q:
         visitors = Visitor.objects.filter(
@@ -114,9 +138,21 @@ def universal_search_view(request):
             Q(found_location__icontains=q) |
             Q(claimant_name__icontains=q)
         )[:20]
+
+        gatepasses = GatePass.objects.filter(
+            Q(pass_number__icontains=q) |
+            Q(carrier_name__icontains=q) |
+            Q(carrier_phone__icontains=q) |
+            Q(destination_entity__icontains=q) |
+            Q(vehicle_plate__icontains=q) |
+            Q(physical_card_ref__icontains=q) |
+            Q(items__item_name__icontains=q) |
+            Q(items__serial_asset_tag__icontains=q)
+        ).distinct()[:20]
         
     return render(request, 'search_results.html', {
         'q': q,
         'visitors': visitors,
         'lostfound_items': lostfound_items,
+        'gatepasses': gatepasses,
     })

@@ -97,6 +97,19 @@
                         <span class="text-xs font-semibold text-slate-300">Safe Vault:</span>
                         <span class="text-xs font-mono font-bold text-amber-400">{{ unclaimed_lf_count }}</span>
                     </a>
+
+                    <a href="{% url 'gatepass_list' %}?card=GREEN&status=active" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 transition" title="Green Cards In-Transit (Awaiting Return)">
+                        <span class="text-xs">🔄</span>
+                        <span class="text-xs font-semibold text-slate-300">Out on Pass:</span>
+                        <span class="text-xs font-mono font-bold text-emerald-400">{{ active_greencards_count }}</span>
+                    </a>
+
+                    {% if overdue_greencards_count > 0 %}
+                    <a href="{% url 'gatepass_list' %}?card=GREEN&status=overdue" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-950/70 hover:bg-rose-900 border border-rose-800 text-rose-300 animate-pulse transition" title="Overdue Green Cards">
+                        <span class="text-xs">🚨</span>
+                        <span class="text-xs font-bold font-mono">{{ overdue_greencards_count }} Overdue Pass</span>
+                    </a>
+                    {% endif %}
                 </div>
 
                 <!-- Right: Search, Theme Toggle, User Profile -->
@@ -147,6 +160,12 @@
                     </a>
                     <a href="{% url 'lostfound_create' %}" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition {% if request.resolver_match.url_name == 'lostfound_create' %}bg-emerald-600 text-white shadow-sm{% else %}text-amber-400 hover:bg-amber-950/60 border border-amber-800/50{% endif %}">
                         ➕ Log Found Item
+                    </a>
+                    <a href="{% url 'gatepass_list' %}" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition {% if 'gatepass' in request.path and request.resolver_match.url_name != 'gatepass_create' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                        🎫 Material Passes (Green/Red)
+                    </a>
+                    <a href="{% url 'gatepass_create' %}" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition {% if request.resolver_match.url_name == 'gatepass_create' %}bg-emerald-600 text-white shadow-sm{% else %}text-sky-400 hover:bg-sky-950/60 border border-sky-800/50{% endif %}">
+                        ➕ Issue Pass
                     </a>
                     <a href="{% url 'audit_log' %}" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition {% if request.resolver_match.url_name == 'audit_log' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-400 hover:bg-slate-800 hover:text-slate-200{% endif %}">
                         📋 Shift Audit Feed

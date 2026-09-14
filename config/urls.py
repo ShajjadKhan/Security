@@ -8,6 +8,7 @@ urlpatterns = [
     path('', include('core.urls')),
     path('visitors/', include('visitors.urls')),
     path('lost-and-found/', include('lostfound.urls')),
+    path('gatepass/', include('gatepass.urls')),
 ]
 
 if settings.DEBUG:

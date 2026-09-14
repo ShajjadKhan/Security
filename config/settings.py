@@ -16,6 +16,7 @@ INSTALLED_APPS = [
     'core',
     'visitors',
     'lostfound',
+    'gatepass',
 ]
 
 MIDDLEWARE = [

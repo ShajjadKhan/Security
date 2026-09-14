@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}Inward Gate Return Verification • {{ pass_card.pass_number }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+
+    <!-- Top Breadcrumb -->
+    <div class="flex items-center justify-between">
+        <a href="{% url 'gatepass_detail' pass_card.pk %}" class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition">
+            ← Back to Pass #{{ pass_card.pass_number }}
+        </a>
+        <div class="text-[11px] font-mono text-slate-400">
+            Gate Inspection Form • Receiving Officer: <span class="font-bold text-emerald-500">{{ user.username }}</span>
+        </div>
+    </div>
+
+    <!-- Header Banner -->
+    <div class="bg-gradient-to-r from-emerald-700 to-teal-800 rounded-2xl p-5 text-white shadow-md">
+        <div class="flex items-center gap-2 text-[10px] font-mono font-bold uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full w-fit">
+            <span>📥</span> Inward Gate Handover Checklist
+        </div>
+        <h1 class="text-xl sm:text-2xl font-black font-mono mt-2">
+            Verify Return of {{ pass_card.pass_number }}
+        </h1>
+        <p class="text-xs text-emerald-100 mt-1">
+            Carrier: <strong>{{ pass_card.carrier_name }}</strong> ({{ pass_card.carrier_phone }}) • Returning to: <strong>{{ pass_card.from_department.name|default:'General' }}</strong>
+        </p>
+    </div>
+
+    <!-- Return Form -->
+    <form method="POST" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Items Checklist Card -->
+        <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                    <span class="text-base">📦</span>
+                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">
+                        Cargo Physical Inspection & Count
+                    </h3>
+                </div>
+                <span class="text-xs text-slate-400 font-medium">Verify actual quantities and condition returned</span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800">
+                        <tr>
+                            <th class="py-2.5 px-3">Item Description</th>
+                            <th class="py-2.5 px-3">Dispatched Qty</th>
+                            <th class="py-2.5 px-3">Serial / Asset Tag</th>
+                            <th class="py-2.5 px-3 w-28">Returned Qty <span class="text-rose-500">*</span></th>
+                            <th class="py-2.5 px-3 w-48">Return Condition <span class="text-rose-500">*</span></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
+                        {% for item in pass_card.items.all %}
+                        <tr>
+                            <td class="py-3 px-3">
+                                <span class="font-bold text-slate-900 dark:text-white block">{{ item.item_name }}</span>
+                                <span class="text-[10px] text-slate-400">Condition Out: {{ item.get_condition_out_display }}</span>
+                            </td>
+                            <td class="py-3 px-3 font-mono font-bold text-slate-700 dark:text-slate-300">
+                                {{ item.quantity }} {{ item.unit }}
+                            </td>
+                            <td class="py-3 px-3 font-mono text-slate-500 dark:text-slate-400">
+                                {{ item.serial_asset_tag|default:'—' }}
+                            </td>
+                            <td class="py-3 px-3">
+                                <input type="number" name="qty_{{ item.id }}" value="{{ item.quantity }}" min="0" max="{{ item.quantity }}" required class="w-24 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold text-center text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500">
+                            </td>
+                            <td class="py-3 px-3">
+                                <select name="condition_{{ item.id }}" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
+                                    <option value="repaired" selected>Repaired & Fully Working</option>
+                                    <option value="same">Same Condition (Unchanged)</option>
+                                    <option value="damaged">Damaged / Beyond Repair</option>
+                                </select>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
+                💡 <em>If partial quantity is returned (e.g. 2 out of 5), pass status will update to <strong>Partially Returned</strong> until the rest arrive.</em>
+            </p>
+        </div>
+
+        <!-- Inward Photo & Gate Notes -->
+        <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+            <div class="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <span class="text-base">📸</span>
+                <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">
+                    Return Inspection Photo & Notes
+                </h3>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Return Cargo Photo <span class="text-slate-400 font-normal">(Optional cargo inspection photo)</span>
+                    </label>
+                    <input type="file" name="return_cargo_photo" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-100 dark:file:bg-slate-800 file:text-slate-700 dark:file:text-slate-200 hover:file:bg-slate-200">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Inward Gate Inspection Notes
+                    </label>
+                    <input type="text" name="return_notes" placeholder="e.g. Pump tested by Eng duty tech, verified working." class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 flex items-center justify-between gap-4">
+            <a href="{% url 'gatepass_detail' pass_card.pk %}" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-xs transition">
+                Cancel
+            </a>
+            <button type="submit" class="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-900/30 flex items-center gap-2 transition">
+                <span>✓ Confirm Inward Gate Return & Close</span>
+            </button>
+        </div>
+
+    </form>
+
+</div>
+{% endblock %}
