@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="{{ lang }}" dir="{% if is_rtl %}rtl{% else %}ltr{% endif %}">
+<html lang="{{ lang }}" dir="{% if is_rtl %}rtl{% else %}ltr{% endif %}" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{{ T.app_title }} {{ T.app_hq }}{% endblock %}</title>
+    <title>{% block title %}{{ T.app_title }}{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -11,15 +11,6 @@
             theme: {
                 extend: {
                     colors: {
-                        sec: {
-                            50: '#f0fdf4',
-                            100: '#dcfce7',
-                            500: '#22c55e',
-                            600: '#16a34a',
-                            700: '#15803d',
-                            800: '#166534',
-                            900: '#14532d',
-                        },
                         navy: {
                             800: '#1e293b',
                             900: '#0f172a',
@@ -43,73 +34,93 @@
                 localStorage.setItem('sec_theme', 'dark');
             }
         }
+        function toggleDropdown(id) {
+            const menu = document.getElementById(id);
+            if (!menu) return;
+            const isHidden = menu.classList.contains('hidden');
+            document.querySelectorAll('.dropdown-menu').forEach(el => el.classList.add('hidden'));
+            if (isHidden) {
+                menu.classList.remove('hidden');
+            }
+        }
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.dropdown-container')) {
+                document.querySelectorAll('.dropdown-menu').forEach(el => el.classList.add('hidden'));
+            }
+        });
+        function toggleMobileNav() {
+            const d = document.getElementById('mobileNavDrawer');
+            if (d) d.classList.toggle('hidden');
+        }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <style>
+        * { box-sizing: border-box; }
         body {
             {% if is_rtl %}
             font-family: 'Cairo', 'Plus Jakarta Sans', -apple-system, sans-serif;
             {% else %}
             font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
             {% endif %}
+            overflow-x: hidden;
         }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .dropdown-menu {
+            animation: fadeInFast 0.12s ease-out forwards;
+        }
+        @keyframes fadeInFast {
+            from { opacity: 0; transform: translateY(-3px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-slate-50 dark:bg-navy-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-150">
+<body class="bg-slate-50 dark:bg-navy-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-150 antialiased">
     
-    <!-- Top Security Command Header -->
+    <!-- Top Security Command Header (Sleek Single 64px Bar) -->
     <header class="bg-navy-900 border-b border-slate-800 text-white sticky top-0 z-50 shadow-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6">
+            <div class="flex items-center justify-between h-16 gap-2">
                 
-                <!-- Left: Branding -->
-                <div class="flex items-center gap-3">
-                    <a href="{% url 'dashboard' %}" class="flex items-center gap-2.5 group">
-                        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-900/40 text-xl font-bold text-white group-hover:scale-105 transition">
+                <!-- Left: Branding & Facility Switcher -->
+                <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+                    <a href="{% url 'dashboard' %}" class="flex items-center gap-2 group shrink-0">
+                        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center shadow-md shadow-emerald-900/40 text-base sm:text-lg font-bold text-white group-hover:scale-105 transition">
                             🛡️
                         </div>
-                        <div>
-                            <span class="text-base font-extrabold tracking-tight text-white flex items-center gap-1.5">
-                                {{ T.app_title }} <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-mono border border-emerald-500/30">{{ T.app_hq }}</span>
-                            </span>
-                            <span class="text-[11px] text-slate-400 block -mt-0.5 font-medium">{{ T.app_subtitle }}</span>
-                        </div>
+                        <span class="text-xs sm:text-sm font-black tracking-tight text-white hidden sm:inline whitespace-nowrap">
+                            {{ T.app_title }}
+                        </span>
                     </a>
-                </div>
 
-                {% if user.is_authenticated %}
-                <!-- Center: Active Duty Gate Picker & Telemetry Badges -->
-                <div class="hidden lg:flex items-center gap-3">
-                    
-                                        <!-- Active Facility / Property Selector Dropdown -->
-                    <div class="relative group">
-                        <button class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-xs font-bold transition">
-                            <span class="text-indigo-400">🏢</span>
-                            <span class="text-slate-200 max-w-[140px] truncate">
+                    {% if user.is_authenticated %}
+                    <!-- Facility Picker Pill Dropdown -->
+                    <div class="relative dropdown-container">
+                        <button onclick="toggleDropdown('propDropdownMenu')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700/80 border border-slate-700 text-xs font-bold text-slate-200 transition max-w-[120px] sm:max-w-[150px]" title="Active Property">
+                            <span class="text-indigo-400 text-xs">🏢</span>
+                            <span class="truncate text-[11px]">
                                 {% if is_global_property_mode %}
                                     {{ T.global_hq_mode }}
                                 {% elif current_property %}
                                     {% if lang == 'ar' and current_property.name_ar %}{{ current_property.name_ar }}{% else %}{{ current_property.name }}{% endif %}
                                 {% else %}
-                                    {{ T.property_switcher }}
+                                    Facility
                                 {% endif %}
                             </span>
-                            <span class="text-[10px] text-slate-400">▼</span>
+                            <span class="text-[9px] text-slate-400">▼</span>
                         </button>
-                        <div class="absolute {% if is_rtl %}right-0{% else %}left-0{% endif %} mt-1 w-72 bg-navy-900 border border-slate-700 rounded-2xl shadow-xl py-2 hidden group-hover:block z-50">
+                        <div id="propDropdownMenu" class="dropdown-menu absolute {% if is_rtl %}right-0{% else %}left-0{% endif %} mt-1.5 w-72 bg-navy-900 border border-slate-700 rounded-2xl shadow-2xl py-2 hidden z-50">
                             <div class="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800 flex items-center justify-between">
                                 <span>{{ T.property_switcher }}</span>
                                 <span class="font-mono text-[9px] text-indigo-400">HQ Mode</span>
                             </div>
-                            <a href="{% url 'property_switch' 'ALL' %}" class="flex items-center justify-between px-3 py-2 text-xs hover:bg-slate-800 transition {% if is_global_property_mode %}text-indigo-400 font-bold bg-slate-800/50{% else %}text-slate-300{% endif %}">
+                            <a href="{% url 'property_switch' 'ALL' %}" class="flex items-center justify-between px-3 py-2 text-xs hover:bg-slate-800 transition {% if is_global_property_mode %}text-indigo-400 font-bold bg-slate-800/60{% else %}text-slate-300{% endif %}">
                                 <span class="flex items-center gap-2"><span>🌐</span> {{ T.global_hq_mode }}</span>
                                 <span class="font-mono text-[10px] text-slate-400">ALL</span>
                             </a>
                             <div class="border-t border-slate-800/60 my-1"></div>
                             {% for p in all_properties %}
-                            <a href="{% url 'property_switch' p.id %}" class="flex items-center justify-between px-3 py-2 text-xs hover:bg-slate-800 transition {% if current_property and current_property.id == p.id and not is_global_property_mode %}text-emerald-400 font-bold bg-slate-800/50{% else %}text-slate-300{% endif %}">
+                            <a href="{% url 'property_switch' p.id %}" class="flex items-center justify-between px-3 py-2 text-xs hover:bg-slate-800 transition {% if current_property and current_property.id == p.id and not is_global_property_mode %}text-emerald-400 font-bold bg-slate-800/60{% else %}text-slate-300{% endif %}">
                                 <span class="truncate max-w-[180px]">{% if lang == 'ar' and p.name_ar %}{{ p.name_ar }}{% else %}{{ p.name }}{% endif %}</span>
                                 <span class="font-mono text-[10px] text-slate-400">[{{ p.code }}]</span>
                             </a>
@@ -123,27 +134,76 @@
                             {% endif %}
                         </div>
                     </div>
+                    {% endif %}
+                </div>
 
-<!-- Duty Gate Selector Dropdown -->
-                    <div class="relative group">
-                        <button class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-xs font-bold transition">
-                            <span class="text-emerald-400">📍</span>
-                            <span class="text-slate-200">
+                {% if user.is_authenticated %}
+                <!-- Center: Navigation Tabs (Concise, Clean, High-Contrast) -->
+                <nav class="hidden lg:flex items-center gap-1 text-xs font-bold shrink-0">
+                    <a href="{% url 'dashboard' %}" class="px-2.5 py-1.5 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap {% if request.resolver_match.url_name == 'dashboard' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                        <span>📊</span> <span>{{ T.nav_dashboard }}</span>
+                    </a>
+                    <a href="{% url 'gatepass_list' %}" class="px-2.5 py-1.5 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap {% if 'gatepass' in request.path %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                        <span>🎫</span> <span>{{ T.nav_passes }}</span>
+                        {% if active_greencards_count > 0 %}<span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-emerald-500/20 text-emerald-400">{{ active_greencards_count }}</span>{% endif %}
+                    </a>
+                    <a href="{% url 'visitor_list' %}" class="px-2.5 py-1.5 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap {% if 'visitor' in request.path %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                        <span>🛂</span> <span>{{ T.nav_visitors }}</span>
+                        {% if active_visitors_count > 0 %}<span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-sky-500/20 text-sky-400">{{ active_visitors_count }}</span>{% endif %}
+                    </a>
+                    <a href="{% url 'lostfound_list' %}" class="px-2.5 py-1.5 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap {% if 'lost-and-found' in request.path %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                        <span>📦</span> <span>{{ T.nav_lostfound }}</span>
+                    </a>
+                    <a href="{% url 'gates_list' %}" class="px-2.5 py-1.5 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap {% if 'gates' in request.path %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                        <span>🚧</span> <span>{{ T.nav_gates }}</span>
+                    </a>
+
+                    {% if user.is_superuser or user.role == 'director' or user.role == 'supervisor' %}
+                    <!-- Admin & Audit Dropdown Pill -->
+                    <div class="relative dropdown-container">
+                        <button onclick="toggleDropdown('adminNavMenu')" class="px-2.5 py-1.5 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap {% if 'super-admin' in request.path or request.resolver_match.url_name == 'audit_log' %}bg-indigo-600 text-white shadow-sm{% else %}text-indigo-300 hover:bg-indigo-950/60 border border-indigo-800/40{% endif %}">
+                            <span>👑</span> <span>{{ T.nav_admin }}</span> <span class="text-[9px] text-indigo-400">▼</span>
+                        </button>
+                        <div id="adminNavMenu" class="dropdown-menu absolute {% if is_rtl %}right-0{% else %}left-0{% endif %} mt-1.5 w-52 bg-navy-900 border border-slate-700 rounded-2xl shadow-2xl py-2 hidden z-50 text-xs">
+                            {% if user.is_superuser or user.role == 'director' %}
+                            <a href="{% url 'super_admin_dashboard' %}" class="flex items-center gap-2 px-3.5 py-2 hover:bg-slate-800 text-indigo-300 font-bold transition">
+                                <span>👑</span> {{ T.super_admin_hub }}
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'audit_log' %}" class="flex items-center gap-2 px-3.5 py-2 hover:bg-slate-800 text-slate-300 transition">
+                                <span>🔒</span> {{ T.shift_audit }}
+                            </a>
+                            <a href="{% url 'gates_list' %}" class="flex items-center gap-2 px-3.5 py-2 hover:bg-slate-800 text-slate-300 transition">
+                                <span>🚧</span> {{ T.gates_management }}
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </nav>
+
+                <!-- Right: Duty Station Pill, Language Toggle, Dark Mode, Profile Dropdown -->
+                <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                    
+                    <!-- Duty Gate Station Selector Pill -->
+                    <div class="relative dropdown-container hidden xl:block">
+                        <button onclick="toggleDropdown('gateDropdownMenu')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-xs font-bold text-slate-200 transition max-w-[120px]" title="Active Duty Gate Station">
+                            <span class="text-emerald-400 text-xs">📍</span>
+                            <span class="truncate text-[11px]">
                                 {% if current_gate %}
                                     {% if lang == 'ar' and current_gate.name_ar %}{{ current_gate.name_ar }}{% else %}{{ current_gate.name }}{% endif %}
                                 {% else %}
-                                    {{ T.duty_station }}
+                                    Gate
                                 {% endif %}
                             </span>
-                            <span class="text-[10px] text-slate-400">▼</span>
+                            <span class="text-[9px] text-slate-400">▼</span>
                         </button>
-                        <div class="absolute {% if is_rtl %}right-0{% else %}left-0{% endif %} mt-1 w-64 bg-navy-900 border border-slate-700 rounded-2xl shadow-xl py-2 hidden group-hover:block z-50">
+                        <div id="gateDropdownMenu" class="dropdown-menu absolute {% if is_rtl %}left-0{% else %}right-0{% endif %} mt-1.5 w-64 bg-navy-900 border border-slate-700 rounded-2xl shadow-2xl py-2 hidden z-50">
                             <div class="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
                                 {{ T.gate_switch_station }}
                             </div>
                             {% for g in all_gates %}
-                            <a href="{% url 'switch_duty_gate' g.id %}" class="flex items-center justify-between px-3 py-2 text-xs hover:bg-slate-800 transition {% if current_gate and current_gate.id == g.id %}text-emerald-400 font-bold bg-slate-800/50{% else %}text-slate-300{% endif %}">
-                                <span>{% if lang == 'ar' and g.name_ar %}{{ g.name_ar }}{% else %}{{ g.name }}{% endif %}</span>
+                            <a href="{% url 'switch_duty_gate' g.id %}" class="flex items-center justify-between px-3 py-2 text-xs hover:bg-slate-800 transition {% if current_gate and current_gate.id == g.id %}text-emerald-400 font-bold bg-slate-800/60{% else %}text-slate-300{% endif %}">
+                                <span class="truncate max-w-[170px]">{% if lang == 'ar' and g.name_ar %}{{ g.name_ar }}{% else %}{{ g.name }}{% endif %}</span>
                                 <span class="font-mono text-[10px] text-slate-400">{{ g.code }}</span>
                             </a>
                             {% endfor %}
@@ -155,112 +215,103 @@
                         </div>
                     </div>
 
-                    <!-- Telemetry Badges -->
-                    <a href="{% url 'gatepass_list' %}?card=GREEN&status=active" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 transition" title="{{ T.out_on_pass }}">
-                        <span class="text-xs">🔄</span>
-                        <span class="text-xs font-semibold text-slate-300">{{ T.out_on_pass }}:</span>
-                        <span class="text-xs font-mono font-bold text-emerald-400">{{ active_greencards_count }}</span>
+                    <!-- Language Switcher Button (1-Click EN / عربي) -->
+                    <a href="{% url 'set_language' %}?lang={{ T.switch_lang_target }}" class="px-2 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition flex items-center gap-1 shrink-0" title="Switch Language">
+                        <span>🌐</span>
+                        <span class="font-mono text-[11px]">{% if lang == 'ar' %}EN{% else %}عربي{% endif %}</span>
                     </a>
 
-                    {% if overdue_greencards_count > 0 %}
-                    <a href="{% url 'gatepass_list' %}?card=GREEN&status=overdue" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-950/70 hover:bg-rose-900 border border-rose-800 text-rose-300 animate-pulse transition" title="{{ T.passes_overdue }}">
-                        <span class="text-xs">🚨</span>
-                        <span class="text-xs font-bold font-mono">{{ overdue_greencards_count }} {{ T.passes_overdue }}</span>
-                    </a>
-                    {% endif %}
-
-                    <a href="{% url 'visitor_list' %}?status=active" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 transition" title="{{ T.kpi_on_premises }}">
-                        <span class="text-xs">🛂</span>
-                        <span class="text-xs font-mono font-bold text-emerald-400">{{ active_visitors_count }}</span>
-                    </a>
-                </div>
-
-                <!-- Right: Search, Language Switcher, Theme Toggle, User Profile -->
-                <div class="flex items-center gap-2.5">
-                    
-                    <!-- Universal Search -->
-                    <form action="{% url 'universal_search' %}" method="GET" class="hidden md:block">
-                        <div class="relative">
-                            <input type="text" name="q" placeholder="{{ T.search_placeholder }}" class="w-48 xl:w-60 px-3 py-1.5 rounded-xl text-xs bg-slate-800 border border-slate-700 text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        </div>
-                    </form>
-
-                    <!-- Language Switcher Button (1-Click EN / AR) -->
-                    <a href="{% url 'set_language' %}?lang={{ T.switch_lang_target }}" class="px-3 py-1.5 rounded-xl bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/50 text-xs font-bold transition flex items-center gap-1.5" title="Switch Language">
-                        {{ T.switch_lang_btn }}
-                    </a>
-
-                    <!-- Theme Toggle -->
-                    <button onclick="toggleTheme()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm transition" title="Toggle dark mode">
+                    <!-- Theme Toggle (Dark / Light) -->
+                    <button onclick="toggleTheme()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs transition shrink-0" title="Toggle dark/light mode">
                         <span class="dark:hidden">🌙</span>
                         <span class="hidden dark:inline">☀️</span>
                     </button>
 
-                    <!-- User Profile & Logout -->
-                    <div class="flex items-center gap-2 pl-2 {% if is_rtl %}border-r border-slate-800 pr-2 pl-0{% else %}border-l border-slate-800{% endif %}">
-                        <div class="text-right hidden sm:block">
-                            <p class="text-xs font-bold text-slate-200 leading-tight">{{ user.get_full_name|default:user.username }}</p>
-                            <p class="text-[10px] text-emerald-400 font-mono">{{ user.get_role_display }}</p>
+                    <!-- User Profile & Action Dropdown -->
+                    <div class="relative dropdown-container shrink-0">
+                        <button onclick="toggleDropdown('userDropdownMenu')" class="flex items-center gap-1.5 p-1 rounded-xl hover:bg-slate-800 transition" title="User Profile">
+                            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-600 to-slate-800 flex items-center justify-center text-xs font-bold text-white border border-emerald-500/30 shadow-sm relative">
+                                {{ user.username|slice:":2"|upper }}
+                                <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-navy-900"></span>
+                            </div>
+                            <span class="text-[9px] text-slate-400">▼</span>
+                        </button>
+                        
+                        <div id="userDropdownMenu" class="dropdown-menu absolute {% if is_rtl %}left-0{% else %}right-0{% endif %} mt-2 w-60 bg-navy-900 border border-slate-700 rounded-2xl shadow-2xl py-2 hidden z-50 text-xs">
+                            <div class="px-4 py-2.5 border-b border-slate-800">
+                                <div class="font-extrabold text-white text-sm">{{ user.get_full_name|default:user.username }}</div>
+                                <div class="text-[11px] text-emerald-400 font-mono mt-0.5">{{ user.get_role_display }}</div>
+                                {% if user.badge_number %}<div class="text-[10px] text-slate-400 font-mono mt-1">Badge: {{ user.badge_number }}</div>{% endif %}
+                                {% if current_gate %}<div class="text-[10px] text-slate-400 mt-0.5">Duty: 📍 {% if lang == 'ar' and current_gate.name_ar %}{{ current_gate.name_ar }}{% else %}{{ current_gate.name }}{% endif %}</div>{% endif %}
+                            </div>
+                            {% if user.is_superuser or user.role == 'director' %}
+                            <a href="{% url 'super_admin_dashboard' %}" class="flex items-center gap-2 px-4 py-2 hover:bg-slate-800 text-indigo-300 font-bold transition">
+                                <span>👑</span> {{ T.super_admin_hub }}
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'audit_log' %}" class="flex items-center gap-2 px-4 py-2 hover:bg-slate-800 text-slate-300 transition">
+                                <span>🔒</span> {{ T.shift_audit }}
+                            </a>
+                            <a href="{% url 'gates_list' %}" class="flex items-center gap-2 px-4 py-2 hover:bg-slate-800 text-slate-300 transition">
+                                <span>🚧</span> {{ T.gates_management }}
+                            </a>
+                            <div class="border-t border-slate-800 my-1"></div>
+                            <a href="{% url 'logout' %}" class="flex items-center gap-2 px-4 py-2 hover:bg-rose-950/50 text-rose-400 font-bold transition">
+                                <span>🚪</span> {{ T.logout }}
+                            </a>
                         </div>
-                        <a href="{% url 'logout' %}" class="p-2 rounded-xl bg-slate-800 hover:bg-rose-900/60 hover:text-rose-300 text-slate-400 text-xs font-semibold transition" title="{{ T.logout }}">
-                            🚪
-                        </a>
                     </div>
+
+                    <!-- Mobile Hamburger Button -->
+                    <button onclick="toggleMobileNav()" class="lg:hidden p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white text-sm shrink-0">
+                        ☰
+                    </button>
+
                 </div>
                 {% endif %}
 
             </div>
-        </div>
 
-        {% if user.is_authenticated %}
-        <!-- Sub Navigation Bar (Clean & Modern) -->
-        <div class="bg-navy-950/90 border-t border-slate-800/80 px-4 sm:px-6 lg:px-8">
-            <div class="max-w-7xl mx-auto flex items-center justify-between overflow-x-auto py-2">
-                <nav class="flex items-center gap-1.5 sm:gap-2 text-xs font-bold">
-                    
-                    <a href="{% url 'dashboard' %}" class="px-3 py-1.5 rounded-xl transition {% if request.resolver_match.url_name == 'dashboard' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
-                        📊 {{ T.dashboard }}
-                    </a>
-
-                    <a href="{% url 'gatepass_list' %}" class="px-3 py-1.5 rounded-xl transition {% if 'gatepass' in request.path and request.resolver_match.url_name != 'gatepass_create' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
-                        🎫 {{ T.material_passes }}
-                    </a>
-
-                    <a href="{% url 'gatepass_create' %}" class="px-3 py-1.5 rounded-xl transition {% if request.resolver_match.url_name == 'gatepass_create' %}bg-emerald-600 text-white shadow-sm{% else %}text-sky-400 hover:bg-sky-950/60 border border-sky-800/50{% endif %}">
-                        {{ T.issue_pass }}
-                    </a>
-
-                    <a href="{% url 'visitor_list' %}" class="px-3 py-1.5 rounded-xl transition {% if 'visitor' in request.path and request.resolver_match.url_name != 'visitor_checkin' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
-                        🛂 {{ T.visitors }}
-                    </a>
-
-                    <a href="{% url 'lostfound_list' %}" class="px-3 py-1.5 rounded-xl transition {% if 'lost-and-found' in request.path %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
-                        📦 {{ T.lost_found }}
-                    </a>
-
-                    <a href="{% url 'gates_list' %}" class="px-3 py-1.5 rounded-xl transition {% if 'gates' in request.path %}bg-emerald-600 text-white shadow-sm{% else %}text-amber-400 hover:bg-amber-950/60 border border-amber-800/50{% endif %}">
-                        🚧 {{ T.gates_management }}
-                    </a>
-
-                                        {% if user.is_superuser or user.role == 'director' %}
-                    <a href="{% url 'super_admin_dashboard' %}" class="px-3 py-1.5 rounded-xl transition {% if 'super-admin' in request.path %}bg-indigo-600 text-white shadow-sm{% else %}text-indigo-400 hover:bg-indigo-950/60 border border-indigo-800/50{% endif %}">
-                        👑 {{ T.super_admin_hub }}
-                    </a>
-                    {% endif %}
-
-{% if user.is_superuser or user.role == 'director' or user.role == 'supervisor' %}
-                    <a href="{% url 'audit_log' %}" class="px-3 py-1.5 rounded-xl transition {% if request.resolver_match.url_name == 'audit_log' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-400 hover:bg-slate-800 hover:text-slate-200{% endif %}">
-                        🔒 {{ T.shift_audit }}
-                    </a>
-                    {% endif %}
-                </nav>
-
-                <div class="text-[11px] font-mono text-slate-400 hidden xl:flex items-center gap-2">
-                    <span>{{ T.duty_station }}: <strong class="text-emerald-400">{% if current_gate %}{% if lang == 'ar' and current_gate.name_ar %}{{ current_gate.name_ar }}{% else %}{{ current_gate.name }}{% endif %}{% else %}Gate 1{% endif %}</strong></span>
+            <!-- Mobile Navigation Drawer -->
+            {% if user.is_authenticated %}
+            <div id="mobileNavDrawer" class="hidden lg:hidden border-t border-slate-800 py-3 space-y-1">
+                <div class="grid grid-cols-2 gap-2 pb-2 mb-2 border-b border-slate-800">
+                    <button onclick="toggleDropdown('propDropdownMenu')" class="px-3 py-2 rounded-xl bg-slate-800 text-left text-xs font-bold text-slate-200 truncate">
+                        🏢 {% if current_property %}{{ current_property.code }}{% else %}Facility{% endif %} ▼
+                    </button>
+                    <button onclick="toggleDropdown('gateDropdownMenu')" class="px-3 py-2 rounded-xl bg-slate-800 text-left text-xs font-bold text-slate-200 truncate">
+                        📍 {% if current_gate %}{{ current_gate.code }}{% else %}Gate{% endif %} ▼
+                    </button>
                 </div>
+                <a href="{% url 'dashboard' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-200 hover:bg-slate-800">
+                    <span>📊</span> {{ T.nav_dashboard }}
+                </a>
+                <a href="{% url 'gatepass_list' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-200 hover:bg-slate-800">
+                    <span>🎫</span> {{ T.nav_passes }}
+                </a>
+                <a href="{% url 'visitor_list' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-200 hover:bg-slate-800">
+                    <span>🛂</span> {{ T.nav_visitors }}
+                </a>
+                <a href="{% url 'lostfound_list' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-200 hover:bg-slate-800">
+                    <span>📦</span> {{ T.nav_lostfound }}
+                </a>
+                <a href="{% url 'gates_list' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-amber-400 hover:bg-slate-800">
+                    <span>🚧</span> {{ T.nav_gates }}
+                </a>
+                {% if user.is_superuser or user.role == 'director' %}
+                <a href="{% url 'super_admin_dashboard' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-indigo-400 hover:bg-slate-800">
+                    <span>👑</span> {{ T.super_admin_hub }}
+                </a>
+                {% endif %}
+                {% if user.is_superuser or user.role in 'director,supervisor' %}
+                <a href="{% url 'audit_log' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-400 hover:bg-slate-800">
+                    <span>🔒</span> {{ T.shift_audit }}
+                </a>
+                {% endif %}
             </div>
+            {% endif %}
+
         </div>
-        {% endif %}
     </header>
 
     <!-- Global Flash Messages -->
@@ -286,10 +337,13 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white dark:bg-navy-900 border-t border-slate-200 dark:border-slate-800 py-6 text-center text-xs text-slate-500 dark:text-slate-400 mt-auto">
+    <footer class="bg-white dark:bg-navy-900 border-t border-slate-200 dark:border-slate-800 py-5 text-center text-xs text-slate-500 dark:text-slate-400 mt-auto">
         <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
             <p>© 2026 {{ T.app_title }} — Hotel & Facility Command System</p>
-            <p class="font-mono text-[11px]">System Status: <span class="text-emerald-500 font-bold">● Operational (Port 7000)</span></p>
+            <div class="flex items-center gap-3 font-mono text-[11px]">
+                {% if current_property %}<span class="text-slate-400">Facility: <strong class="text-slate-700 dark:text-slate-200">[{{ current_property.code }}]</strong></span>{% endif %}
+                <span class="text-emerald-500 font-bold">● Operational (Port 7000)</span>
+            </div>
         </div>
     </footer>
 
