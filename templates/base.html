@@ -201,9 +201,11 @@
                         🚧 {{ T.gates_management }}
                     </a>
 
+                    {% if user.is_superuser or user.role == 'director' or user.role == 'supervisor' %}
                     <a href="{% url 'audit_log' %}" class="px-3 py-1.5 rounded-xl transition {% if request.resolver_match.url_name == 'audit_log' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-400 hover:bg-slate-800 hover:text-slate-200{% endif %}">
-                        📋 {{ T.shift_audit }}
+                        🔒 {{ T.shift_audit }}
                     </a>
+                    {% endif %}
                 </nav>
 
                 <div class="text-[11px] font-mono text-slate-400 hidden xl:flex items-center gap-2">

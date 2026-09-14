@@ -109,8 +109,35 @@ def dashboard_view(request):
 
 @login_required
 def audit_log_view(request):
-    logs = SecurityAuditLog.objects.select_related('user').all()[:200]
-    return render(request, 'audit_log.html', {'logs': logs})
+    # Restricted: Only Security Director / Shift Supervisor can view the audit trail
+    if not (request.user.is_superuser or request.user.role in ('director', 'supervisor')):
+        messages.error(request, "Access Restricted: The Security Audit Trail is strictly limited to Security Directors and Supervisors.")
+        return redirect('dashboard')
+
+    action_filter = request.GET.get('action', 'ALL')
+    queryset = SecurityAuditLog.objects.select_related('user', 'gate').all()
+
+    if action_filter == 'DELETIONS':
+        queryset = queryset.filter(action__in=['PASS_DELETED', 'GATE_DELETED'])
+    elif action_filter == 'EDITS':
+        queryset = queryset.filter(action__in=['PASS_EDITED', 'GATE_EDITED'])
+    elif action_filter == 'PASSES':
+        queryset = queryset.filter(action__in=['PASS_CREATED', 'PASS_EDITED', 'PASS_DELETED', 'CHECK_IN', 'CHECK_OUT'])
+    elif action_filter == 'GATES':
+        queryset = queryset.filter(action__in=['GATE_ADDED', 'GATE_EDITED', 'GATE_DELETED'])
+    elif action_filter != 'ALL':
+        queryset = queryset.filter(action=action_filter)
+
+    logs = queryset[:300]
+    deletions_count = SecurityAuditLog.objects.filter(action__in=['PASS_DELETED', 'GATE_DELETED']).count()
+    edits_count = SecurityAuditLog.objects.filter(action__in=['PASS_EDITED', 'GATE_EDITED']).count()
+
+    return render(request, 'audit_log.html', {
+        'logs': logs,
+        'action_filter': action_filter,
+        'deletions_count': deletions_count,
+        'edits_count': edits_count,
+    })
 
 @login_required
 def universal_search_view(request):
@@ -215,3 +242,61 @@ def set_language_view(request):
         request.session['lang'] = lang
     next_url = request.META.get('HTTP_REFERER') or '/'
     return redirect(next_url)
+
+
+@login_required
+def gate_edit_view(request, gate_id):
+    gate = get_object_or_404(SecurityGate, pk=gate_id)
+    if request.method == 'POST':
+        old_name = gate.name
+        old_code = gate.code
+        
+        gate.name = request.POST.get('name', '').strip() or gate.name
+        gate.name_ar = request.POST.get('name_ar', '').strip()
+        new_code = request.POST.get('code', '').strip().upper()
+        if new_code and new_code != gate.code and not SecurityGate.objects.filter(code=new_code).exists():
+            gate.code = new_code
+        gate.gate_type = request.POST.get('gate_type', gate.gate_type)
+        gate.description = request.POST.get('description', '').strip()
+        gate.is_active = (request.POST.get('is_active') == 'on')
+        gate.save()
+
+        SecurityAuditLog.objects.create(
+            user=request.user,
+            gate=gate,
+            action='GATE_EDITED',
+            reference=gate.code,
+            details=f"Gate '{gate.code}' updated by {request.user.username}. Name: {gate.name} (was {old_name}). Active: {gate.is_active}.",
+            ip_address=request.META.get('REMOTE_ADDR')
+        )
+        messages.success(request, f"Gate {gate.code} ({gate.name}) updated successfully!")
+    return redirect('gates_list')
+
+
+@login_required
+def gate_delete_view(request, gate_id):
+    gate = get_object_or_404(SecurityGate, pk=gate_id)
+    if request.method == 'POST':
+        reason = request.POST.get('deletion_reason', '').strip() or 'Deactivated by administrator'
+        gate_code = gate.code
+        gate_name = gate.name
+
+        # If gate has passes or visitors, safely deactivate it to maintain historical integrity
+        has_passes = gate.gate_passes.exists() or gate.visitors.exists()
+        if has_passes:
+            gate.is_active = False
+            gate.save(update_fields=['is_active'])
+            action_desc = f"Deactivated gate '{gate_code}' ({gate_name}) (has linked pass records). Reason: {reason}."
+        else:
+            gate.delete()
+            action_desc = f"Permanently deleted gate '{gate_code}' ({gate_name}). Reason: {reason}."
+
+        SecurityAuditLog.objects.create(
+            user=request.user,
+            action='GATE_DELETED',
+            reference=gate_code,
+            details=action_desc,
+            ip_address=request.META.get('REMOTE_ADDR')
+        )
+        messages.success(request, f"Gate {gate_code} has been deactivated/removed. Audit trail entry created.")
+    return redirect('gates_list')

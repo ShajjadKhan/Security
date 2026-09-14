@@ -239,3 +239,128 @@ def gatepass_return(request, pk):
 def gatepass_print(request, pk):
     pass_card = get_object_or_404(GatePass.objects.select_related('from_department', 'dispatched_by').prefetch_related('items'), pk=pk)
     return render(request, 'gatepass/print.html', {'pass_card': pass_card})
+
+
+@login_required
+def gatepass_edit(request, pk):
+    pass_card = get_object_or_404(GatePass.objects.select_related('from_department', 'gate').prefetch_related('items'), pk=pk)
+    departments = DepartmentHost.objects.all().order_by('name')
+    gates = SecurityGate.objects.filter(is_active=True).order_by('code')
+
+    if request.method == 'POST':
+        old_carrier = pass_card.carrier_name
+        old_plate = pass_card.vehicle_plate
+        
+        pass_card.physical_card_ref = request.POST.get('physical_card_ref', '').strip()
+        
+        dept_id = request.POST.get('from_department')
+        if dept_id:
+            pass_card.from_department = DepartmentHost.objects.filter(pk=dept_id).first()
+        pass_card.sender_name = request.POST.get('sender_name', '').strip()
+        pass_card.sender_phone = request.POST.get('sender_phone', '').strip()
+        
+        pass_card.destination_entity = request.POST.get('destination_entity', '').strip()
+        pass_card.destination_address = request.POST.get('destination_address', '').strip()
+        
+        pass_card.carrier_name = request.POST.get('carrier_name', '').strip()
+        pass_card.carrier_phone = request.POST.get('carrier_phone', '').strip()
+        pass_card.vehicle_plate = request.POST.get('vehicle_plate', '').strip()
+        pass_card.vehicle_model = request.POST.get('vehicle_model', '').strip()
+        
+        pass_card.purpose = request.POST.get('purpose', pass_card.purpose)
+        pass_card.purpose_notes = request.POST.get('purpose_notes', '').strip()
+        pass_card.authorized_by_manager = request.POST.get('authorized_by_manager', '').strip()
+        
+        gate_id = request.POST.get('gate_id')
+        if gate_id:
+            pass_card.gate = SecurityGate.objects.filter(pk=gate_id).first()
+            if pass_card.gate:
+                pass_card.gate_location = pass_card.gate.name
+
+        if pass_card.is_green_card and 'return_days' in request.POST:
+            days_loan = int(request.POST.get('return_days', 7))
+            pass_card.expected_return_date = timezone.now() + timezone.timedelta(days=days_loan)
+
+        if 'exit_cargo_photo' in request.FILES:
+            pass_card.exit_cargo_photo = request.FILES['exit_cargo_photo']
+
+        pass_card.save()
+
+        # Update or recreate items manifest
+        item_names = request.POST.getlist('item_name[]')
+        quantities = request.POST.getlist('quantity[]')
+        units = request.POST.getlist('unit[]')
+        serials = request.POST.getlist('serial_asset_tag[]')
+        conditions = request.POST.getlist('condition_out[]')
+
+        # Replace items with updated manifest
+        pass_card.items.all().delete()
+        for idx, name in enumerate(item_names):
+            if name.strip():
+                qty = int(quantities[idx]) if idx < len(quantities) and quantities[idx].isdigit() else 1
+                u = units[idx] if idx < len(units) else 'pcs'
+                s = serials[idx] if idx < len(serials) else ''
+                c = conditions[idx] if idx < len(conditions) else 'for_repair'
+                GatePassItem.objects.create(
+                    pass_card=pass_card,
+                    item_name=name.strip(),
+                    quantity=qty,
+                    unit=u,
+                    serial_asset_tag=s.strip(),
+                    condition_out=c,
+                )
+
+        # Audit Log
+        SecurityAuditLog.objects.create(
+            user=request.user,
+            gate=pass_card.gate,
+            action='PASS_EDITED',
+            reference=pass_card.pass_number,
+            details=f"Gate Pass {pass_card.pass_number} modified by {request.user.username} ({request.user.get_role_display()}). Carrier: {pass_card.carrier_name} (was {old_carrier}). Plate: {pass_card.vehicle_plate} (was {old_plate}). Total items: {pass_card.total_items_count}.",
+            ip_address=request.META.get('REMOTE_ADDR'),
+        )
+
+        messages.success(request, f"Gate pass {pass_card.pass_number} successfully updated and change recorded in audit log!")
+        return redirect('gatepass_detail', pk=pass_card.pk)
+
+    return render(request, 'gatepass/edit.html', {
+        'pass_card': pass_card,
+        'departments': departments,
+        'gates': gates,
+    })
+
+
+@login_required
+def gatepass_delete(request, pk):
+    pass_card = get_object_or_404(GatePass.objects.select_related('from_department', 'gate').prefetch_related('items'), pk=pk)
+
+    if request.method == 'POST':
+        reason = request.POST.get('deletion_reason', '').strip()
+        if not reason:
+            messages.error(request, "A mandatory reason for cancellation/deletion must be provided for security audit compliance.")
+            return redirect('gatepass_detail', pk=pass_card.pk)
+
+        # Snapshot for immutable audit log
+        items_summary = ", ".join([f"{i.quantity}x {i.item_name} ({i.serial_asset_tag or 'No Tag'})" for i in pass_card.items.all()])
+        pass_num = pass_card.pass_number
+        card_type = pass_card.card_type
+        dept_name = pass_card.from_department.name if pass_card.from_department else 'General'
+        carrier = f"{pass_card.carrier_name} ({pass_card.carrier_phone})"
+        gate_name = pass_card.gate.name if pass_card.gate else pass_card.gate_location
+
+        # Permanent audit log entry
+        SecurityAuditLog.objects.create(
+            user=request.user,
+            gate=pass_card.gate,
+            action='PASS_DELETED',
+            reference=pass_num,
+            details=f"[VOID / DELETED] Pass {pass_num} ({card_type} Card) deleted by {request.user.username} ({request.user.get_role_display()}). Reason: '{reason}'. Origin: {dept_name} -> {pass_card.destination_entity}. Carrier: {carrier}. Gate: {gate_name}. Manifest items: [{items_summary}].",
+            ip_address=request.META.get('REMOTE_ADDR'),
+        )
+
+        pass_card.delete()
+
+        messages.success(request, f"Gate pass {pass_num} has been deleted/voided. Audit trail entry permanently logged.")
+        return redirect('gatepass_list')
+
+    return redirect('gatepass_detail', pk=pass_card.pk)

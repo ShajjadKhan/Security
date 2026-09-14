@@ -1,5 +1,42 @@
 {% extends 'base.html' %}
-{% block title %}{{ pass_card.pass_number }} • {{ T.app_title }}{% endblock %}
+{% block title %}{{ pass_card.pass_number }} • {{ T.app_title }}
+<!-- Delete Confirmation Modal with Mandatory Reason -->
+<div id="deleteModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-navy-900 rounded-3xl border-2 border-rose-500 shadow-2xl max-w-lg w-full p-6 space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div class="flex items-center gap-2 text-rose-600 dark:text-rose-400 font-black">
+                <span class="text-xl">⚠️</span>
+                <h3>{{ T.delete_pass_title }}</h3>
+            </div>
+            <button onclick="document.getElementById('deleteModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 text-xs font-semibold leading-relaxed border border-rose-200 dark:border-rose-900">
+            {{ T.delete_pass_warning }}
+        </div>
+
+        <form action="{% url 'gatepass_delete' pass_card.pk %}" method="POST" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-black text-slate-800 dark:text-slate-200 mb-1">
+                    {{ T.delete_reason_label }} <span class="text-rose-500">*</span>
+                </label>
+                <textarea name="deletion_reason" required rows="3" placeholder="{{ T.delete_reason_placeholder }}" class="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs focus:ring-2 focus:ring-rose-500"></textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button type="button" onclick="document.getElementById('deleteModal').classList.add('hidden')" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">
+                    {{ T.cancel }}
+                </button>
+                <button type="submit" class="px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black shadow-lg shadow-rose-900/30">
+                    {{ T.confirm_delete_btn }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
 
 {% block content %}
 <div class="max-w-4xl mx-auto space-y-6">
@@ -32,6 +69,13 @@
             <a href="{% url 'gatepass_print' pass_card.pk %}" target="_blank" class="px-4 py-2.5 rounded-2xl bg-white dark:bg-navy-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center gap-2 transition">
                 <span>🖨️</span> {{ T.print_slip }}
             </a>
+            <a href="{% url 'gatepass_edit' pass_card.pk %}" class="px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center gap-2 transition">
+                <span>✏️</span> {{ T.btn_edit }}
+            </a>
+
+            <button type="button" onclick="document.getElementById('deleteModal').classList.remove('hidden')" class="px-4 py-2.5 rounded-2xl bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 font-bold text-xs flex items-center gap-2 transition">
+                <span>🗑️</span> {{ T.btn_delete }}
+            </button>
         </div>
     </div>
 
@@ -293,4 +337,41 @@
     </div>
 
 </div>
+
+<!-- Delete Confirmation Modal with Mandatory Reason -->
+<div id="deleteModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-navy-900 rounded-3xl border-2 border-rose-500 shadow-2xl max-w-lg w-full p-6 space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div class="flex items-center gap-2 text-rose-600 dark:text-rose-400 font-black">
+                <span class="text-xl">⚠️</span>
+                <h3>{{ T.delete_pass_title }}</h3>
+            </div>
+            <button onclick="document.getElementById('deleteModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 text-xs font-semibold leading-relaxed border border-rose-200 dark:border-rose-900">
+            {{ T.delete_pass_warning }}
+        </div>
+
+        <form action="{% url 'gatepass_delete' pass_card.pk %}" method="POST" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-black text-slate-800 dark:text-slate-200 mb-1">
+                    {{ T.delete_reason_label }} <span class="text-rose-500">*</span>
+                </label>
+                <textarea name="deletion_reason" required rows="3" placeholder="{{ T.delete_reason_placeholder }}" class="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs focus:ring-2 focus:ring-rose-500"></textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button type="button" onclick="document.getElementById('deleteModal').classList.add('hidden')" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">
+                    {{ T.cancel }}
+                </button>
+                <button type="submit" class="px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black shadow-lg shadow-rose-900/30">
+                    {{ T.confirm_delete_btn }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {% endblock %}

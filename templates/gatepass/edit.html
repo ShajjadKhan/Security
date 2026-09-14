@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+{% block title %}{{ T.edit_pass_title }} • {{ pass_card.pass_number }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+
+    <!-- Header & Action Bar -->
+    <div class="flex items-center justify-between">
+        <a href="{% url 'gatepass_detail' pass_card.pk %}" class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition">
+            {% if is_rtl %}➔{% else %}←{% endif %} {{ pass_card.pass_number }}
+        </a>
+        <button type="button" onclick="document.getElementById('deleteModal').classList.remove('hidden')" class="px-4 py-2 rounded-2xl bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 font-bold text-xs flex items-center gap-1.5 transition">
+            {{ T.btn_void_pass }}
+        </button>
+    </div>
+
+    <!-- Pass Banner -->
+    <div class="rounded-3xl p-6 text-white {% if pass_card.is_green_card %}bg-gradient-to-r from-emerald-700 to-teal-800{% else %}bg-gradient-to-r from-rose-700 to-slate-800{% endif %} shadow-lg">
+        <div class="flex items-center justify-between">
+            <div>
+                <span class="text-[10px] font-mono font-bold uppercase bg-white/20 px-3 py-1 rounded-full">
+                    {% if pass_card.is_green_card %}{{ T.green_card_badge }}{% else %}{{ T.red_card_badge }}{% endif %}
+                </span>
+                <h1 class="text-2xl sm:text-3xl font-black font-mono mt-2">{{ pass_card.pass_number }}</h1>
+            </div>
+            <div class="text-right {% if is_rtl %}text-left{% endif %}">
+                <span class="text-xs text-white/80 block">{{ T.dispatched_by }}: {{ pass_card.dispatched_by.username }}</span>
+                <span class="text-[11px] text-white/60 font-mono">{{ pass_card.dispatched_at|date:"d M Y H:i" }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Form -->
+    <form method="POST" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Gate & Card Reference -->
+        <div class="bg-white dark:bg-navy-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-4">
+            <h2 class="text-xs font-black uppercase tracking-wider text-slate-400">
+                {{ T.gate_and_auth }}
+            </h2>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.gate_type }}</label>
+                    <select name="gate_id" class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold">
+                        {% for g in gates %}
+                        <option value="{{ g.id }}" {% if pass_card.gate and pass_card.gate.id == g.id %}selected{% endif %}>
+                            {{ g.code }} - {% if lang == 'ar' and g.name_ar %}{{ g.name_ar }}{% else %}{{ g.name }}{% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.card_tag_label }}</label>
+                    <input type="text" name="physical_card_ref" value="{{ pass_card.physical_card_ref }}" class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-mono text-xs">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.authorized_by }}</label>
+                    <input type="text" name="authorized_by_manager" value="{{ pass_card.authorized_by_manager }}" required class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold">
+                </div>
+            </div>
+
+            {% if pass_card.is_green_card %}
+            <div class="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <strong class="text-emerald-900 dark:text-emerald-300 block">Current Expected Return: {{ pass_card.expected_return_date|date:"d M Y • H:i" }}</strong>
+                    <span class="text-[11px] text-emerald-700 dark:text-emerald-400">Select new loan duration if deadline was extended</span>
+                </div>
+                <select name="return_days" class="px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-700 font-bold text-xs text-emerald-900 dark:text-emerald-300">
+                    <option value="1">Extend +1 Day</option>
+                    <option value="3">Extend +3 Days</option>
+                    <option value="7" selected>Extend +7 Days (1 Week)</option>
+                    <option value="14">Extend +14 Days (2 Weeks)</option>
+                    <option value="30">Extend +30 Days (1 Month)</option>
+                </select>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Route (Origin & Destination) -->
+        <div class="bg-white dark:bg-navy-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-4">
+            <h2 class="text-xs font-black uppercase tracking-wider text-slate-400">
+                {{ T.dept_and_dest }}
+            </h2>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.from_dept }}</label>
+                    <select name="from_department" class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-semibold text-xs">
+                        {% for d in departments %}
+                        <option value="{{ d.id }}" {% if pass_card.from_department and pass_card.from_department.id == d.id %}selected{% endif %}>{{ d.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.sender_name }}</label>
+                    <input type="text" name="sender_name" value="{{ pass_card.sender_name }}" required class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.destination_name }}</label>
+                    <input type="text" name="destination_entity" value="{{ pass_card.destination_entity }}" required class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.destination_addr }}</label>
+                    <input type="text" name="destination_address" value="{{ pass_card.destination_address }}" class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
+                </div>
+            </div>
+        </div>
+
+        <!-- Carrier & Transport -->
+        <div class="bg-white dark:bg-navy-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-4">
+            <h2 class="text-xs font-black uppercase tracking-wider text-slate-400">
+                {{ T.carrier_info }}
+            </h2>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.carrier_name }}</label>
+                    <input type="text" name="carrier_name" value="{{ pass_card.carrier_name }}" required class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.carrier_phone }}</label>
+                    <input type="tel" name="carrier_phone" value="{{ pass_card.carrier_phone }}" required class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-mono text-xs">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.vehicle_plate }}</label>
+                    <input type="text" name="vehicle_plate" value="{{ pass_card.vehicle_plate }}" class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-mono text-xs uppercase">
+                </div>
+            </div>
+        </div>
+
+        <!-- Cargo Manifest Items (Cart) -->
+        <div class="bg-white dark:bg-navy-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div>
+                    <h2 class="text-xs font-black uppercase tracking-wider text-slate-400">
+                        {{ T.cart_manifest_title }}
+                    </h2>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Edit or add cargo items</p>
+                </div>
+                <button type="button" onclick="addItemRow()" class="px-4 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 border border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-bold text-xs">
+                    {{ T.add_item_btn }}
+                </button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left {% if is_rtl %}text-right{% endif %} text-xs" id="itemsTable">
+                    <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800">
+                        <tr>
+                            <th class="py-2.5 px-3 min-w-[220px]">{{ T.item_desc }}</th>
+                            <th class="py-2.5 px-3 w-24">{{ T.item_qty }}</th>
+                            <th class="py-2.5 px-3 w-28">{{ T.item_unit }}</th>
+                            <th class="py-2.5 px-3 min-w-[160px]">{{ T.item_serial }}</th>
+                            <th class="py-2.5 px-3 w-12 text-center">✕</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsBody" class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                        {% for item in pass_card.items.all %}
+                        <tr class="item-row">
+                            <td class="py-2 px-3">
+                                <input type="text" name="item_name[]" value="{{ item.item_name }}" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold">
+                            </td>
+                            <td class="py-2 px-3">
+                                <input type="number" name="quantity[]" value="{{ item.quantity }}" min="1" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-mono font-bold text-center">
+                            </td>
+                            <td class="py-2 px-3">
+                                <select name="unit[]" class="w-full px-2.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
+                                    <option value="pcs" {% if item.unit == 'pcs' %}selected{% endif %}>pcs / قطعة</option>
+                                    <option value="sets" {% if item.unit == 'sets' %}selected{% endif %}>sets / طقم</option>
+                                    <option value="boxes" {% if item.unit == 'boxes' %}selected{% endif %}>boxes / كرتون</option>
+                                    <option value="kg" {% if item.unit == 'kg' %}selected{% endif %}>kg / كجم</option>
+                                    <option value="meters" {% if item.unit == 'meters' %}selected{% endif %}>meters / متر</option>
+                                </select>
+                            </td>
+                            <td class="py-2 px-3">
+                                <input type="text" name="serial_asset_tag[]" value="{{ item.serial_asset_tag }}" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-mono text-xs">
+                            </td>
+                            <td class="py-2 px-3 text-center">
+                                <button type="button" onclick="removeItemRow(this)" class="p-1 text-slate-400 hover:text-rose-500 transition">✕</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="bg-white dark:bg-navy-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 flex items-center justify-between gap-4">
+            <a href="{% url 'gatepass_detail' pass_card.pk %}" class="px-5 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs">
+                {{ T.cancel }}
+            </a>
+            <button type="submit" class="px-8 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-900/30 flex items-center gap-2">
+                <span>✓ Save Changes & Log Audit</span>
+            </button>
+        </div>
+
+    </form>
+
+</div>
+
+<!-- Delete Confirmation Modal with Mandatory Reason -->
+<div id="deleteModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-navy-900 rounded-3xl border-2 border-rose-500 shadow-2xl max-w-lg w-full p-6 space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div class="flex items-center gap-2 text-rose-600 dark:text-rose-400 font-black">
+                <span class="text-xl">⚠️</span>
+                <h3>{{ T.delete_pass_title }}</h3>
+            </div>
+            <button onclick="document.getElementById('deleteModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 text-xs font-semibold leading-relaxed border border-rose-200 dark:border-rose-900">
+            {{ T.delete_pass_warning }}
+        </div>
+
+        <form action="{% url 'gatepass_delete' pass_card.pk %}" method="POST" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-black text-slate-800 dark:text-slate-200 mb-1">
+                    {{ T.delete_reason_label }} <span class="text-rose-500">*</span>
+                </label>
+                <textarea name="deletion_reason" required rows="3" placeholder="{{ T.delete_reason_placeholder }}" class="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs focus:ring-2 focus:ring-rose-500"></textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button type="button" onclick="document.getElementById('deleteModal').classList.add('hidden')" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">
+                    {{ T.cancel }}
+                </button>
+                <button type="submit" class="px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black shadow-lg shadow-rose-900/30">
+                    {{ T.confirm_delete_btn }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function addItemRow() {
+    const tbody = document.getElementById('itemsBody');
+    const tr = document.createElement('tr');
+    tr.className = "item-row";
+    tr.innerHTML = `
+        <td class="py-2 px-3">
+            <input type="text" name="item_name[]" required placeholder="Item description" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold">
+        </td>
+        <td class="py-2 px-3">
+            <input type="number" name="quantity[]" value="1" min="1" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-mono font-bold text-center">
+        </td>
+        <td class="py-2 px-3">
+            <select name="unit[]" class="w-full px-2.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
+                <option value="pcs" selected>pcs / قطعة</option>
+                <option value="sets">sets / طقم</option>
+                <option value="boxes">boxes / كرتون</option>
+                <option value="kg">kg / كجم</option>
+                <option value="meters">meters / متر</option>
+            </select>
+        </td>
+        <td class="py-2 px-3">
+            <input type="text" name="serial_asset_tag[]" placeholder="Serial / Tag #" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-mono text-xs">
+        </td>
+        <td class="py-2 px-3 text-center">
+            <button type="button" onclick="removeItemRow(this)" class="p-1 text-slate-400 hover:text-rose-500 transition">✕</button>
+        </td>
+    `;
+    tbody.appendChild(tr);
+}
+
+function removeItemRow(btn) {
+    const rows = document.querySelectorAll('.item-row');
+    if (rows.length > 1) {
+        btn.closest('tr').remove();
+    } else {
+        alert('Pass must contain at least 1 item.');
+    }
+}
+</script>
+{% endblock %}

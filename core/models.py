@@ -63,7 +63,12 @@ class SecurityAuditLog(models.Model):
         ('LF_CLAIMED', 'Lost & Found Item Handed Over'),
         ('LF_DISPOSED', 'Lost & Found Item Disposed'),
         ('SECURITY_ALERT', 'Security Incident Flagged'),
+        ('PASS_CREATED', 'Gate Pass Issued / Dispatched'),
+        ('PASS_EDITED', 'Gate Pass Modified / Updated'),
+        ('PASS_DELETED', 'Gate Pass Deleted / Cancelled'),
         ('GATE_ADDED', 'New Security Gate Created'),
+        ('GATE_EDITED', 'Security Gate Modified'),
+        ('GATE_DELETED', 'Security Gate Deactivated / Deleted'),
     ]
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     gate = models.ForeignKey(SecurityGate, on_delete=models.SET_NULL, null=True, blank=True)
