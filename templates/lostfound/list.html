@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block title %}Lost & Found Safe Register • Security Dept{% endblock %}
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Top Bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Lost & Found Safe Custody</h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Vault register for discovered property, guest belongings, and claimed items.</p>
+        </div>
+        <a href="{% url 'lostfound_create' %}" class="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-md shadow-amber-900/20 flex items-center gap-2 self-start transition">
+            <span>📦</span> Register Discovered Item
+        </a>
+    </div>
+
+    <!-- Filters & Search Bar -->
+    <div class="bg-white dark:bg-navy-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+        <!-- Status Tabs -->
+        <div class="flex items-center gap-1.5 flex-wrap w-full md:w-auto">
+            <a href="?status=all&tier={{ tier_filter }}&q={{ q }}" class="px-3 py-1.5 rounded-lg text-xs font-bold transition {% if status_filter == 'all' %}bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900{% else %}bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200{% endif %}">
+                All Vault
+            </a>
+            <a href="?status=unclaimed&tier={{ tier_filter }}&q={{ q }}" class="px-3 py-1.5 rounded-lg text-xs font-bold transition {% if status_filter == 'unclaimed' %}bg-amber-600 text-white{% else %}bg-slate-100 dark:bg-slate-800 text-amber-600 dark:text-amber-400 hover:bg-amber-50{% endif %}">
+                🔒 In Custody (Unclaimed)
+            </a>
+            <a href="?status=claimed&tier={{ tier_filter }}&q={{ q }}" class="px-3 py-1.5 rounded-lg text-xs font-bold transition {% if status_filter == 'claimed' %}bg-emerald-600 text-white{% else %}bg-slate-100 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50{% endif %}">
+                ✅ Claimed & Handed Over
+            </a>
+            <a href="?tier=high_value&status={{ status_filter }}&q={{ q }}" class="px-3 py-1.5 rounded-lg text-xs font-bold transition {% if tier_filter == 'high_value' %}bg-purple-600 text-white{% else %}bg-slate-100 dark:bg-slate-800 text-purple-600 dark:text-purple-400 hover:bg-purple-50{% endif %}">
+                ★ High Value Vault
+            </a>
+        </div>
+
+        <!-- Search Input -->
+        <form method="GET" class="w-full md:w-80 flex gap-2">
+            <input type="hidden" name="status" value="{{ status_filter }}">
+            <input type="text" name="q" value="{{ q }}" placeholder="Search ref, item title, brand, room..." class="flex-1 px-3.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none">
+            <button type="submit" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold">Search</button>
+        </form>
+    </div>
+
+    <!-- Items Grid Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {% for item in items %}
+        <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col hover:border-amber-500/50 transition">
+            
+            <!-- Photo Thumbnail Container -->
+            <div class="h-44 bg-slate-100 dark:bg-slate-800/80 relative flex items-center justify-center overflow-hidden">
+                {% if item.primary_photo %}
+                <img src="{{ item.primary_photo.url }}" alt="{{ item.title }}" class="w-full h-full object-cover">
+                {% else %}
+                <span class="text-4xl text-slate-300 dark:text-slate-600">📦</span>
+                {% endif %}
+
+                <!-- Badges over photo -->
+                <div class="absolute top-3 left-3 flex gap-1.5 flex-wrap">
+                    <span class="font-mono text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-900/80 text-white backdrop-blur-sm">
+                        {{ item.reference_number }}
+                    </span>
+                    {% if item.value_tier == 'high_value' %}
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-500 text-white shadow-sm">
+                        ★ High Value
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div class="absolute bottom-3 right-3">
+                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider backdrop-blur-md shadow-sm {% if item.status == 'unclaimed' %}bg-amber-500/90 text-white{% elif item.status == 'claimed' %}bg-emerald-600/90 text-white{% else %}bg-slate-800/90 text-slate-200{% endif %}">
+                        {{ item.get_status_display }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                <div>
+                    <h3 class="font-bold text-sm text-slate-900 dark:text-white line-clamp-1">{{ item.title }}</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">{{ item.description }}</p>
+                </div>
+
+                <div class="pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 space-y-1">
+                    <div class="flex justify-between">
+                        <span>Location Found:</span>
+                        <span class="font-bold text-slate-700 dark:text-slate-200">{{ item.found_location }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Storage Bin/Safe:</span>
+                        <span class="font-mono font-bold text-amber-600 dark:text-amber-400">{{ item.storage_location }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Discovered:</span>
+                        <span>{{ item.found_date|date:"d M Y" }} ({{ item.days_in_custody }}d ago)</span>
+                    </div>
+                </div>
+
+                <div class="pt-2 flex items-center justify-between gap-2">
+                    <a href="{% url 'lostfound_detail' item.pk %}" class="flex-1 text-center py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition">
+                        View Details
+                    </a>
+                    {% if item.status == 'unclaimed' %}
+                    <a href="{% url 'lostfound_claim' item.pk %}" class="flex-1 text-center py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm transition">
+                        Release / Claim
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+        {% empty %}
+        <div class="col-span-full py-12 text-center text-slate-400 bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <span class="text-4xl block mb-2">🔍</span>
+            <p class="text-sm font-semibold">No Lost & Found records found matching your filters.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

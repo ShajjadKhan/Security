@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+{% block title %}Operational Dashboard • Security Dept HQ{% endblock %}
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Top Action Bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-navy-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div>
+            <h1 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                Security Control Center <span class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">LIVE</span>
+            </h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Real-time gate pass management, on-premises contractor tracking, and lost & found custody.</p>
+        </div>
+        <div class="flex items-center gap-2.5 flex-wrap">
+            <a href="{% url 'visitor_checkin' %}" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-900/20 flex items-center gap-2 transition">
+                <span>➕</span> Check-In Visitor / Contractor
+            </a>
+            <a href="{% url 'lostfound_create' %}" class="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-md shadow-amber-900/20 flex items-center gap-2 transition">
+                <span>📦</span> Register Found Item
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI Metric Cards Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <!-- 1. Active on-site -->
+        <a href="{% url 'visitor_list' %}?status=active" class="bg-white dark:bg-navy-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-emerald-500 dark:hover:border-emerald-500 transition group">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">On Premises</span>
+                <span class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm font-bold">🛂</span>
+            </div>
+            <div class="mt-3">
+                <span class="text-3xl font-black font-mono text-slate-900 dark:text-white">{{ active_count }}</span>
+                <span class="text-xs text-emerald-600 dark:text-emerald-400 ml-1.5 font-semibold">Active now</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">Contractors: {{ contractor_count }} • Guests: {{ guest_count }}</p>
+        </a>
+
+        <!-- 2. Today's Checkins -->
+        <div class="bg-white dark:bg-navy-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Today Check-Ins</span>
+                <span class="w-8 h-8 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center text-sm font-bold">📥</span>
+            </div>
+            <div class="mt-3">
+                <span class="text-3xl font-black font-mono text-slate-900 dark:text-white">{{ today_checkins }}</span>
+                <span class="text-xs text-slate-400 ml-1.5 font-semibold">Logged</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">Checked out today: <span class="font-bold text-slate-600 dark:text-slate-300 font-mono">{{ today_checkouts }}</span></p>
+        </div>
+
+        <!-- 3. Overstay Alerts -->
+        <a href="{% url 'visitor_list' %}?status=overstay" class="bg-white dark:bg-navy-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-rose-500 dark:hover:border-rose-500 transition group {% if overstay_count > 0 %}border-rose-300 dark:border-rose-900/60 bg-rose-50/20{% endif %}">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Overstay Alerts</span>
+                <span class="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center text-sm font-bold">⚠️</span>
+            </div>
+            <div class="mt-3">
+                <span class="text-3xl font-black font-mono text-rose-600 dark:text-rose-400">{{ overstay_count }}</span>
+                <span class="text-xs text-rose-500 ml-1.5 font-semibold">Flagged</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">Exceeded departure window</p>
+        </a>
+
+        <!-- 4. Lost & Found in Safe -->
+        <a href="{% url 'lostfound_list' %}?status=unclaimed" class="bg-white dark:bg-navy-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-amber-500 dark:hover:border-amber-500 transition group">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Lost & Found Safe</span>
+                <span class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm font-bold">🔒</span>
+            </div>
+            <div class="mt-3">
+                <span class="text-3xl font-black font-mono text-slate-900 dark:text-white">{{ unclaimed_count }}</span>
+                <span class="text-xs text-amber-600 dark:text-amber-400 ml-1.5 font-semibold">Unclaimed</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">High-value vault items: <span class="font-bold text-amber-500 font-mono">{{ high_value_count }}</span></p>
+        </a>
+    </div>
+
+    <!-- Active On-Premises Live Table -->
+    <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                <h2 class="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">Active Visitors & Contractors On-Premises</h2>
+                <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">{{ active_count }}</span>
+            </div>
+            <a href="{% url 'visitor_list' %}?status=active" class="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline">View All Log →</a>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                        <th class="py-3 px-4">Pass #</th>
+                        <th class="py-3 px-4">Visitor / Contractor</th>
+                        <th class="py-3 px-4">Category</th>
+                        <th class="py-3 px-4">Host / Department</th>
+                        <th class="py-3 px-4">Vehicle</th>
+                        <th class="py-3 px-4">Check-In Time</th>
+                        <th class="py-3 px-4">Duration</th>
+                        <th class="py-3 px-4 text-right">Gate Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
+                    {% for v in active_visitors %}
+                    <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
+                        <td class="py-3 px-4 font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                            <a href="{% url 'visitor_detail' v.pk %}" class="hover:underline">{{ v.pass_number }}</a>
+                        </td>
+                        <td class="py-3 px-4">
+                            <div class="font-bold text-slate-900 dark:text-white">{{ v.full_name }}</div>
+                            <div class="text-[11px] text-slate-400 font-mono">{{ v.phone }} {% if v.company_name %}• {{ v.company_name }}{% endif %}</div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider {% if v.category == 'contractor' %}bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300{% elif v.category == 'delivery' %}bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300{% elif v.category == 'official' %}bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300{% else %}bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300{% endif %}">
+                                {{ v.get_category_display }}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <div class="text-slate-800 dark:text-slate-200">{{ v.host_person|default:v.host_department.name|default:'General' }}</div>
+                            {% if v.host_department %}<div class="text-[11px] text-slate-400">{{ v.host_department.floor_room }}</div>{% endif %}
+                        </td>
+                        <td class="py-3 px-4">
+                            {% if v.has_vehicle %}
+                            <span class="font-mono text-slate-700 dark:text-slate-300 font-bold bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-[11px]">{{ v.vehicle_plate }}</span>
+                            {% else %}
+                            <span class="text-slate-400 italic">No vehicle</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-slate-600 dark:text-slate-400">
+                            {{ v.check_in_time|date:"H:i" }}
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="font-mono font-bold {% if v.is_overstay %}text-rose-600 dark:text-rose-400 animate-pulse{% else %}text-slate-700 dark:text-slate-300{% endif %}">
+                                {{ v.duration_formatted }}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <form action="{% url 'visitor_checkout' v.pk %}" method="POST" class="inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="dashboard">
+                                <button type="submit" onclick="return confirm('Confirm check-out and return badge for {{ v.full_name }}?')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-600 text-white font-bold text-[11px] transition shadow-sm">
+                                    Check Out 🚪
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="py-8 text-center text-slate-400">
+                            No active visitors on premises right now. Use "+ Check-In Visitor" to log arrival.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Two-Column Grid: Lost & Found Register + Recent Security Audit -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Left: Lost & Found Custody -->
+        <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                    <span class="text-base">📦</span>
+                    <h2 class="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">Lost & Found Safe Custody</h2>
+                </div>
+                <a href="{% url 'lostfound_list' %}" class="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline">View Safe Register →</a>
+            </div>
+
+            <div class="space-y-3">
+                {% for item in recent_lostfound %}
+                <a href="{% url 'lostfound_detail' item.pk %}" class="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
+                            {% if item.primary_photo %}
+                            <img src="{{ item.primary_photo.url }}" alt="{{ item.title }}" class="w-full h-full object-cover">
+                            {% else %}
+                            <span class="text-base">🔍</span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-xs text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition">{{ item.title }}</span>
+                                {% if item.value_tier == 'high_value' %}
+                                <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300">★ High Value</span>
+                                {% endif %}
+                            </div>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Ref: <span class="font-mono font-bold">{{ item.reference_number }}</span> • Found at: {{ item.found_location }}</p>
+                        </div>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider {% if item.status == 'unclaimed' %}bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300{% elif item.status == 'claimed' %}bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300{% else %}bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300{% endif %}">
+                            {{ item.get_status_display }}
+                        </span>
+                        <p class="text-[10px] text-slate-400 mt-1">{{ item.days_in_custody }}d in custody</p>
+                    </div>
+                </a>
+                {% empty %}
+                <p class="text-xs text-slate-400 text-center py-6">No lost items registered yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Right: Real-Time Security Audit Feed -->
+        <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                    <span class="text-base">📋</span>
+                    <h2 class="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">Shift Audit Activity Feed</h2>
+                </div>
+                <a href="{% url 'audit_log' %}" class="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline">Full Log →</a>
+            </div>
+
+            <div class="space-y-2.5">
+                {% for log in recent_audits %}
+                <div class="flex items-start gap-3 text-xs p-2.5 rounded-lg border border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-800/30">
+                    <span class="font-mono text-[10px] text-slate-400 mt-0.5 shrink-0">{{ log.created_at|date:"H:i" }}</span>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-bold text-[10px] px-1.5 py-0.5 rounded {% if log.action == 'CHECK_IN' %}bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300{% elif log.action == 'CHECK_OUT' %}bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200{% elif log.action == 'LF_LOGGED' %}bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300{% elif log.action == 'LF_CLAIMED' %}bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300{% else %}bg-purple-100 text-purple-800{% endif %}">
+                                {{ log.get_action_display }}
+                            </span>
+                            <span class="font-mono font-bold text-slate-700 dark:text-slate-300">{{ log.reference }}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-snug">{{ log.details }}</p>
+                    </div>
+                    <span class="text-[10px] text-slate-400 shrink-0 font-medium">{{ log.user.username }}</span>
+                </div>
+                {% empty %}
+                <p class="text-xs text-slate-400 text-center py-6">No shift audit records logged yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

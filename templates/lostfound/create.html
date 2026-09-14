@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block title %}Log Found Item • Security Dept{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <a href="{% url 'lostfound_list' %}" class="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline">← Back to Safe Register</a>
+            <h1 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight mt-1">Register Found Property</h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Log item custody into the secure vault with photographic proof.</p>
+        </div>
+        <span class="text-2xl">📦</span>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="bg-white dark:bg-navy-900 p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+        {% csrf_token %}
+
+        <!-- 1. Item Specifications -->
+        <div>
+            <h2 class="text-xs font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-3 pb-1 border-b border-slate-100 dark:border-slate-800">
+                1. Item Identification
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Item Title / Summary *</label>
+                    <input type="text" name="title" required placeholder="e.g. Silver iPhone 15 Pro in Black Case" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Category *</label>
+                    <select name="category" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        <option value="electronics">Electronics (Phones, Laptops, Earbuds, Cameras)</option>
+                        <option value="wallet_cash">Wallets, Purses & Cash</option>
+                        <option value="jewelry">Jewelry, Watches & Luxury Goods</option>
+                        <option value="documents">IDs, Passports, Cards & Keys</option>
+                        <option value="luggage_bags">Baggage, Backpacks & Briefcases</option>
+                        <option value="clothing">Clothing, Eyewear & Shoes</option>
+                        <option value="accessories">Hats, Umbrellas, Personal Items</option>
+                        <option value="other">Other Miscellaneous Items</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Value Classification *</label>
+                    <select name="value_tier" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        <option value="normal">Standard Property</option>
+                        <option value="high_value">★ High Value (Requires Safe Storage)</option>
+                        <option value="sensitive">Confidential Documents / Large Cash</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Brand / Manufacturer</label>
+                    <input type="text" name="brand" placeholder="e.g. Apple / Montblanc / Samsonite" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Color / Distinguishing Finish</label>
+                    <input type="text" name="color" placeholder="e.g. Titanium Gray / Gold" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Serial Number / IMEI / Card Endings</label>
+                    <input type="text" name="serial_number" placeholder="e.g. Serial: F2LX9... or Visa ending in 4821" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-mono focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Detailed Physical Description *</label>
+                    <textarea name="description" required rows="3" placeholder="Condition, scratches, lock-screen wallpaper, stickers, contents inside..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Discovery & Finder Information -->
+        <div>
+            <h2 class="text-xs font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-3 pb-1 border-b border-slate-100 dark:border-slate-800">
+                2. Discovery & Safe Custody Location
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Location Found *</label>
+                    <input type="text" name="found_location" required placeholder="e.g. Lobby Couch next to Coffee Shop" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Vault / Locker Storage Bin *</label>
+                    <input type="text" name="storage_location" required value="Security Main Safe A" placeholder="e.g. Safe Box B, Locker #12" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-mono focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Finder Type</label>
+                    <select name="finder_type" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        <option value="staff">Hotel Staff / Housekeeping</option>
+                        <option value="security">Security Officer on Patrol</option>
+                        <option value="guest">Guest / Visitor</option>
+                        <option value="contractor">Contractor / Vendor</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Finder Full Name & Contact</label>
+                    <input type="text" name="finder_name" placeholder="e.g. Mary (Housekeeping Floor 4)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Photo Proof Upload -->
+        <div>
+            <h2 class="text-xs font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-3 pb-1 border-b border-slate-100 dark:border-slate-800">
+                3. Photographic Custody Evidence
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="p-4 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 text-center">
+                    <span class="text-2xl block mb-1">📸</span>
+                    <label class="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Primary Item Photo *</label>
+                    <input type="file" name="primary_photo" accept="image/*" class="text-xs text-slate-500">
+                </div>
+                <div class="p-4 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 text-center">
+                    <span class="text-2xl block mb-1">🖼️</span>
+                    <label class="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Extra Supporting Photos (Gallery)</label>
+                    <input type="file" name="extra_photos" multiple accept="image/*" class="text-xs text-slate-500">
+                </div>
+            </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
+            <a href="{% url 'lostfound_list' %}" class="px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                Cancel
+            </a>
+            <button type="submit" class="px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-md shadow-amber-900/20 transition">
+                Secure in Safe & Register →
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

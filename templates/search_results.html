@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Universal Search Results • Security Dept{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <div>
+        <a href="{% url 'dashboard' %}" class="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline">← Back to Dashboard</a>
+        <h1 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight mt-1">Search Results for "{{ q }}"</h1>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Matching visitors, contractor passes, vehicle plates, and lost & found safe items.</p>
+    </div>
+
+    <!-- Matching Visitors -->
+    <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-3">
+        <h2 class="text-xs font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 pb-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <span>🛂 Matching Visitors ({{ visitors|length }})</span>
+        </h2>
+        {% for v in visitors %}
+        <div class="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+            <div>
+                <span class="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400">{{ v.pass_number }}</span>
+                <a href="{% url 'visitor_detail' v.pk %}" class="font-bold text-xs text-slate-900 dark:text-white ml-2 hover:underline">{{ v.full_name }}</a>
+                <p class="text-[11px] text-slate-400">Phone: {{ v.phone }} • Plate: {{ v.vehicle_plate|default:'N/A' }} • Host: {{ v.host_person|default:v.host_department.name }}</p>
+            </div>
+            <a href="{% url 'visitor_detail' v.pk %}" class="px-3 py-1.5 rounded-lg bg-slate-800 text-white font-bold text-xs">View Pass</a>
+        </div>
+        {% empty %}
+        <p class="text-xs text-slate-400 py-3">No matching visitor records.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Matching Lost & Found -->
+    <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-3">
+        <h2 class="text-xs font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400 pb-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <span>📦 Matching Lost & Found Vault Items ({{ lostfound_items|length }})</span>
+        </h2>
+        {% for item in lostfound_items %}
+        <div class="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+            <div>
+                <span class="font-mono font-bold text-xs text-amber-600 dark:text-amber-400">{{ item.reference_number }}</span>
+                <a href="{% url 'lostfound_detail' item.pk %}" class="font-bold text-xs text-slate-900 dark:text-white ml-2 hover:underline">{{ item.title }}</a>
+                <p class="text-[11px] text-slate-400">Location: {{ item.found_location }} • Safe Storage: {{ item.storage_location }} • Status: {{ item.get_status_display }}</p>
+            </div>
+            <a href="{% url 'lostfound_detail' item.pk %}" class="px-3 py-1.5 rounded-lg bg-slate-800 text-white font-bold text-xs">View Item</a>
+        </div>
+        {% empty %}
+        <p class="text-xs text-slate-400 py-3">No matching lost & found items.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
