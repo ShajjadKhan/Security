@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Q
 from .models import LostFoundItem, ItemPhoto
-from core.models import SecurityAuditLog
+from core.models import Property, SecurityAuditLog
 
 @login_required
 def lostfound_list(request):
@@ -14,6 +14,9 @@ def lostfound_list(request):
     q = request.GET.get('q', '').strip()
     
     queryset = LostFoundItem.objects.select_related('logged_by', 'released_by').all()
+    current_prop_id = request.session.get('current_property_id')
+    if current_prop_id and current_prop_id != 'ALL':
+        queryset = queryset.filter(property_id=current_prop_id)
     
     if status_filter != 'all':
         queryset = queryset.filter(status=status_filter)
@@ -59,7 +62,15 @@ def lostfound_create(request):
         finder_phone = request.POST.get('finder_phone', '').strip()
         storage_location = request.POST.get('storage_location', 'Security Safe').strip()
         
+        current_prop_id = request.session.get('current_property_id')
+        current_prop = None
+        if current_prop_id and current_prop_id != 'ALL':
+            current_prop = Property.objects.filter(id=current_prop_id).first()
+        elif not current_prop_id:
+            current_prop = getattr(request.user, 'assigned_property', None) or Property.objects.filter(is_active=True).first()
+
         item = LostFoundItem.objects.create(
+            property=current_prop,
             title=title,
             category=category,
             value_tier=value_tier,

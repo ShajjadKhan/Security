@@ -1,0 +1,764 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ T.super_admin_title }} | {{ T.app_title }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6 pb-12">
+
+    <!-- Top Executive Banner -->
+    <div class="bg-gradient-to-r from-navy-900 via-slate-900 to-indigo-950 rounded-3xl p-6 sm:p-8 text-white border border-slate-800 shadow-xl relative overflow-hidden">
+        <div class="absolute -top-12 -right-12 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-12 -left-12 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div>
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 flex items-center gap-1.5">
+                        <span>👑</span> {{ T.super_admin_hub }}
+                    </span>
+                    <span class="text-xs text-slate-400 font-mono">HQ Multi-Property Master Control</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white">
+                    {{ T.super_admin_title }}
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl font-medium">
+                    {{ T.super_admin_sub }}
+                </p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap items-center gap-2.5">
+                <a href="{% url 'property_switch' 'ALL' %}" class="px-4 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-2 {% if is_global_property_mode %}bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 border border-indigo-400{% else %}bg-slate-800/90 text-slate-200 hover:bg-slate-700 border border-slate-700{% endif %}">
+                    <span>🌐</span> {{ T.global_hq_mode }}
+                </a>
+                <button onclick="openModal('createPropertyModal')" class="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-700/30 transition flex items-center gap-2">
+                    <span>🏢</span> {{ T.create_property_btn }}
+                </button>
+                <button onclick="openModal('createUserModal')" class="px-4 py-2.5 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold shadow-lg shadow-sky-700/30 transition flex items-center gap-2">
+                    <span>👮</span> {{ T.add_user_btn }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Portfolio Telemetry Counters Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mt-6 pt-6 border-t border-slate-800/80">
+            <div class="bg-slate-800/50 rounded-2xl p-3 border border-slate-700/50">
+                <span class="text-[11px] text-slate-400 block font-semibold">Registered Properties</span>
+                <div class="flex items-baseline gap-1.5 mt-1">
+                    <span class="text-xl font-black text-indigo-400 font-mono">{{ active_properties }}</span>
+                    <span class="text-[11px] text-slate-500 font-mono">/ {{ total_properties }}</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-800/50 rounded-2xl p-3 border border-slate-700/50">
+                <span class="text-[11px] text-slate-400 block font-semibold">Perimeter Gates</span>
+                <div class="text-xl font-black text-emerald-400 font-mono mt-1">{{ total_gates }}</div>
+            </div>
+
+            <div class="bg-slate-800/50 rounded-2xl p-3 border border-slate-700/50">
+                <span class="text-[11px] text-slate-400 block font-semibold">Security Personnel</span>
+                <div class="flex items-baseline gap-1.5 mt-1">
+                    <span class="text-xl font-black text-sky-400 font-mono">{{ on_duty_users }}</span>
+                    <span class="text-[11px] text-slate-500 font-mono">on duty ({{ total_users }} total)</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-800/50 rounded-2xl p-3 border border-slate-700/50">
+                <span class="text-[11px] text-slate-400 block font-semibold">Active Visitors</span>
+                <div class="text-xl font-black text-amber-400 font-mono mt-1">{{ total_active_visitors }}</div>
+            </div>
+
+            <div class="bg-slate-800/50 rounded-2xl p-3 border border-slate-700/50">
+                <span class="text-[11px] text-slate-400 block font-semibold">Green Cards Out</span>
+                <div class="text-xl font-black text-emerald-400 font-mono mt-1">{{ total_active_greencards }}</div>
+            </div>
+
+            <div class="bg-slate-800/50 rounded-2xl p-3 border border-slate-700/50 {% if total_overdue_greencards > 0 %}border-rose-700 bg-rose-950/40{% endif %}">
+                <span class="text-[11px] {% if total_overdue_greencards > 0 %}text-rose-300 font-bold{% else %}text-slate-400{% endif %} block font-semibold">Overdue Alert</span>
+                <div class="text-xl font-black {% if total_overdue_greencards > 0 %}text-rose-400 animate-pulse{% else %}text-slate-400{% endif %} font-mono mt-1">
+                    {{ total_overdue_greencards }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2 text-xs font-bold">
+        <button onclick="switchTab('tab-properties')" id="btn-tab-properties" class="tab-btn active-tab px-4 py-2 rounded-xl transition flex items-center gap-2 bg-indigo-600 text-white shadow-sm">
+            <span>🏢</span> {{ T.properties_portfolio }} ({{ total_properties }})
+        </button>
+        <button onclick="switchTab('tab-users')" id="btn-tab-users" class="tab-btn px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition flex items-center gap-2">
+            <span>👮</span> {{ T.guards_personnel }} ({{ total_users }})
+        </button>
+        <button onclick="switchTab('tab-audit')" id="btn-tab-audit" class="tab-btn px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition flex items-center gap-2">
+            <span>🛡️</span> {{ T.super_admin_audit }} ({{ admin_audits|length }})
+        </button>
+    </div>
+
+    <!-- TAB 1: PROPERTIES PORTFOLIO -->
+    <div id="tab-properties" class="tab-content space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for item in properties_data %}
+            <div class="bg-white dark:bg-navy-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition flex flex-col justify-between relative overflow-hidden group">
+                {% if not item.property.is_active %}
+                <div class="absolute top-0 right-0 left-0 bg-rose-500/20 text-rose-600 dark:text-rose-400 text-[10px] font-bold py-0.5 text-center uppercase tracking-wider border-b border-rose-500/30">
+                    {{ T.property_inactive }}
+                </div>
+                {% endif %}
+
+                <div>
+                    <!-- Header -->
+                    <div class="flex items-start justify-between gap-3 mt-1">
+                        <div>
+                            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-700">
+                                {{ item.property.code }}
+                            </span>
+                            <h3 class="text-base font-extrabold text-slate-900 dark:text-white mt-1.5 leading-snug">
+                                {% if lang == 'ar' and item.property.name_ar %}
+                                    {{ item.property.name_ar }}
+                                    <span class="block text-xs font-normal text-slate-500 mt-0.5">{{ item.property.name }}</span>
+                                {% else %}
+                                    {{ item.property.name }}
+                                    {% if item.property.name_ar %}<span class="block text-xs font-normal text-slate-500 mt-0.5">{{ item.property.name_ar }}</span>{% endif %}
+                                {% endif %}
+                            </h3>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-xl text-[11px] font-bold shrink-0 {% if item.property.is_active %}bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30{% else %}bg-slate-200 dark:bg-slate-800 text-slate-500{% endif %}">
+                            {{ item.property.get_property_type_display|truncatechars:18 }}
+                        </span>
+                    </div>
+
+                    <!-- Details -->
+                    <div class="mt-3 space-y-1 text-xs text-slate-600 dark:text-slate-400">
+                        <div class="flex items-center gap-1.5">
+                            <span>📍</span> <span>{{ item.property.city }}{% if item.property.address %}, {{ item.property.address }}{% endif %}</span>
+                        </div>
+                        {% if item.property.manager_name %}
+                        <div class="flex items-center gap-1.5">
+                            <span>👤</span> <span>Director: <strong class="text-slate-800 dark:text-slate-200">{{ item.property.manager_name }}</strong></span>
+                        </div>
+                        {% endif %}
+                        {% if item.property.contact_phone or item.property.contact_email %}
+                        <div class="flex items-center gap-2 text-[11px] font-mono text-slate-500">
+                            {% if item.property.contact_phone %}<span>📞 {{ item.property.contact_phone }}</span>{% endif %}
+                            {% if item.property.contact_email %}<span>✉️ {{ item.property.contact_email }}</span>{% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Telemetry Stats Grid -->
+                    <div class="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/80 text-center">
+                        <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
+                            <span class="text-[10px] text-slate-400 block font-semibold">Gates</span>
+                            <span class="text-sm font-black text-slate-800 dark:text-slate-100 font-mono">{{ item.gates_count }}</span>
+                        </div>
+                        <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
+                            <span class="text-[10px] text-slate-400 block font-semibold">Guards</span>
+                            <span class="text-sm font-black text-sky-500 font-mono">{{ item.staff_count }}</span>
+                        </div>
+                        <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
+                            <span class="text-[10px] text-slate-400 block font-semibold">Visitors</span>
+                            <span class="text-sm font-black text-amber-500 font-mono">{{ item.active_visitors }}</span>
+                        </div>
+                        <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
+                            <span class="text-[10px] text-slate-400 block font-semibold">Passes</span>
+                            <span class="text-sm font-black text-emerald-500 font-mono">{{ item.active_greencards }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="flex items-center gap-2 mt-5 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+                    <a href="{% url 'property_switch' item.property.id %}" class="flex-1 py-2 rounded-xl text-xs font-bold text-center transition flex items-center justify-center gap-1.5 {% if current_property and current_property.id == item.property.id %}bg-emerald-600 text-white shadow-sm{% else %}bg-slate-100 dark:bg-slate-800 hover:bg-emerald-600 hover:text-white text-slate-700 dark:text-slate-300{% endif %}">
+                        <span>🏢</span> {{ T.switch_to_property }}
+                    </a>
+
+                    <button onclick="openEditPropertyModal({{ item.property.id }}, '{{ item.property.name|escapejs }}', '{{ item.property.name_ar|escapejs }}', '{{ item.property.code|escapejs }}', '{{ item.property.property_type|escapejs }}', '{{ item.property.city|escapejs }}', '{{ item.property.address|escapejs }}', '{{ item.property.contact_email|escapejs }}', '{{ item.property.contact_phone|escapejs }}', '{{ item.property.manager_name|escapejs }}', {{ item.property.is_active|yesno:'true,false' }})" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold transition" title="{{ T.edit_property }}">
+                        ✏️
+                    </button>
+
+                    <a href="{% url 'property_toggle' item.property.id %}" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-rose-900/40 hover:text-rose-400 text-slate-600 dark:text-slate-400 text-xs font-bold transition" title="{% if item.property.is_active %}{{ T.deactivate_property }}{% else %}{{ T.activate_property }}{% endif %}">
+                        {% if item.property.is_active %}⏸️{% else %}▶️{% endif %}
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- TAB 2: SECURITY PERSONNEL & GUARD ROSTER -->
+    <div id="tab-users" class="tab-content hidden space-y-6">
+        <div class="bg-white dark:bg-navy-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h3 class="text-base font-extrabold text-slate-900 dark:text-white">{{ T.guards_personnel }}</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Manage guards, shift assignments, and gate duty authorizations across all properties.</p>
+                </div>
+                <button onclick="openModal('createUserModal')" class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold shadow-md transition flex items-center gap-1.5 self-start sm:self-auto">
+                    <span>+</span> {{ T.add_user_btn }}
+                </button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs text-left {% if is_rtl %}text-right{% endif %}">
+                    <thead class="bg-slate-50 dark:bg-slate-800/60 text-slate-500 uppercase text-[10px] font-bold tracking-wider">
+                        <tr>
+                            <th class="px-4 py-3">Security Personnel</th>
+                            <th class="px-4 py-3">Role</th>
+                            <th class="px-4 py-3">Badge / ID</th>
+                            <th class="px-4 py-3">Facility & Gate Station</th>
+                            <th class="px-4 py-3">Shift</th>
+                            <th class="px-4 py-3">Duty Status</th>
+                            <th class="px-4 py-3 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800/80 font-medium text-slate-700 dark:text-slate-300">
+                        {% for u in users_list %}
+                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition">
+                            <td class="px-4 py-3.5">
+                                <div class="font-extrabold text-slate-900 dark:text-white">{{ u.get_full_name|default:u.username }}</div>
+                                <div class="text-[11px] text-slate-400 font-mono">@{{ u.username }} {% if u.phone %}• {{ u.phone }}{% endif %}</div>
+                            </td>
+                            <td class="px-4 py-3.5">
+                                <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider {% if u.role == 'director' %}bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30{% elif u.role == 'supervisor' %}bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30{% else %}bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30{% endif %}">
+                                    {{ u.get_role_display }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3.5 font-mono font-bold text-slate-800 dark:text-slate-200">
+                                {{ u.badge_number|default:"—" }}
+                            </td>
+                            <td class="px-4 py-3.5">
+                                {% if u.assigned_property %}
+                                <span class="font-bold text-slate-900 dark:text-white block">{% if lang == 'ar' and u.assigned_property.name_ar %}{{ u.assigned_property.name_ar }}{% else %}{{ u.assigned_property.name }}{% endif %}</span>
+                                <span class="text-[10px] text-slate-400 font-mono">{{ u.assigned_property.code }}</span>
+                                {% else %}
+                                <span class="text-slate-400 italic">Global HQ / Unassigned</span>
+                                {% endif %}
+                                {% if u.assigned_gate %}
+                                <div class="text-[11px] text-emerald-500 font-semibold mt-0.5">📍 {% if lang == 'ar' and u.assigned_gate.name_ar %}{{ u.assigned_gate.name_ar }}{% else %}{{ u.assigned_gate.name }}{% endif %}</div>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3.5 capitalize">
+                                {{ u.get_shift_display }}
+                            </td>
+                            <td class="px-4 py-3.5">
+                                {% if u.is_on_duty %}
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> {{ T.on_duty }}
+                                </span>
+                                {% else %}
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 dark:bg-slate-800 text-slate-500">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> {{ T.off_duty }}
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3.5 text-center">
+                                <button onclick="openEditUserModal({{ u.id }}, '{{ u.username|escapejs }}', '{{ u.first_name|escapejs }}', '{{ u.last_name|escapejs }}', '{{ u.email|escapejs }}', '{{ u.role|escapejs }}', '{{ u.badge_number|default:""|escapejs }}', '{{ u.phone|default:""|escapejs }}', '{{ u.shift|escapejs }}', '{{ u.assigned_property.id|default:"" }}', '{{ u.assigned_gate.id|default:"" }}', {{ u.is_on_duty|yesno:'true,false' }})" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition">
+                                    ✏️ Edit
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: EXECUTIVE AUDIT TRAIL -->
+    <div id="tab-audit" class="tab-content hidden space-y-6">
+        <div class="bg-white dark:bg-navy-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800">
+                <h3 class="text-base font-extrabold text-slate-900 dark:text-white">{{ T.super_admin_audit }}</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Master immutable ledger recording all property registrations, facility modifications, guard assignments, and gate operations.</p>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs text-left {% if is_rtl %}text-right{% endif %}">
+                    <thead class="bg-slate-50 dark:bg-slate-800/60 text-slate-500 uppercase text-[10px] font-bold tracking-wider">
+                        <tr>
+                            <th class="px-4 py-3">Timestamp</th>
+                            <th class="px-4 py-3">Executive / Officer</th>
+                            <th class="px-4 py-3">Action</th>
+                            <th class="px-4 py-3">Reference</th>
+                            <th class="px-4 py-3">Facility / Gate</th>
+                            <th class="px-4 py-3">Details</th>
+                            <th class="px-4 py-3">IP</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800/80 font-medium text-slate-700 dark:text-slate-300">
+                        {% for a in admin_audits %}
+                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition">
+                            <td class="px-4 py-3 font-mono text-slate-500 text-[11px] whitespace-nowrap">
+                                {{ a.created_at|date:"Y-m-d H:i:s" }}
+                            </td>
+                            <td class="px-4 py-3 font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                                👤 {{ a.user.username|default:"System" }}
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold font-mono uppercase {% if 'CREATED' in a.action or 'ADDED' in a.action %}bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30{% elif 'EDITED' in a.action %}bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30{% else %}bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30{% endif %}">
+                                    {{ a.action }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 font-mono font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                                {{ a.reference|default:"—" }}
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                {% if a.property %}<span class="text-indigo-400 font-bold font-mono">[{{ a.property.code }}]</span>{% endif %}
+                                {% if a.gate %}<span class="text-emerald-400 text-[11px] font-mono">{{ a.gate.code }}</span>{% endif %}
+                            </td>
+                            <td class="px-4 py-3 text-slate-600 dark:text-slate-300 max-w-md truncate" title="{{ a.details }}">
+                                {{ a.details }}
+                            </td>
+                            <td class="px-4 py-3 font-mono text-[10px] text-slate-400 whitespace-nowrap">
+                                {{ a.ip_address|default:"127.0.0.1" }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-8 text-slate-400 italic">
+                                No administrative audit events logged yet.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- MODAL: CREATE PROPERTY -->
+<div id="createPropertyModal" class="fixed inset-0 bg-navy-950/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-navy-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5 my-8">
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+            <div>
+                <h3 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    <span>🏢</span> {{ T.create_property_btn }}
+                </h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Register a new hotel, tower, compound, or logistics hub into the centralized command hierarchy.</p>
+            </div>
+            <button onclick="closeModal('createPropertyModal')" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">✕</button>
+        </div>
+
+        <form action="{% url 'property_create' %}" method="POST" class="space-y-4 text-xs">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_name_en }} *</label>
+                    <input type="text" name="name" required placeholder="e.g. Riyadh Grand Palace Hotel" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_name_ar }}</label>
+                    <input type="text" name="name_ar" placeholder="مثال: فندق قصر الرياض الكبير" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_code }} *</label>
+                    <input type="text" name="code" required placeholder="e.g. PROP-RUH-01" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_type }}</label>
+                    <select name="property_type" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        {% for val, label in property_types %}
+                        <option value="{{ val }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.city }}</label>
+                    <input type="text" name="city" value="Riyadh" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.address }}</label>
+                    <input type="text" name="address" placeholder="e.g. King Fahd Road, Al Olaya" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.manager_name }}</label>
+                    <input type="text" name="manager_name" placeholder="e.g. Col. Fahad Al-Otaibi" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.contact_phone }}</label>
+                    <input type="text" name="contact_phone" placeholder="e.g. +966 50 123 4567" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.contact_email }}</label>
+                    <input type="email" name="contact_email" placeholder="security@grandpalace.sa" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+            </div>
+
+            <div class="p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800 flex items-center gap-3">
+                <input type="checkbox" name="create_default_gate" id="create_default_gate" checked class="w-4 h-4 text-emerald-600 rounded">
+                <label for="create_default_gate" class="font-bold text-indigo-900 dark:text-indigo-200 cursor-pointer">
+                    {{ T.auto_create_main_gate }}
+                </label>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button type="button" onclick="closeModal('createPropertyModal')" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+                    Cancel
+                </button>
+                <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-md shadow-emerald-700/30 transition flex items-center gap-2">
+                    <span>✓</span> {{ T.save_property_btn }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: EDIT PROPERTY -->
+<div id="editPropertyModal" class="fixed inset-0 bg-navy-950/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-navy-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5 my-8">
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+            <div>
+                <h3 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    <span>✏️</span> {{ T.edit_property }}
+                </h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Update property metadata, location, contact details, and operational status.</p>
+            </div>
+            <button onclick="closeModal('editPropertyModal')" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">✕</button>
+        </div>
+
+        <form id="editPropertyForm" method="POST" class="space-y-4 text-xs">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_name_en }} *</label>
+                    <input type="text" name="name" id="edit_prop_name" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_name_ar }}</label>
+                    <input type="text" name="name_ar" id="edit_prop_name_ar" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_code }} *</label>
+                    <input type="text" name="code" id="edit_prop_code" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_type }}</label>
+                    <select name="property_type" id="edit_prop_type" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        {% for val, label in property_types %}
+                        <option value="{{ val }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.city }}</label>
+                    <input type="text" name="city" id="edit_prop_city" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.address }}</label>
+                    <input type="text" name="address" id="edit_prop_address" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.manager_name }}</label>
+                    <input type="text" name="manager_name" id="edit_prop_manager" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.contact_phone }}</label>
+                    <input type="text" name="contact_phone" id="edit_prop_phone" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.contact_email }}</label>
+                    <input type="email" name="contact_email" id="edit_prop_email" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+
+            <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center gap-3">
+                <input type="checkbox" name="is_active" id="edit_prop_is_active" class="w-4 h-4 text-emerald-600 rounded">
+                <label for="edit_prop_is_active" class="font-bold text-slate-800 dark:text-slate-200 cursor-pointer">
+                    Facility is Active & Fully Operational
+                </label>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button type="button" onclick="closeModal('editPropertyModal')" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+                    Cancel
+                </button>
+                <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-md shadow-indigo-700/30 transition flex items-center gap-2">
+                    <span>✓</span> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: PROVISION SECURITY STAFF -->
+<div id="createUserModal" class="fixed inset-0 bg-navy-950/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-navy-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5 my-8">
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+            <div>
+                <h3 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    <span>👮</span> {{ T.add_user_btn }}
+                </h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Issue credentials for security officers, shift supervisors, and gate attendants.</p>
+            </div>
+            <button onclick="closeModal('createUserModal')" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">✕</button>
+        </div>
+
+        <form action="{% url 'user_create' %}" method="POST" class="space-y-4 text-xs">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Username *</label>
+                    <input type="text" name="username" required placeholder="e.g. guard_khalid" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Temporary Password *</label>
+                    <input type="password" name="password" required placeholder="••••••••" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">First Name</label>
+                    <input type="text" name="first_name" placeholder="e.g. Khalid" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Last Name</label>
+                    <input type="text" name="last_name" placeholder="e.g. Al-Zahrani" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Security Role *</label>
+                    <select name="role" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        {% for rval, rname in role_choices %}
+                        <option value="{{ rval }}">{{ rname }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.badge_number }}</label>
+                    <input type="text" name="badge_number" placeholder="e.g. SEC-8842" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Phone / WhatsApp</label>
+                    <input type="text" name="phone" placeholder="e.g. +966 55 999 1122" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.assigned_property }}</label>
+                    <select name="property_id" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        <option value="">-- Global HQ / Multi-Site --</option>
+                        {% for p in all_properties %}
+                        <option value="{{ p.id }}">[{{ p.code }}] {% if lang == 'ar' and p.name_ar %}{{ p.name_ar }}{% else %}{{ p.name }}{% endif %}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.assigned_gate }}</label>
+                    <select name="gate_id" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        <option value="">-- Any Gate / Roaming --</option>
+                        {% for g in all_gates %}
+                        <option value="{{ g.id }}">[{{ g.property.code|default:"" }}] {{ g.code }} - {% if lang == 'ar' and g.name_ar %}{{ g.name_ar }}{% else %}{{ g.name }}{% endif %}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Shift</label>
+                    <select name="shift" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        {% for sval, sname in shift_choices %}
+                        <option value="{{ sval }}">{{ sname }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center gap-3">
+                <input type="checkbox" name="is_on_duty" id="create_user_is_on_duty" checked class="w-4 h-4 text-sky-600 rounded">
+                <label for="create_user_is_on_duty" class="font-bold text-slate-800 dark:text-slate-200 cursor-pointer">
+                    Active & Currently On Duty
+                </label>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button type="button" onclick="closeModal('createUserModal')" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+                    Cancel
+                </button>
+                <button type="submit" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold shadow-md shadow-sky-700/30 transition flex items-center gap-2">
+                    <span>✓</span> Provision User
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: EDIT SECURITY STAFF -->
+<div id="editUserModal" class="fixed inset-0 bg-navy-950/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-navy-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5 my-8">
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+            <div>
+                <h3 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    <span>✏️</span> Edit Security Personnel
+                </h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5" id="edit_user_title_sub">Update role, property assignments, shift, or reset password.</p>
+            </div>
+            <button onclick="closeModal('editUserModal')" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">✕</button>
+        </div>
+
+        <form id="editUserForm" method="POST" class="space-y-4 text-xs">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">First Name</label>
+                    <input type="text" name="first_name" id="edit_user_first_name" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Last Name</label>
+                    <input type="text" name="last_name" id="edit_user_last_name" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Security Role</label>
+                    <select name="role" id="edit_user_role" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        {% for rval, rname in role_choices %}
+                        <option value="{{ rval }}">{{ rname }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.badge_number }}</label>
+                    <input type="text" name="badge_number" id="edit_user_badge" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Phone</label>
+                    <input type="text" name="phone" id="edit_user_phone" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.assigned_property }}</label>
+                    <select name="property_id" id="edit_user_property" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        <option value="">-- Global HQ / Multi-Site --</option>
+                        {% for p in all_properties %}
+                        <option value="{{ p.id }}">[{{ p.code }}] {% if lang == 'ar' and p.name_ar %}{{ p.name_ar }}{% else %}{{ p.name }}{% endif %}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.assigned_gate }}</label>
+                    <select name="gate_id" id="edit_user_gate" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        <option value="">-- Any Gate / Roaming --</option>
+                        {% for g in all_gates %}
+                        <option value="{{ g.id }}">[{{ g.property.code|default:"" }}] {{ g.code }} - {% if lang == 'ar' and g.name_ar %}{{ g.name_ar }}{% else %}{{ g.name }}{% endif %}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Shift</label>
+                    <select name="shift" id="edit_user_shift" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        {% for sval, sname in shift_choices %}
+                        <option value="{{ sval }}">{{ sname }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">New Password (leave blank to keep unchanged)</label>
+                <input type="password" name="password" placeholder="••••••••" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+            </div>
+
+            <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center gap-3">
+                <input type="checkbox" name="is_on_duty" id="edit_user_is_on_duty" class="w-4 h-4 text-sky-600 rounded">
+                <label for="edit_user_is_on_duty" class="font-bold text-slate-800 dark:text-slate-200 cursor-pointer">
+                    Officer is On Duty
+                </label>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button type="button" onclick="closeModal('editUserModal')" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+                    Cancel
+                </button>
+                <button type="submit" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold shadow-md shadow-sky-700/30 transition flex items-center gap-2">
+                    <span>✓</span> Update Profile
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.tab-btn').forEach(el => {
+            el.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm');
+            el.classList.add('text-slate-600', 'dark:text-slate-400');
+        });
+
+        document.getElementById(tabId).classList.remove('hidden');
+        const activeBtn = document.getElementById('btn-' + tabId);
+        activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+        activeBtn.classList.remove('text-slate-600', 'dark:text-slate-400');
+    }
+
+    function openModal(id) {
+        document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+    }
+
+    function openEditPropertyModal(id, name, name_ar, code, propType, city, address, email, phone, manager, isActive) {
+        const form = document.getElementById('editPropertyForm');
+        form.action = '/super-admin/properties/' + id + '/edit/';
+        document.getElementById('edit_prop_name').value = name;
+        document.getElementById('edit_prop_name_ar').value = name_ar || '';
+        document.getElementById('edit_prop_code').value = code;
+        document.getElementById('edit_prop_type').value = propType;
+        document.getElementById('edit_prop_city').value = city;
+        document.getElementById('edit_prop_address').value = address || '';
+        document.getElementById('edit_prop_email').value = email || '';
+        document.getElementById('edit_prop_phone').value = phone || '';
+        document.getElementById('edit_prop_manager').value = manager || '';
+        document.getElementById('edit_prop_is_active').checked = isActive;
+        openModal('editPropertyModal');
+    }
+
+    function openEditUserModal(id, username, firstName, lastName, email, role, badge, phone, shift, propId, gateId, isOnDuty) {
+        const form = document.getElementById('editUserForm');
+        form.action = '/super-admin/users/' + id + '/edit/';
+        document.getElementById('edit_user_title_sub').innerText = 'Editing Officer: @' + username;
+        document.getElementById('edit_user_first_name').value = firstName || '';
+        document.getElementById('edit_user_last_name').value = lastName || '';
+        document.getElementById('edit_user_role').value = role;
+        document.getElementById('edit_user_badge').value = badge || '';
+        document.getElementById('edit_user_phone').value = phone || '';
+        document.getElementById('edit_user_shift').value = shift;
+        document.getElementById('edit_user_property').value = propId || '';
+        document.getElementById('edit_user_gate').value = gateId || '';
+        document.getElementById('edit_user_is_on_duty').checked = isOnDuty;
+        openModal('editUserModal');
+    }
+</script>
+{% endblock %}

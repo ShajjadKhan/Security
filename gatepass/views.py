@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.db.models import Q
 from .models import GatePass, GatePassItem
 from visitors.models import DepartmentHost
-from core.models import SecurityAuditLog, SecurityGate
+from core.models import Property, SecurityAuditLog, SecurityGate
 
 @login_required
 def gatepass_list(request):
@@ -14,6 +14,9 @@ def gatepass_list(request):
     q = request.GET.get('q', '').strip()
 
     queryset = GatePass.objects.select_related('from_department', 'dispatched_by').prefetch_related('items').all()
+    current_prop_id = request.session.get('current_property_id')
+    if current_prop_id and current_prop_id != 'ALL':
+        queryset = queryset.filter(property_id=current_prop_id)
 
     if card_filter in ('GREEN', 'RED'):
         queryset = queryset.filter(card_type=card_filter)
@@ -109,7 +112,18 @@ def gatepass_create(request):
             days_loan = int(request.POST.get('return_days', 7))
             expected_return_date = timezone.now() + timezone.timedelta(days=days_loan)
 
+        current_prop_id = request.session.get('current_property_id')
+        current_prop = None
+        if current_prop_id and current_prop_id != 'ALL':
+            current_prop = Property.objects.filter(id=current_prop_id).first()
+        elif not current_prop_id:
+            current_prop = getattr(request.user, 'assigned_property', None) or Property.objects.filter(is_active=True).first()
+
+        current_gate_id = request.session.get('current_gate_id')
+        current_gate = SecurityGate.objects.filter(id=current_gate_id).first() if current_gate_id else getattr(request.user, 'assigned_gate', None)
+
         gate_pass = GatePass.objects.create(
+            property=current_prop,
             card_type=card_type,
             physical_card_ref=physical_card_ref,
             gate=gate_obj,

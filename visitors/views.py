@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Q
 from .models import Visitor, DepartmentHost
-from core.models import SecurityAuditLog
+from core.models import Property, SecurityGate, SecurityAuditLog
 
 @login_required
 def visitor_list(request):
@@ -13,6 +13,9 @@ def visitor_list(request):
     q = request.GET.get('q', '').strip()
     
     queryset = Visitor.objects.select_related('host_department', 'checked_in_by').all()
+    current_prop_id = request.session.get('current_property_id')
+    if current_prop_id and current_prop_id != 'ALL':
+        queryset = queryset.filter(property_id=current_prop_id)
     
     if status_filter == 'active':
         queryset = queryset.filter(status='active')
@@ -72,7 +75,19 @@ def visitor_checkin(request):
         
         expected_checkout = timezone.now() + timezone.timedelta(hours=expected_hours)
         
+        current_prop_id = request.session.get('current_property_id')
+        current_prop = None
+        if current_prop_id and current_prop_id != 'ALL':
+            current_prop = Property.objects.filter(id=current_prop_id).first()
+        elif not current_prop_id:
+            current_prop = getattr(request.user, 'assigned_property', None) or Property.objects.filter(is_active=True).first()
+
+        current_gate_id = request.session.get('current_gate_id')
+        current_gate = SecurityGate.objects.filter(id=current_gate_id).first() if current_gate_id else getattr(request.user, 'assigned_gate', None)
+
         visitor = Visitor.objects.create(
+            property=current_prop,
+            gate=current_gate,
             full_name=full_name,
             phone=phone,
             category=category,

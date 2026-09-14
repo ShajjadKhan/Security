@@ -1,3 +1,4 @@
+import builtins
 import random
 from django.db import models
 from django.utils import timezone
@@ -56,6 +57,7 @@ class LostFoundItem(models.Model):
 
     # Custody & Storage
     storage_location = models.CharField(max_length=100, default='Security Main Safe', help_text="e.g. Safe Box A, Locker #14, Shelf 2")
+    property = models.ForeignKey('core.Property', on_delete=models.SET_NULL, null=True, blank=True, related_name='lost_found_items')
     logged_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='items_logged')
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='unclaimed')
@@ -75,8 +77,7 @@ class LostFoundItem(models.Model):
 
     class Meta:
         ordering = ['-created_at']
-
-    @property
+    @builtins.property
     def days_in_custody(self):
         end = self.handover_date or timezone.now()
         return (end - self.found_date).days

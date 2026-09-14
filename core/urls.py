@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import views_admin
 
 urlpatterns = [
     path('', views.dashboard_view, name='dashboard'),
@@ -12,4 +13,13 @@ urlpatterns = [
     path('gates/<int:gate_id>/edit/', views.gate_edit_view, name='gate_edit'),
     path('gates/<int:gate_id>/delete/', views.gate_delete_view, name='gate_delete'),
     path('set-lang/', views.set_language_view, name='set_language'),
+
+    # Super Admin Master Hub & Property Regulation
+    path('super-admin/', views_admin.super_admin_dashboard_view, name='super_admin_dashboard'),
+    path('super-admin/properties/create/', views_admin.property_create_view, name='property_create'),
+    path('super-admin/properties/<int:property_id>/edit/', views_admin.property_edit_view, name='property_edit'),
+    path('super-admin/properties/<int:property_id>/toggle/', views_admin.property_toggle_view, name='property_toggle'),
+    path('properties/<str:property_id>/switch/', views_admin.property_switch_view, name='property_switch'),
+    path('super-admin/users/create/', views_admin.user_create_view, name='user_create'),
+    path('super-admin/users/<int:user_id>/edit/', views_admin.user_edit_view, name='user_edit'),
 ]

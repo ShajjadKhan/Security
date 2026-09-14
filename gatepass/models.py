@@ -1,3 +1,4 @@
+import builtins
 import random
 import urllib.parse
 from django.db import models
@@ -75,6 +76,7 @@ class GatePass(models.Model):
     dispatched_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='passes_dispatched')
     created_at = models.DateTimeField(auto_now_add=True)
     dispatched_at = models.DateTimeField(default=timezone.now)
+    property = models.ForeignKey('core.Property', on_delete=models.SET_NULL, null=True, blank=True, related_name='gate_passes')
     gate = models.ForeignKey('core.SecurityGate', on_delete=models.SET_NULL, null=True, blank=True, related_name='gate_passes')
     gate_location = models.CharField(max_length=100, default='Loading Dock Gate')
     exit_cargo_photo = models.ImageField(upload_to='gatepass_cargo_exit/', blank=True, null=True)
@@ -97,28 +99,23 @@ class GatePass(models.Model):
         if self.card_type == 'RED' and self.status == 'active':
             self.status = 'dispatched_closed'
         super().save(*args, **kwargs)
-
-    @property
+    @builtins.property
     def is_green_card(self):
         return self.card_type == 'GREEN'
-
-    @property
+    @builtins.property
     def is_red_card(self):
         return self.card_type == 'RED'
-
-    @property
+    @builtins.property
     def is_overdue(self):
         if self.is_green_card and self.status in ('active', 'partially_returned') and self.expected_return_date:
             return timezone.now() > self.expected_return_date
         return False
-
-    @property
+    @builtins.property
     def days_overdue(self):
         if self.is_overdue:
             return (timezone.now() - self.expected_return_date).days
         return 0
-
-    @property
+    @builtins.property
     def time_remaining_display(self):
         if not self.expected_return_date:
             return "N/A (Permanent)"
@@ -128,12 +125,10 @@ class GatePass(models.Model):
             return f"OVERDUE by {delta.days}d {delta.seconds//3600}h"
         delta = self.expected_return_date - now
         return f"{delta.days}d {delta.seconds//3600}h remaining"
-
-    @property
+    @builtins.property
     def total_items_count(self):
         return sum(item.quantity for item in self.items.all())
-
-    @property
+    @builtins.property
     def whatsapp_carrier_url(self):
         if not self.carrier_phone:
             return ""
@@ -154,8 +149,7 @@ class GatePass(models.Model):
         )
         encoded = urllib.parse.quote(msg)
         return f"https://wa.me/{clean_phone}?text={encoded}"
-
-    @property
+    @builtins.property
     def whatsapp_dept_url(self):
         if not self.sender_phone:
             return ""

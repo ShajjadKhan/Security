@@ -83,7 +83,48 @@
                 <!-- Center: Active Duty Gate Picker & Telemetry Badges -->
                 <div class="hidden lg:flex items-center gap-3">
                     
-                    <!-- Duty Gate Selector Dropdown -->
+                                        <!-- Active Facility / Property Selector Dropdown -->
+                    <div class="relative group">
+                        <button class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-xs font-bold transition">
+                            <span class="text-indigo-400">🏢</span>
+                            <span class="text-slate-200 max-w-[140px] truncate">
+                                {% if is_global_property_mode %}
+                                    {{ T.global_hq_mode }}
+                                {% elif current_property %}
+                                    {% if lang == 'ar' and current_property.name_ar %}{{ current_property.name_ar }}{% else %}{{ current_property.name }}{% endif %}
+                                {% else %}
+                                    {{ T.property_switcher }}
+                                {% endif %}
+                            </span>
+                            <span class="text-[10px] text-slate-400">▼</span>
+                        </button>
+                        <div class="absolute {% if is_rtl %}right-0{% else %}left-0{% endif %} mt-1 w-72 bg-navy-900 border border-slate-700 rounded-2xl shadow-xl py-2 hidden group-hover:block z-50">
+                            <div class="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800 flex items-center justify-between">
+                                <span>{{ T.property_switcher }}</span>
+                                <span class="font-mono text-[9px] text-indigo-400">HQ Mode</span>
+                            </div>
+                            <a href="{% url 'property_switch' 'ALL' %}" class="flex items-center justify-between px-3 py-2 text-xs hover:bg-slate-800 transition {% if is_global_property_mode %}text-indigo-400 font-bold bg-slate-800/50{% else %}text-slate-300{% endif %}">
+                                <span class="flex items-center gap-2"><span>🌐</span> {{ T.global_hq_mode }}</span>
+                                <span class="font-mono text-[10px] text-slate-400">ALL</span>
+                            </a>
+                            <div class="border-t border-slate-800/60 my-1"></div>
+                            {% for p in all_properties %}
+                            <a href="{% url 'property_switch' p.id %}" class="flex items-center justify-between px-3 py-2 text-xs hover:bg-slate-800 transition {% if current_property and current_property.id == p.id and not is_global_property_mode %}text-emerald-400 font-bold bg-slate-800/50{% else %}text-slate-300{% endif %}">
+                                <span class="truncate max-w-[180px]">{% if lang == 'ar' and p.name_ar %}{{ p.name_ar }}{% else %}{{ p.name }}{% endif %}</span>
+                                <span class="font-mono text-[10px] text-slate-400">[{{ p.code }}]</span>
+                            </a>
+                            {% endfor %}
+                            {% if is_admin_user %}
+                            <div class="border-t border-slate-800 mt-1 pt-1 px-3">
+                                <a href="{% url 'super_admin_dashboard' %}" class="text-[11px] text-indigo-400 hover:underline font-bold block py-1">
+                                    👑 {{ T.super_admin_hub }} →
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+<!-- Duty Gate Selector Dropdown -->
                     <div class="relative group">
                         <button class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-xs font-bold transition">
                             <span class="text-emerald-400">📍</span>
@@ -201,7 +242,13 @@
                         🚧 {{ T.gates_management }}
                     </a>
 
-                    {% if user.is_superuser or user.role == 'director' or user.role == 'supervisor' %}
+                                        {% if user.is_superuser or user.role == 'director' %}
+                    <a href="{% url 'super_admin_dashboard' %}" class="px-3 py-1.5 rounded-xl transition {% if 'super-admin' in request.path %}bg-indigo-600 text-white shadow-sm{% else %}text-indigo-400 hover:bg-indigo-950/60 border border-indigo-800/50{% endif %}">
+                        👑 {{ T.super_admin_hub }}
+                    </a>
+                    {% endif %}
+
+{% if user.is_superuser or user.role == 'director' or user.role == 'supervisor' %}
                     <a href="{% url 'audit_log' %}" class="px-3 py-1.5 rounded-xl transition {% if request.resolver_match.url_name == 'audit_log' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-400 hover:bg-slate-800 hover:text-slate-200{% endif %}">
                         🔒 {{ T.shift_audit }}
                     </a>

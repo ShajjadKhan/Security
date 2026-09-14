@@ -7,7 +7,7 @@ from django.db.models import Count, Q
 from visitors.models import Visitor, DepartmentHost
 from lostfound.models import LostFoundItem
 from gatepass.models import GatePass
-from .models import User, SecurityAuditLog, SecurityGate
+from .models import Property, User, SecurityAuditLog, SecurityGate
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -35,46 +35,78 @@ def logout_view(request):
 def dashboard_view(request):
     now = timezone.now()
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    
+
+    # Multi-Property scoping
+    current_prop_id = request.session.get('current_property_id')
+    current_prop = None
+    if current_prop_id and current_prop_id != 'ALL':
+        current_prop = Property.objects.filter(id=current_prop_id).first()
+    elif not current_prop_id:
+        if getattr(request.user, 'assigned_property', None):
+            current_prop = request.user.assigned_property
+        else:
+            current_prop = Property.objects.filter(is_active=True).first()
+
     # 1. Live Visitor KPI counts
     active_visitors = Visitor.objects.filter(status='active').select_related('host_department', 'checked_in_by')
-    active_count = active_visitors.count()
-    
-    today_checkins = Visitor.objects.filter(check_in_time__gte=today_start).count()
-    today_checkouts = Visitor.objects.filter(check_out_time__gte=today_start).count()
-    
+    today_checkins_qs = Visitor.objects.filter(check_in_time__gte=today_start)
+    today_checkouts_qs = Visitor.objects.filter(check_out_time__gte=today_start)
     overstay_visitors = Visitor.objects.filter(
         status='active',
         expected_checkout_time__isnull=False,
         expected_checkout_time__lt=now
     )
-    overstay_count = overstay_visitors.count()
-
+    
     # 2. Lost & Found metrics
     unclaimed_lf = LostFoundItem.objects.filter(status='unclaimed')
-    unclaimed_count = unclaimed_lf.count()
-    high_value_count = unclaimed_lf.filter(value_tier='high_value').count()
-    today_lf_logged = LostFoundItem.objects.filter(created_at__gte=today_start).count()
+    today_lf_qs = LostFoundItem.objects.filter(created_at__gte=today_start)
 
-    # 3. Material Gate Pass metrics (Green / Red Cards)
+    # 3. Material Gate Pass metrics
     active_greencards = GatePass.objects.filter(
         card_type='GREEN',
         status__in=['active', 'partially_returned']
     ).select_related('from_department')
+    total_redcards_qs = GatePass.objects.filter(card_type='RED')
+    recent_gatepasses_qs = GatePass.objects.select_related('from_department').all()
+    recent_visitors_qs = Visitor.objects.all()
+    recent_lostfound_qs = LostFoundItem.objects.all()
+    recent_audits_qs = SecurityAuditLog.objects.all()
+
+    # Apply property scoping if not Global ALL mode
+    if current_prop:
+        active_visitors = active_visitors.filter(property=current_prop)
+        today_checkins_qs = today_checkins_qs.filter(property=current_prop)
+        today_checkouts_qs = today_checkouts_qs.filter(property=current_prop)
+        overstay_visitors = overstay_visitors.filter(property=current_prop)
+        unclaimed_lf = unclaimed_lf.filter(property=current_prop)
+        today_lf_qs = today_lf_qs.filter(property=current_prop)
+        active_greencards = active_greencards.filter(property=current_prop)
+        total_redcards_qs = total_redcards_qs.filter(property=current_prop)
+        recent_gatepasses_qs = recent_gatepasses_qs.filter(property=current_prop)
+        recent_visitors_qs = recent_visitors_qs.filter(property=current_prop)
+        recent_lostfound_qs = recent_lostfound_qs.filter(property=current_prop)
+        recent_audits_qs = recent_audits_qs.filter(Q(property=current_prop) | Q(gate__property=current_prop))
+
+    active_count = active_visitors.count()
+    today_checkins = today_checkins_qs.count()
+    today_checkouts = today_checkouts_qs.count()
+    overstay_count = overstay_visitors.count()
+    unclaimed_count = unclaimed_lf.count()
+    high_value_count = unclaimed_lf.filter(value_tier='high_value').count()
+    today_lf_logged = today_lf_qs.count()
+
     active_greencards_count = active_greencards.count()
-    
     overdue_greencards = active_greencards.filter(
         expected_return_date__isnull=False,
         expected_return_date__lt=now
     )
     overdue_greencards_count = overdue_greencards.count()
-    total_redcards_count = GatePass.objects.filter(card_type='RED').count()
-    recent_gatepasses = GatePass.objects.select_related('from_department').all()[:6]
+    total_redcards_count = total_redcards_qs.count()
+    recent_gatepasses = recent_gatepasses_qs[:6]
 
-    # Recent activity
-    recent_visitors = Visitor.objects.all()[:8]
-    recent_lostfound = LostFoundItem.objects.all()[:6]
-    recent_audits = SecurityAuditLog.objects.all()[:10]
+    recent_visitors = recent_visitors_qs[:8]
+    recent_lostfound = recent_lostfound_qs[:6]
+    recent_audits = recent_audits_qs[:10]
 
     # Category breakdown for active visitors
     contractor_count = active_visitors.filter(category='contractor').count()
@@ -187,7 +219,15 @@ def universal_search_view(request):
 
 @login_required
 def gates_list_view(request):
-    gates = SecurityGate.objects.all().order_by('code')
+    current_prop_id = request.session.get('current_property_id')
+    current_prop = None
+    if current_prop_id and current_prop_id != 'ALL':
+        current_prop = Property.objects.filter(id=current_prop_id).first()
+
+    if current_prop:
+        gates = SecurityGate.objects.filter(property=current_prop).order_by('code')
+    else:
+        gates = SecurityGate.objects.all().order_by('code')
     
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
@@ -195,6 +235,8 @@ def gates_list_view(request):
         code = request.POST.get('code', '').strip().upper()
         gate_type = request.POST.get('gate_type', 'service')
         description = request.POST.get('description', '').strip()
+        prop_id = request.POST.get('property_id')
+        target_property = Property.objects.filter(pk=prop_id).first() if prop_id else current_prop
         
         if not name or not code:
             messages.error(request, "Gate name and gate code are required.")
@@ -202,6 +244,7 @@ def gates_list_view(request):
             messages.error(request, f"Gate code '{code}' already exists! Please use a unique identifier.")
         else:
             new_gate = SecurityGate.objects.create(
+                property=target_property,
                 name=name,
                 name_ar=name_ar,
                 code=code,

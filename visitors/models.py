@@ -1,3 +1,4 @@
+import builtins
 import random
 from django.db import models
 from django.utils import timezone
@@ -9,6 +10,7 @@ def generate_pass_number():
     return f"PASS-{date_str}-{rand}"
 
 class DepartmentHost(models.Model):
+    property = models.ForeignKey('core.Property', on_delete=models.CASCADE, null=True, blank=True, related_name='departments')
     name = models.CharField(max_length=100)
     floor_room = models.CharField(max_length=50, blank=True, help_text="e.g. Floor 3 / Room 302 / Admin Office")
     contact_person = models.CharField(max_length=100, blank=True)
@@ -70,6 +72,7 @@ class Visitor(models.Model):
         ('Loading Dock', 'Loading Dock / Delivery Gate'),
         ('VIP Lobby', 'VIP / Executive Entrance')
     ])
+    property = models.ForeignKey('core.Property', on_delete=models.SET_NULL, null=True, blank=True, related_name='visitors')
     gate = models.ForeignKey('core.SecurityGate', on_delete=models.SET_NULL, null=True, blank=True, related_name='visitors')
     checked_in_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='visitors_checked_in')
     check_in_time = models.DateTimeField(default=timezone.now)
@@ -83,8 +86,7 @@ class Visitor(models.Model):
 
     class Meta:
         ordering = ['-check_in_time']
-
-    @property
+    @builtins.property
     def duration_formatted(self):
         if not self.check_in_time:
             return "0m"
@@ -95,8 +97,7 @@ class Visitor(models.Model):
         if hours > 0:
             return f"{hours}h {mins}m"
         return f"{mins}m"
-
-    @property
+    @builtins.property
     def is_overstay(self):
         if self.status == 'active' and self.expected_checkout_time:
             return timezone.now() > self.expected_checkout_time
