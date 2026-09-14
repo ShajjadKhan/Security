@@ -71,3 +71,18 @@ Pre-change backup on tserver:
 Git:
 - Code commit pushed to GitHub branch `main`: `02fb38a feat: harden multi-property security platform access`.
 - Remote configured on tserver: `git@github.com:ShajjadKhan/Security.git`.
+
+## 2026-09-15 Trial Browser Users
+
+Created demo properties and trial users in the tserver database for browser testing.
+
+Demo properties:
+- DEMO-SEC-01: Demo Security Hotel One
+- DEMO-SEC-02: Demo Security Hotel Two
+
+Accounts:
+- 	rial_owner: SaaS owner / master admin. Can see all properties and SaaS billing/admin controls.
+- 	rial_cluster: cluster security director. Has cluster access to DEMO-SEC-01 and DEMO-SEC-02.
+- 	rial_supervisor: supervisor/admin-style property user. Assigned to DEMO-SEC-01 only.
+- 	rial_officer: officer/staff user. Assigned to DEMO-SEC-01 only.
+- 	rial_property2: officer/staff user. Assigned to DEMO-SEC-02 only.
