@@ -7,7 +7,7 @@ from django.db.models import Count, Q
 from visitors.models import Visitor, DepartmentHost
 from lostfound.models import LostFoundItem
 from gatepass.models import GatePass
-from .models import User, SecurityAuditLog
+from .models import User, SecurityAuditLog, SecurityGate
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -156,3 +156,62 @@ def universal_search_view(request):
         'lostfound_items': lostfound_items,
         'gatepasses': gatepasses,
     })
+
+
+@login_required
+def gates_list_view(request):
+    gates = SecurityGate.objects.all().order_by('code')
+    
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        name_ar = request.POST.get('name_ar', '').strip()
+        code = request.POST.get('code', '').strip().upper()
+        gate_type = request.POST.get('gate_type', 'service')
+        description = request.POST.get('description', '').strip()
+        
+        if not name or not code:
+            messages.error(request, "Gate name and gate code are required.")
+        elif SecurityGate.objects.filter(code=code).exists():
+            messages.error(request, f"Gate code '{code}' already exists! Please use a unique identifier.")
+        else:
+            new_gate = SecurityGate.objects.create(
+                name=name,
+                name_ar=name_ar,
+                code=code,
+                gate_type=gate_type,
+                description=description,
+                is_active=True
+            )
+            SecurityAuditLog.objects.create(
+                user=request.user,
+                gate=new_gate,
+                action='GATE_ADDED',
+                reference=new_gate.code,
+                details=f"New perimeter gate added: {new_gate.name} ({new_gate.code}) by {request.user.username}.",
+                ip_address=request.META.get('REMOTE_ADDR')
+            )
+            messages.success(request, f"Gate '{new_gate.name}' ({new_gate.code}) successfully added to property register!")
+            return redirect('gates_list')
+            
+    return render(request, 'gates/list.html', {'gates': gates})
+
+
+@login_required
+def switch_duty_gate_view(request, gate_id):
+    gate = get_object_or_404(SecurityGate, pk=gate_id, is_active=True)
+    request.session['current_gate_id'] = gate.id
+    user = request.user
+    user.assigned_gate = gate
+    user.save(update_fields=['assigned_gate'])
+    
+    messages.success(request, f"Duty Station switched to: {gate.name} ({gate.code})")
+    next_url = request.META.get('HTTP_REFERER') or 'dashboard'
+    return redirect(next_url)
+
+
+def set_language_view(request):
+    lang = request.GET.get('lang', 'en')
+    if lang in ('ar', 'en'):
+        request.session['lang'] = lang
+    next_url = request.META.get('HTTP_REFERER') or '/'
+    return redirect(next_url)

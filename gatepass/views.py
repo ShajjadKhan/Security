@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.db.models import Q
 from .models import GatePass, GatePassItem
 from visitors.models import DepartmentHost
-from core.models import SecurityAuditLog
+from core.models import SecurityAuditLog, SecurityGate
 
 @login_required
 def gatepass_list(request):
@@ -97,7 +97,11 @@ def gatepass_create(request):
         purpose = request.POST.get('purpose', 'repair')
         purpose_notes = request.POST.get('purpose_notes', '').strip()
         authorized_by_manager = request.POST.get('authorized_by_manager', '').strip()
-        gate_location = request.POST.get('gate_location', 'Loading Dock Gate')
+        gate_id = request.POST.get('gate_id')
+        gate_obj = SecurityGate.objects.filter(pk=gate_id).first() if gate_id else None
+        if not gate_obj and request.session.get('current_gate_id'):
+            gate_obj = SecurityGate.objects.filter(pk=request.session.get('current_gate_id')).first()
+        gate_location = gate_obj.name if gate_obj else request.POST.get('gate_location', 'Loading Dock Gate')
 
         # Return date calculation
         expected_return_date = None
@@ -108,6 +112,7 @@ def gatepass_create(request):
         gate_pass = GatePass.objects.create(
             card_type=card_type,
             physical_card_ref=physical_card_ref,
+            gate=gate_obj,
             from_department=from_dept,
             sender_name=sender_name,
             sender_email=sender_email,

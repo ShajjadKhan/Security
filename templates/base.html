@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ lang }}" dir="{% if is_rtl %}rtl{% else %}ltr{% endif %}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Security Department Command System{% endblock %}</title>
+    <title>{% block title %}{{ T.app_title }} {{ T.app_hq }}{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -44,9 +44,15 @@
             }
         }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; }
+        body {
+            {% if is_rtl %}
+            font-family: 'Cairo', 'Plus Jakarta Sans', -apple-system, sans-serif;
+            {% else %}
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            {% endif %}
+        }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
     </style>
     {% block extra_head %}{% endblock %}
@@ -58,7 +64,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 
-                <!-- Left: Branding & Duty Status -->
+                <!-- Left: Branding -->
                 <div class="flex items-center gap-3">
                     <a href="{% url 'dashboard' %}" class="flex items-center gap-2.5 group">
                         <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-900/40 text-xl font-bold text-white group-hover:scale-105 transition">
@@ -66,72 +72,96 @@
                         </div>
                         <div>
                             <span class="text-base font-extrabold tracking-tight text-white flex items-center gap-1.5">
-                                SECURITY DEPT <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-mono border border-emerald-500/30">HQ</span>
+                                {{ T.app_title }} <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-mono border border-emerald-500/30">{{ T.app_hq }}</span>
                             </span>
-                            <span class="text-[11px] text-slate-400 block -mt-0.5 font-medium">Gate & Visitor Command • Lost & Found Vault</span>
+                            <span class="text-[11px] text-slate-400 block -mt-0.5 font-medium">{{ T.app_subtitle }}</span>
                         </div>
                     </a>
                 </div>
 
                 {% if user.is_authenticated %}
-                <!-- Center: Live Telemetry Badges -->
-                <div class="hidden md:flex items-center gap-3">
-                    <a href="{% url 'visitor_list' %}?status=active" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 transition" title="Visitors currently on-premises">
-                        <span class="relative flex h-2.5 w-2.5">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                        </span>
-                        <span class="text-xs font-semibold text-slate-300">On Site:</span>
-                        <span class="text-xs font-mono font-bold text-emerald-400">{{ active_visitors_count }}</span>
-                    </a>
+                <!-- Center: Active Duty Gate Picker & Telemetry Badges -->
+                <div class="hidden lg:flex items-center gap-3">
+                    
+                    <!-- Duty Gate Selector Dropdown -->
+                    <div class="relative group">
+                        <button class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-xs font-bold transition">
+                            <span class="text-emerald-400">📍</span>
+                            <span class="text-slate-200">
+                                {% if current_gate %}
+                                    {% if lang == 'ar' and current_gate.name_ar %}{{ current_gate.name_ar }}{% else %}{{ current_gate.name }}{% endif %}
+                                {% else %}
+                                    {{ T.duty_station }}
+                                {% endif %}
+                            </span>
+                            <span class="text-[10px] text-slate-400">▼</span>
+                        </button>
+                        <div class="absolute {% if is_rtl %}right-0{% else %}left-0{% endif %} mt-1 w-64 bg-navy-900 border border-slate-700 rounded-2xl shadow-xl py-2 hidden group-hover:block z-50">
+                            <div class="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                                {{ T.gate_switch_station }}
+                            </div>
+                            {% for g in all_gates %}
+                            <a href="{% url 'switch_duty_gate' g.id %}" class="flex items-center justify-between px-3 py-2 text-xs hover:bg-slate-800 transition {% if current_gate and current_gate.id == g.id %}text-emerald-400 font-bold bg-slate-800/50{% else %}text-slate-300{% endif %}">
+                                <span>{% if lang == 'ar' and g.name_ar %}{{ g.name_ar }}{% else %}{{ g.name }}{% endif %}</span>
+                                <span class="font-mono text-[10px] text-slate-400">{{ g.code }}</span>
+                            </a>
+                            {% endfor %}
+                            <div class="border-t border-slate-800 mt-1 pt-1 px-3">
+                                <a href="{% url 'gates_list' %}" class="text-[11px] text-emerald-400 hover:underline font-bold block py-1">
+                                    ⚙️ {{ T.gates_management }} →
+                                </a>
+                            </div>
+                        </div>
+                    </div>
 
-                    {% if overstay_count > 0 %}
-                    <a href="{% url 'visitor_list' %}?status=overstay" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800 text-rose-300 animate-pulse transition">
-                        <span class="text-xs">⚠️</span>
-                        <span class="text-xs font-bold font-mono">{{ overstay_count }} Overstay</span>
-                    </a>
-                    {% endif %}
-
-                    <a href="{% url 'lostfound_list' %}?status=unclaimed" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 transition" title="Unclaimed items in safe storage">
-                        <span class="text-xs">📦</span>
-                        <span class="text-xs font-semibold text-slate-300">Safe Vault:</span>
-                        <span class="text-xs font-mono font-bold text-amber-400">{{ unclaimed_lf_count }}</span>
-                    </a>
-
-                    <a href="{% url 'gatepass_list' %}?card=GREEN&status=active" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 transition" title="Green Cards In-Transit (Awaiting Return)">
+                    <!-- Telemetry Badges -->
+                    <a href="{% url 'gatepass_list' %}?card=GREEN&status=active" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 transition" title="{{ T.out_on_pass }}">
                         <span class="text-xs">🔄</span>
-                        <span class="text-xs font-semibold text-slate-300">Out on Pass:</span>
+                        <span class="text-xs font-semibold text-slate-300">{{ T.out_on_pass }}:</span>
                         <span class="text-xs font-mono font-bold text-emerald-400">{{ active_greencards_count }}</span>
                     </a>
 
                     {% if overdue_greencards_count > 0 %}
-                    <a href="{% url 'gatepass_list' %}?card=GREEN&status=overdue" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-950/70 hover:bg-rose-900 border border-rose-800 text-rose-300 animate-pulse transition" title="Overdue Green Cards">
+                    <a href="{% url 'gatepass_list' %}?card=GREEN&status=overdue" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-950/70 hover:bg-rose-900 border border-rose-800 text-rose-300 animate-pulse transition" title="{{ T.passes_overdue }}">
                         <span class="text-xs">🚨</span>
-                        <span class="text-xs font-bold font-mono">{{ overdue_greencards_count }} Overdue Pass</span>
+                        <span class="text-xs font-bold font-mono">{{ overdue_greencards_count }} {{ T.passes_overdue }}</span>
                     </a>
                     {% endif %}
+
+                    <a href="{% url 'visitor_list' %}?status=active" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 transition" title="{{ T.kpi_on_premises }}">
+                        <span class="text-xs">🛂</span>
+                        <span class="text-xs font-mono font-bold text-emerald-400">{{ active_visitors_count }}</span>
+                    </a>
                 </div>
 
-                <!-- Right: Search, Theme Toggle, User Profile -->
-                <div class="flex items-center gap-3">
-                    <form action="{% url 'universal_search' %}" method="GET" class="hidden sm:block">
+                <!-- Right: Search, Language Switcher, Theme Toggle, User Profile -->
+                <div class="flex items-center gap-2.5">
+                    
+                    <!-- Universal Search -->
+                    <form action="{% url 'universal_search' %}" method="GET" class="hidden md:block">
                         <div class="relative">
-                            <input type="text" name="q" placeholder="Search pass, name, plate, LF ref..." class="w-52 lg:w-64 pl-8 pr-3 py-1.5 rounded-lg text-xs bg-slate-800 border border-slate-700 text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
-                            <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
+                            <input type="text" name="q" placeholder="{{ T.search_placeholder }}" class="w-48 xl:w-60 px-3 py-1.5 rounded-xl text-xs bg-slate-800 border border-slate-700 text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         </div>
                     </form>
 
-                    <button onclick="toggleTheme()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm transition" title="Toggle dark mode">
+                    <!-- Language Switcher Button (1-Click EN / AR) -->
+                    <a href="{% url 'set_language' %}?lang={{ T.switch_lang_target }}" class="px-3 py-1.5 rounded-xl bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/50 text-xs font-bold transition flex items-center gap-1.5" title="Switch Language">
+                        {{ T.switch_lang_btn }}
+                    </a>
+
+                    <!-- Theme Toggle -->
+                    <button onclick="toggleTheme()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm transition" title="Toggle dark mode">
                         <span class="dark:hidden">🌙</span>
                         <span class="hidden dark:inline">☀️</span>
                     </button>
 
-                    <div class="flex items-center gap-2 pl-2 border-l border-slate-800">
+                    <!-- User Profile & Logout -->
+                    <div class="flex items-center gap-2 pl-2 {% if is_rtl %}border-r border-slate-800 pr-2 pl-0{% else %}border-l border-slate-800{% endif %}">
                         <div class="text-right hidden sm:block">
                             <p class="text-xs font-bold text-slate-200 leading-tight">{{ user.get_full_name|default:user.username }}</p>
-                            <p class="text-[10px] text-emerald-400 font-mono">{{ user.get_role_display }} {% if user.badge_number %}• #{{ user.badge_number }}{% endif %}</p>
+                            <p class="text-[10px] text-emerald-400 font-mono">{{ user.get_role_display }}</p>
                         </div>
-                        <a href="{% url 'logout' %}" class="p-2 rounded-lg bg-slate-800 hover:bg-rose-900/60 hover:text-rose-300 text-slate-400 text-xs font-semibold transition" title="Log Out">
+                        <a href="{% url 'logout' %}" class="p-2 rounded-xl bg-slate-800 hover:bg-rose-900/60 hover:text-rose-300 text-slate-400 text-xs font-semibold transition" title="{{ T.logout }}">
                             🚪
                         </a>
                     </div>
@@ -142,53 +172,54 @@
         </div>
 
         {% if user.is_authenticated %}
-        <!-- Sub Navigation Bar -->
-        <div class="bg-navy-950/80 border-t border-slate-800/80 px-4 sm:px-6 lg:px-8">
+        <!-- Sub Navigation Bar (Clean & Modern) -->
+        <div class="bg-navy-950/90 border-t border-slate-800/80 px-4 sm:px-6 lg:px-8">
             <div class="max-w-7xl mx-auto flex items-center justify-between overflow-x-auto py-2">
-                <nav class="flex items-center gap-1 sm:gap-2">
-                    <a href="{% url 'dashboard' %}" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition {% if request.resolver_match.url_name == 'dashboard' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
-                        📊 Command Dashboard
+                <nav class="flex items-center gap-1.5 sm:gap-2 text-xs font-bold">
+                    
+                    <a href="{% url 'dashboard' %}" class="px-3 py-1.5 rounded-xl transition {% if request.resolver_match.url_name == 'dashboard' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                        📊 {{ T.dashboard }}
                     </a>
-                    <a href="{% url 'visitor_list' %}" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition {% if 'visitor' in request.path and request.resolver_match.url_name != 'visitor_checkin' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
-                        🛂 Visitors & Gate Log
+
+                    <a href="{% url 'gatepass_list' %}" class="px-3 py-1.5 rounded-xl transition {% if 'gatepass' in request.path and request.resolver_match.url_name != 'gatepass_create' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                        🎫 {{ T.material_passes }}
                     </a>
-                    <a href="{% url 'visitor_checkin' %}" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition {% if request.resolver_match.url_name == 'visitor_checkin' %}bg-emerald-600 text-white shadow-sm{% else %}text-emerald-400 hover:bg-emerald-950/60 border border-emerald-800/50{% endif %}">
-                        ➕ New Check-In
+
+                    <a href="{% url 'gatepass_create' %}" class="px-3 py-1.5 rounded-xl transition {% if request.resolver_match.url_name == 'gatepass_create' %}bg-emerald-600 text-white shadow-sm{% else %}text-sky-400 hover:bg-sky-950/60 border border-sky-800/50{% endif %}">
+                        {{ T.issue_pass }}
                     </a>
-                    <a href="{% url 'lostfound_list' %}" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition {% if 'lost-and-found' in request.path and request.resolver_match.url_name != 'lostfound_create' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
-                        📦 Lost & Found Register
+
+                    <a href="{% url 'visitor_list' %}" class="px-3 py-1.5 rounded-xl transition {% if 'visitor' in request.path and request.resolver_match.url_name != 'visitor_checkin' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                        🛂 {{ T.visitors }}
                     </a>
-                    <a href="{% url 'lostfound_create' %}" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition {% if request.resolver_match.url_name == 'lostfound_create' %}bg-emerald-600 text-white shadow-sm{% else %}text-amber-400 hover:bg-amber-950/60 border border-amber-800/50{% endif %}">
-                        ➕ Log Found Item
+
+                    <a href="{% url 'lostfound_list' %}" class="px-3 py-1.5 rounded-xl transition {% if 'lost-and-found' in request.path %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                        📦 {{ T.lost_found }}
                     </a>
-                    <a href="{% url 'gatepass_list' %}" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition {% if 'gatepass' in request.path and request.resolver_match.url_name != 'gatepass_create' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
-                        🎫 Material Passes (Green/Red)
+
+                    <a href="{% url 'gates_list' %}" class="px-3 py-1.5 rounded-xl transition {% if 'gates' in request.path %}bg-emerald-600 text-white shadow-sm{% else %}text-amber-400 hover:bg-amber-950/60 border border-amber-800/50{% endif %}">
+                        🚧 {{ T.gates_management }}
                     </a>
-                    <a href="{% url 'gatepass_create' %}" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition {% if request.resolver_match.url_name == 'gatepass_create' %}bg-emerald-600 text-white shadow-sm{% else %}text-sky-400 hover:bg-sky-950/60 border border-sky-800/50{% endif %}">
-                        ➕ Issue Pass
-                    </a>
-                    <a href="{% url 'audit_log' %}" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition {% if request.resolver_match.url_name == 'audit_log' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-400 hover:bg-slate-800 hover:text-slate-200{% endif %}">
-                        📋 Shift Audit Feed
-                    </a>
-                    <a href="/admin/" target="_blank" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">
-                        ⚙️ Django Admin
+
+                    <a href="{% url 'audit_log' %}" class="px-3 py-1.5 rounded-xl transition {% if request.resolver_match.url_name == 'audit_log' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-400 hover:bg-slate-800 hover:text-slate-200{% endif %}">
+                        📋 {{ T.shift_audit }}
                     </a>
                 </nav>
 
-                <div class="text-[11px] font-mono text-slate-400 hidden lg:block">
-                    Station: <span class="text-slate-200 font-bold">Gate 1 Alpha</span> • Shift: <span class="text-emerald-400 font-bold">{{ user.get_shift_display|default:'Active' }}</span>
+                <div class="text-[11px] font-mono text-slate-400 hidden xl:flex items-center gap-2">
+                    <span>{{ T.duty_station }}: <strong class="text-emerald-400">{% if current_gate %}{% if lang == 'ar' and current_gate.name_ar %}{{ current_gate.name_ar }}{% else %}{{ current_gate.name }}{% endif %}{% else %}Gate 1{% endif %}</strong></span>
                 </div>
             </div>
         </div>
         {% endif %}
     </header>
 
-    <!-- Global Toast Alert Messages -->
+    <!-- Global Flash Messages -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full">
         {% if messages %}
         <div class="space-y-2">
             {% for m in messages %}
-            <div class="flex items-center justify-between p-3.5 rounded-xl text-xs font-semibold shadow-sm border transition {% if m.tags == 'error' %}bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200 border-rose-200 dark:border-rose-800{% elif m.tags == 'success' %}bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800{% else %}bg-sky-50 dark:bg-sky-950/40 text-sky-800 dark:text-sky-200 border-sky-200 dark:border-sky-800{% endif %}">
+            <div class="flex items-center justify-between p-3.5 rounded-2xl text-xs font-semibold shadow-sm border transition {% if m.tags == 'error' %}bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200 border-rose-200 dark:border-rose-800{% elif m.tags == 'success' %}bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800{% else %}bg-sky-50 dark:bg-sky-950/40 text-sky-800 dark:text-sky-200 border-sky-200 dark:border-sky-800{% endif %}">
                 <div class="flex items-center gap-2">
                     <span>{% if m.tags == 'error' %}⚠️{% elif m.tags == 'success' %}✅{% else %}ℹ️{% endif %}</span>
                     <span>{{ m }}</span>
@@ -208,7 +239,7 @@
     <!-- Footer -->
     <footer class="bg-white dark:bg-navy-900 border-t border-slate-200 dark:border-slate-800 py-6 text-center text-xs text-slate-500 dark:text-slate-400 mt-auto">
         <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <p>© 2026 Security Department Management Suite. Hotel & Facility Security Command.</p>
+            <p>© 2026 {{ T.app_title }} — Hotel & Facility Command System</p>
             <p class="font-mono text-[11px]">System Status: <span class="text-emerald-500 font-bold">● Operational (Port 7000)</span></p>
         </div>
     </footer>

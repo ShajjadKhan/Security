@@ -70,6 +70,7 @@ class Visitor(models.Model):
         ('Loading Dock', 'Loading Dock / Delivery Gate'),
         ('VIP Lobby', 'VIP / Executive Entrance')
     ])
+    gate = models.ForeignKey('core.SecurityGate', on_delete=models.SET_NULL, null=True, blank=True, related_name='visitors')
     checked_in_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='visitors_checked_in')
     check_in_time = models.DateTimeField(default=timezone.now)
     expected_checkout_time = models.DateTimeField(null=True, blank=True)

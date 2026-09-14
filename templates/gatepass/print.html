@@ -1,143 +1,137 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ lang }}" dir="{% if is_rtl %}rtl{% else %}ltr{% endif %}">
 <head>
     <meta charset="UTF-8">
     <title>Gate Pass Slip • {{ pass_card.pass_number }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
     <style>
+        body {
+            font-family: 'Cairo', 'Plus Jakarta Sans', sans-serif;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
         @media print {
-            body {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-            .no-print {
-                display: none !important;
-            }
-            @page {
-                size: A4 portrait;
-                margin: 12mm;
-            }
+            .no-print { display: none !important; }
+            @page { size: A4 portrait; margin: 10mm; }
         }
     </style>
 </head>
-<body class="bg-slate-100 py-6 text-slate-900 text-xs font-sans">
+<body class="bg-slate-100 py-6 text-slate-900 text-xs">
 
-    <!-- Top Action Bar (hidden when printing) -->
+    <!-- Top Action Bar -->
     <div class="max-w-3xl mx-auto mb-4 no-print flex items-center justify-between">
-        <a href="{% url 'gatepass_detail' pass_card.pk %}" class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 font-bold text-xs text-slate-700 hover:bg-slate-50 transition">
-            ← Back to System
+        <a href="{% url 'gatepass_detail' pass_card.pk %}" class="px-4 py-2 rounded-xl bg-white border border-slate-300 font-bold text-xs text-slate-700 hover:bg-slate-50 transition">
+            {% if is_rtl %}➔ العودة للنظام{% else %}← Back to System{% endif %}
         </a>
-        <button onclick="window.print()" class="px-5 py-2 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-xs shadow-md flex items-center gap-2 transition">
-            <span>🖨️</span> Print Gate Pass Slip
-        </button>
+        <div class="flex items-center gap-2">
+            <a href="?lang={% if lang == 'ar' %}en{% else %}ar{% endif %}" class="px-3 py-2 rounded-xl bg-white border border-slate-300 font-bold text-xs text-slate-700 hover:bg-slate-50 transition">
+                🌐 {% if lang == 'ar' %}English Print Slip{% else %}طباعة بالعربية{% endif %}
+            </a>
+            <button onclick="window.print()" class="px-6 py-2 rounded-xl bg-slate-900 hover:bg-black text-white font-black text-xs shadow-md flex items-center gap-2 transition">
+                <span>🖨️</span> {% if lang == 'ar' %}طباعة قسيمة التصريح{% else %}Print Gate Pass Slip{% endif %}
+            </button>
+        </div>
     </div>
 
-    <!-- Official Gate Pass Printable Container -->
-    <div class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-md border-4 {% if pass_card.is_green_card %}border-emerald-600{% else %}border-rose-600{% endif %}">
+    <!-- Official Printable Gate Pass Container -->
+    <div class="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-md border-4 {% if pass_card.is_green_card %}border-emerald-600{% else %}border-rose-600{% endif %}">
         
-        <!-- Document Header -->
+        <!-- Header -->
         <div class="flex items-center justify-between pb-4 border-b-2 border-slate-900">
             <div class="flex items-center gap-3">
                 <div class="w-12 h-12 rounded-xl {% if pass_card.is_green_card %}bg-emerald-600{% else %}bg-rose-600{% endif %} text-white flex items-center justify-center text-2xl font-black">
                     🛡️
                 </div>
                 <div>
-                    <h1 class="text-base font-black tracking-tight uppercase leading-tight">
-                        FACILITY & HOTEL SECURITY DEPARTMENT
+                    <h1 class="text-sm sm:text-base font-black tracking-tight uppercase leading-tight">
+                        {% if lang == 'ar' %}إدارة الأمن والسلامة للمنشأة الفندقية{% else %}FACILITY & HOTEL SECURITY DEPARTMENT{% endif %}
                     </h1>
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                        Official Material Movement Gate Pass
+                        {% if lang == 'ar' %}تصريح حركة ومغادرة المواد والمعدات{% else %}Official Material Movement Gate Pass{% endif %}
                     </p>
                 </div>
             </div>
 
-            <div class="text-right">
+            <div class="text-right {% if is_rtl %}text-left{% endif %}">
                 <div class="inline-block px-3 py-1 rounded-md font-mono font-black text-xs text-white uppercase {% if pass_card.is_green_card %}bg-emerald-600{% else %}bg-rose-600{% endif %}">
-                    {% if pass_card.is_green_card %}🟢 GREEN CARD — RETURNABLE{% else %}🔴 RED CARD — NON-RETURNABLE{% endif %}
+                    {% if pass_card.is_green_card %}
+                        🟢 {% if lang == 'ar' %}بطاقة خضراء (يجب الإرجاع){% else %}GREEN CARD (RETURNABLE){% endif %}
+                    {% else %}
+                        🔴 {% if lang == 'ar' %}بطاقة حمراء (خروج نهائي){% else %}RED CARD (NON-RETURNABLE){% endif %}
+                    {% endif %}
                 </div>
                 <div class="text-lg font-mono font-black text-slate-900 mt-1">
                     {{ pass_card.pass_number }}
                 </div>
                 {% if pass_card.physical_card_ref %}
                 <div class="text-[11px] font-mono font-bold text-slate-600">
-                    Badge / Tag Ref: #{{ pass_card.physical_card_ref }}
+                    Card Ref: #{{ pass_card.physical_card_ref }}
                 </div>
                 {% endif %}
             </div>
         </div>
 
-        <!-- Return Warning / Notice Banner -->
+        <!-- Return / Non-Return Notice -->
         {% if pass_card.is_green_card %}
-        <div class="my-4 p-2.5 rounded-lg bg-emerald-50 border border-emerald-300 flex items-center justify-between text-[11px] text-emerald-950">
-            <div>
-                <strong>⚠️ RETURNABLE ASSET NOTICE:</strong> Items on this pass MUST be returned to Gate Security by:
-            </div>
-            <div class="font-mono font-black text-xs text-emerald-800">
-                {{ pass_card.expected_return_date|date:"d M Y • H:i" }}
-            </div>
+        <div class="my-3 p-3 rounded-xl bg-emerald-50 border border-emerald-300 flex items-center justify-between text-xs text-emerald-950 font-bold">
+            <span>⚠️ {% if lang == 'ar' %}تنبيه: هذه المواد معارة أو مرسلة للصيانة ويجب إعادتها قبل موعد:{% else %}RETURN NOTICE: Items must be returned to Gate Security before:{% endif %}</span>
+            <span class="font-mono text-emerald-800 text-sm">{{ pass_card.expected_return_date|date:"d M Y • H:i" }}</span>
         </div>
         {% else %}
-        <div class="my-4 p-2.5 rounded-lg bg-rose-50 border border-rose-300 text-[11px] text-rose-950">
-            <strong>⛔ NON-RETURNABLE DISPATCH:</strong> Material authorized for permanent exit from facility. Not eligible for re-entry.
+        <div class="my-3 p-3 rounded-xl bg-rose-50 border border-rose-300 text-xs text-rose-950 font-bold">
+            ⛔ {% if lang == 'ar' %}خروج نهائي: تم اعتماد خروج هذه المواد بشكل نهائي من الموقع دون عودة.{% else %}NON-RETURNABLE: Material authorized for permanent disposal/transfer. No return required.{% endif %}
         </div>
         {% endif %}
 
-        <!-- Info Grid -->
+        <!-- Information Grid -->
         <div class="grid grid-cols-2 gap-4 my-4 text-xs">
-            
-            <!-- Origin (From) -->
-            <div class="p-3 rounded-lg border border-slate-200 space-y-1">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Origin (From)</span>
-                <div><strong>Department:</strong> {{ pass_card.from_department.name|default:'General Facility' }}</div>
-                <div><strong>Sender Staff:</strong> {{ pass_card.sender_name }}</div>
+            <div class="p-3 rounded-xl border border-slate-200 space-y-1">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Origin (From) / المصدر</span>
+                <div><strong>Dept:</strong> {{ pass_card.from_department.name|default:'General' }}</div>
+                <div><strong>Staff:</strong> {{ pass_card.sender_name }}</div>
                 {% if pass_card.sender_phone %}<div><strong>Phone:</strong> {{ pass_card.sender_phone }}</div>{% endif %}
-                <div><strong>Gate Location:</strong> {{ pass_card.gate_location }}</div>
+                <div><strong>Gate:</strong> {% if pass_card.gate %}{{ pass_card.gate.name }}{% else %}{{ pass_card.gate_location }}{% endif %}</div>
             </div>
 
-            <!-- Destination (To) -->
-            <div class="p-3 rounded-lg border border-slate-200 space-y-1">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Destination (To)</span>
-                <div><strong>Entity / Company:</strong> {{ pass_card.destination_entity }}</div>
+            <div class="p-3 rounded-xl border border-slate-200 space-y-1">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Destination (To) / الوجهة</span>
+                <div><strong>Recipient:</strong> {{ pass_card.destination_entity }}</div>
                 {% if pass_card.destination_address %}<div><strong>Address:</strong> {{ pass_card.destination_address }}</div>{% endif %}
-                {% if pass_card.destination_contact_name %}<div><strong>Contact Person:</strong> {{ pass_card.destination_contact_name }}</div>{% endif %}
-                {% if pass_card.destination_phone %}<div><strong>Phone:</strong> {{ pass_card.destination_phone }}</div>{% endif %}
+                <div><strong>Purpose:</strong> {{ pass_card.get_purpose_display }}</div>
             </div>
 
-            <!-- Carrier (Transport) -->
-            <div class="p-3 rounded-lg border border-slate-200 space-y-1">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Carrier & Driver</span>
+            <div class="p-3 rounded-xl border border-slate-200 space-y-1">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Carrier & Driver / السائق</span>
                 <div><strong>Carrier Name:</strong> {{ pass_card.carrier_name }}</div>
                 <div><strong>Driver Mobile:</strong> {{ pass_card.carrier_phone }}</div>
-                {% if pass_card.carrier_id_number %}<div><strong>Iqama / ID:</strong> {{ pass_card.carrier_id_number }}</div>{% endif %}
-                {% if pass_card.carrier_company %}<div><strong>Transport Co:</strong> {{ pass_card.carrier_company }}</div>{% endif %}
+                {% if pass_card.carrier_company %}<div><strong>Company:</strong> {{ pass_card.carrier_company }}</div>{% endif %}
             </div>
 
-            <!-- Vehicle & Purpose -->
-            <div class="p-3 rounded-lg border border-slate-200 space-y-1">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Vehicle & Purpose</span>
-                <div><strong>Plate Number:</strong> {{ pass_card.vehicle_plate|default:'N/A' }}</div>
+            <div class="p-3 rounded-xl border border-slate-200 space-y-1">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Vehicle / وسيلة النقل</span>
+                <div><strong>Plate:</strong> {{ pass_card.vehicle_plate|default:'N/A' }}</div>
                 {% if pass_card.vehicle_model %}<div><strong>Vehicle Model:</strong> {{ pass_card.vehicle_model }}</div>{% endif %}
-                <div><strong>Movement Purpose:</strong> {{ pass_card.get_purpose_display }}</div>
-                {% if pass_card.purpose_notes %}<div><strong>Notes:</strong> {{ pass_card.purpose_notes }}</div>{% endif %}
+                <div><strong>Dispatched At:</strong> {{ pass_card.dispatched_at|date:"d M Y • H:i" }}</div>
             </div>
-
         </div>
 
         <!-- Manifest Table -->
         <div class="my-4">
-            <h3 class="text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                Cargo Items Manifest (Total: {{ pass_card.total_items_count }} Items)
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                Cargo Manifest (Total: {{ pass_card.total_items_count }} Items) / بيان الأصناف
             </h3>
             <table class="w-full border-collapse border border-slate-300 text-xs">
                 <thead>
                     <tr class="bg-slate-100 border-b border-slate-300 text-slate-700">
                         <th class="border border-slate-300 p-2 text-center w-10">#</th>
-                        <th class="border border-slate-300 p-2 text-left">Item Description</th>
-                        <th class="border border-slate-300 p-2 text-center w-20">Quantity</th>
-                        <th class="border border-slate-300 p-2 text-left w-40">Serial / Asset Tag</th>
-                        <th class="border border-slate-300 p-2 text-left w-32">Condition Out</th>
+                        <th class="border border-slate-300 p-2 text-left {% if is_rtl %}text-right{% endif %}">Description / الصنف</th>
+                        <th class="border border-slate-300 p-2 text-center w-24">Qty / الكمية</th>
+                        <th class="border border-slate-300 p-2 text-left {% if is_rtl %}text-right{% endif %} w-44">Serial Tag / الرقم التسلسلي</th>
+                        <th class="border border-slate-300 p-2 text-left {% if is_rtl %}text-right{% endif %} w-32">Condition / الحالة</th>
                         {% if pass_card.is_green_card %}
-                        <th class="border border-slate-300 p-2 text-center w-24">Return Check</th>
+                        <th class="border border-slate-300 p-2 text-center w-24">Return / الاستلام</th>
                         {% endif %}
                     </tr>
                 </thead>
@@ -164,11 +158,9 @@
             </table>
         </div>
 
-        <!-- Authorization Signatures Box -->
+        <!-- 4-Box Sign-off Section -->
         <div class="mt-6 pt-4 border-t-2 border-slate-900 grid grid-cols-2 sm:grid-cols-4 gap-4 text-[11px]">
-            
-            <!-- 1. Dept Manager -->
-            <div class="border border-slate-300 p-3 rounded-lg flex flex-col justify-between h-28">
+            <div class="border border-slate-300 p-3 rounded-xl flex flex-col justify-between h-28">
                 <div>
                     <span class="font-bold uppercase text-[10px] text-slate-500 block">Department Authorization</span>
                     <span class="font-bold mt-1 block">{{ pass_card.authorized_by_manager }}</span>
@@ -178,8 +170,7 @@
                 </div>
             </div>
 
-            <!-- 2. Carrier Driver -->
-            <div class="border border-slate-300 p-3 rounded-lg flex flex-col justify-between h-28">
+            <div class="border border-slate-300 p-3 rounded-xl flex flex-col justify-between h-28">
                 <div>
                     <span class="font-bold uppercase text-[10px] text-slate-500 block">Carrier / Driver</span>
                     <span class="font-bold mt-1 block">{{ pass_card.carrier_name }}</span>
@@ -189,10 +180,9 @@
                 </div>
             </div>
 
-            <!-- 3. Dispatch Security Officer -->
-            <div class="border border-slate-300 p-3 rounded-lg flex flex-col justify-between h-28">
+            <div class="border border-slate-300 p-3 rounded-xl flex flex-col justify-between h-28">
                 <div>
-                    <span class="font-bold uppercase text-[10px] text-slate-500 block">Security Gate Out</span>
+                    <span class="font-bold uppercase text-[10px] text-slate-500 block">Security Gate Dispatch</span>
                     <span class="font-bold mt-1 block">Officer {{ pass_card.dispatched_by.username }}</span>
                     <span class="text-[10px] text-slate-500">{{ pass_card.dispatched_at|date:"d M Y H:i" }}</span>
                 </div>
@@ -201,8 +191,7 @@
                 </div>
             </div>
 
-            <!-- 4. Inward Security Receiving Officer -->
-            <div class="border border-slate-300 p-3 rounded-lg flex flex-col justify-between h-28">
+            <div class="border border-slate-300 p-3 rounded-xl flex flex-col justify-between h-28">
                 <div>
                     <span class="font-bold uppercase text-[10px] text-slate-500 block">Security Inward Return</span>
                     {% if pass_card.received_by %}
@@ -216,13 +205,11 @@
                     Inward Gate Stamp
                 </div>
             </div>
-
         </div>
 
-        <!-- Footer -->
         <div class="mt-6 pt-3 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-400">
-            <span>Generated by Security Dept HQ System • Gate 1 Alpha</span>
-            <span class="font-mono">Security Code: {{ pass_card.pass_number }} • Valid Official Record</span>
+            <span>{{ T.app_title }} • Gate Station: {% if pass_card.gate %}{{ pass_card.gate.name }}{% else %}Gate 1{% endif %}</span>
+            <span class="font-mono">Security Code: {{ pass_card.pass_number }} • Official Gate Pass</span>
         </div>
 
     </div>

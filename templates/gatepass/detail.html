@@ -1,73 +1,74 @@
 {% extends 'base.html' %}
-{% block title %}{{ pass_card.pass_number }} • Gate Pass Details{% endblock %}
+{% block title %}{{ pass_card.pass_number }} • {{ T.app_title }}{% endblock %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto space-y-6">
+<div class="max-w-4xl mx-auto space-y-6">
 
-    <!-- Top Breadcrumb & Action Toolbar -->
+    <!-- Top Navigation & Actions -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div class="flex items-center gap-2">
-            <a href="{% url 'gatepass_list' %}" class="text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition">
-                ← Back to Gate Pass Register
-            </a>
-            <span class="text-slate-400 text-xs">•</span>
-            <span class="text-xs font-mono text-slate-400">Pass #{{ pass_card.pass_number }}</span>
-        </div>
+        <a href="{% url 'gatepass_list' %}" class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition">
+            {% if is_rtl %}➔{% else %}←{% endif %} {{ T.tab_all_passes }}
+        </a>
 
         <div class="flex items-center gap-2 flex-wrap">
             {% if pass_card.is_green_card and pass_card.whatsapp_carrier_url %}
-            <a href="{{ pass_card.whatsapp_carrier_url }}" target="_blank" class="px-3.5 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 border border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-bold text-xs flex items-center gap-1.5 transition">
-                <span>💬</span> WhatsApp Carrier
+            <a href="{{ pass_card.whatsapp_carrier_url }}" target="_blank" class="px-4 py-2.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 border border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-bold text-xs flex items-center gap-2 transition">
+                <span>💬</span> {{ T.wa_driver }}
             </a>
             {% endif %}
 
             {% if pass_card.is_overdue and pass_card.whatsapp_dept_url %}
-            <a href="{{ pass_card.whatsapp_dept_url }}" target="_blank" class="px-3.5 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 font-bold text-xs flex items-center gap-1.5 transition">
-                <span>📢</span> WhatsApp Dept
+            <a href="{{ pass_card.whatsapp_dept_url }}" target="_blank" class="px-4 py-2.5 rounded-2xl bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 font-bold text-xs flex items-center gap-2 transition">
+                <span>📢</span> {{ T.wa_dept }}
             </a>
             {% endif %}
 
             {% if pass_card.is_green_card and pass_card.status in 'active partially_returned' %}
-            <a href="{% url 'gatepass_return' pass_card.pk %}" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-900/20 flex items-center gap-1.5 transition">
-                <span>📥</span> Process Inward Return
+            <a href="{% url 'gatepass_return' pass_card.pk %}" class="px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-900/20 flex items-center gap-2 transition">
+                <span>📥</span> {{ T.inward_return_btn }}
             </a>
             {% endif %}
 
-            <a href="{% url 'gatepass_print' pass_card.pk %}" target="_blank" class="px-3.5 py-2 rounded-xl bg-white dark:bg-navy-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center gap-1.5 transition">
-                <span>🖨️</span> Print Pass Slip
+            <a href="{% url 'gatepass_print' pass_card.pk %}" target="_blank" class="px-4 py-2.5 rounded-2xl bg-white dark:bg-navy-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center gap-2 transition">
+                <span>🖨️</span> {{ T.print_slip }}
             </a>
         </div>
     </div>
 
-    <!-- Pass Hero Header Banner (Green vs Red Theme) -->
+    <!-- Pass Banner (Green vs Red) -->
     {% if pass_card.is_green_card %}
-    <div class="rounded-2xl p-6 text-white bg-gradient-to-r from-emerald-700 via-emerald-800 to-teal-900 shadow-lg shadow-emerald-950/20 relative overflow-hidden">
-        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="rounded-3xl p-6 text-white bg-gradient-to-r from-emerald-700 via-emerald-800 to-teal-900 shadow-xl shadow-emerald-950/20">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-                <div class="flex items-center gap-2">
-                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-black uppercase tracking-wider bg-white/20 text-white border border-white/30">
-                        🟢 GREEN CARD — RETURNABLE MATERIAL PASS
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-white/20 text-white border border-white/30">
+                        {{ T.green_card_badge }}
                     </span>
                     {% if pass_card.physical_card_ref %}
-                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-white text-emerald-900">
-                        🪪 Tag: {{ pass_card.physical_card_ref }}
+                    <span class="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-white text-emerald-900">
+                        🪪 {{ pass_card.physical_card_ref }}
+                    </span>
+                    {% endif %}
+                    {% if pass_card.gate %}
+                    <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-white/20 text-white">
+                        🚪 {% if lang == 'ar' and pass_card.gate.name_ar %}{{ pass_card.gate.name_ar }}{% else %}{{ pass_card.gate.name }}{% endif %}
                     </span>
                     {% endif %}
                 </div>
-                <h1 class="text-2xl sm:text-3xl font-black font-mono tracking-tight mt-2">{{ pass_card.pass_number }}</h1>
-                <p class="text-xs text-emerald-100/90 mt-1">
-                    Destination: <strong class="text-white">{{ pass_card.destination_entity }}</strong> • Dispatched from: <strong class="text-white">{{ pass_card.from_department.name|default:'General' }}</strong>
+                <h1 class="text-3xl sm:text-4xl font-black font-mono tracking-tight mt-3">{{ pass_card.pass_number }}</h1>
+                <p class="text-xs text-emerald-100 mt-1">
+                    {{ T.to_destination }}: <strong class="text-white">{{ pass_card.destination_entity }}</strong> • {{ T.from_dept }}: <strong class="text-white">{{ pass_card.from_department.name|default:'General' }}</strong>
                 </p>
             </div>
 
-            <div class="bg-black/20 backdrop-blur-sm p-4 rounded-xl border border-white/20 text-right shrink-0">
-                <span class="text-[10px] uppercase font-bold tracking-wider text-emerald-200 block">Return Deadline</span>
-                <div class="text-lg font-black font-mono text-white mt-0.5">
+            <div class="bg-black/20 backdrop-blur-sm p-4 rounded-2xl border border-white/20 text-right {% if is_rtl %}text-left{% endif %} shrink-0">
+                <span class="text-[10px] uppercase font-bold tracking-wider text-emerald-200 block">{{ T.expected_return_date }}</span>
+                <div class="text-base font-black font-mono text-white mt-0.5">
                     {{ pass_card.expected_return_date|date:"d M Y • H:i" }}
                 </div>
                 <div class="text-xs font-bold mt-1 {% if pass_card.is_overdue %}text-rose-300 animate-pulse{% else %}text-emerald-200{% endif %}">
                     {% if pass_card.status == 'fully_returned' %}
-                        ✓ Fully Returned & Closed
+                        ✓ {{ T.status_returned }}
                     {% else %}
                         {{ pass_card.time_remaining_display }}
                     {% endif %}
@@ -76,193 +77,140 @@
         </div>
     </div>
     {% else %}
-    <div class="rounded-2xl p-6 text-white bg-gradient-to-r from-rose-700 via-rose-800 to-slate-900 shadow-lg shadow-rose-950/20 relative overflow-hidden">
-        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="rounded-3xl p-6 text-white bg-gradient-to-r from-rose-700 via-rose-800 to-slate-900 shadow-xl shadow-rose-950/20">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-                <div class="flex items-center gap-2">
-                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-black uppercase tracking-wider bg-white/20 text-white border border-white/30">
-                        🔴 RED CARD — NON-RETURNABLE MATERIAL PASS
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-white/20 text-white border border-white/30">
+                        {{ T.red_card_badge }}
                     </span>
                     {% if pass_card.physical_card_ref %}
-                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-white text-rose-900">
-                        🪪 Tag: {{ pass_card.physical_card_ref }}
+                    <span class="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-white text-rose-900">
+                        🪪 {{ pass_card.physical_card_ref }}
+                    </span>
+                    {% endif %}
+                    {% if pass_card.gate %}
+                    <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-white/20 text-white">
+                        🚪 {% if lang == 'ar' and pass_card.gate.name_ar %}{{ pass_card.gate.name_ar }}{% else %}{{ pass_card.gate.name }}{% endif %}
                     </span>
                     {% endif %}
                 </div>
-                <h1 class="text-2xl sm:text-3xl font-black font-mono tracking-tight mt-2">{{ pass_card.pass_number }}</h1>
-                <p class="text-xs text-rose-100/90 mt-1">
-                    Destination: <strong class="text-white">{{ pass_card.destination_entity }}</strong> • Dispatched from: <strong class="text-white">{{ pass_card.from_department.name|default:'General' }}</strong>
+                <h1 class="text-3xl sm:text-4xl font-black font-mono tracking-tight mt-3">{{ pass_card.pass_number }}</h1>
+                <p class="text-xs text-rose-100 mt-1">
+                    {{ T.to_destination }}: <strong class="text-white">{{ pass_card.destination_entity }}</strong> • {{ T.from_dept }}: <strong class="text-white">{{ pass_card.from_department.name|default:'General' }}</strong>
                 </p>
             </div>
 
-            <div class="bg-black/20 backdrop-blur-sm p-4 rounded-xl border border-white/20 text-right shrink-0">
-                <span class="text-[10px] uppercase font-bold tracking-wider text-rose-200 block">Exit Classification</span>
+            <div class="bg-black/20 backdrop-blur-sm p-4 rounded-2xl border border-white/20 text-right {% if is_rtl %}text-left{% endif %} shrink-0">
+                <span class="text-[10px] uppercase font-bold tracking-wider text-rose-200 block">EXIT</span>
                 <div class="text-base font-black font-mono text-white mt-0.5">
-                    PERMANENT EXIT
+                    PERMANENT OUT
                 </div>
                 <div class="text-xs text-rose-200 font-semibold mt-1">
-                    Dispatched & Closed
+                    {{ T.status_dispatched_closed }}
                 </div>
             </div>
         </div>
     </div>
     {% endif %}
 
-    <!-- Overdue Warning Callout (If Green Card and Overdue) -->
+    <!-- Overdue Alert Callout -->
     {% if pass_card.is_overdue %}
-    <div class="bg-rose-50 dark:bg-rose-950/40 border-2 border-rose-300 dark:border-rose-800/80 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div class="bg-rose-50 dark:bg-rose-950/40 border-2 border-rose-400 p-5 rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div class="flex items-center gap-3">
-            <span class="text-2xl">🚨</span>
+            <span class="text-3xl">🚨</span>
             <div>
                 <h3 class="text-xs font-black uppercase tracking-wider text-rose-700 dark:text-rose-300">
-                    OVERDUE RETURN WARNING • {{ pass_card.days_overdue }} DAYS PAST CUTOFF
+                    {{ T.overdue_alert }} • {{ pass_card.days_overdue }} {{ T.days }} {{ T.overdue_by }}
                 </h3>
                 <p class="text-xs text-rose-600 dark:text-rose-400 mt-0.5">
-                    Expected return cutoff was <strong>{{ pass_card.expected_return_date|date:"d M Y H:i" }}</strong>. Follow up immediately with carrier and department.
+                    Cutoff was <strong>{{ pass_card.expected_return_date|date:"d M Y H:i" }}</strong>.
                 </p>
             </div>
         </div>
         <div class="flex items-center gap-2 shrink-0">
             {% if pass_card.whatsapp_carrier_url %}
-            <a href="{{ pass_card.whatsapp_carrier_url }}" target="_blank" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1 shadow-sm transition">
-                <span>💬</span> WhatsApp Driver
+            <a href="{{ pass_card.whatsapp_carrier_url }}" target="_blank" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition">
+                <span>💬</span> {{ T.wa_driver }}
             </a>
             {% endif %}
             {% if pass_card.whatsapp_dept_url %}
-            <a href="{{ pass_card.whatsapp_dept_url }}" target="_blank" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-1 shadow-sm transition">
-                <span>📢</span> Alert Dept
+            <a href="{{ pass_card.whatsapp_dept_url }}" target="_blank" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition">
+                <span>📢</span> {{ T.wa_dept }}
             </a>
             {% endif %}
         </div>
     </div>
     {% endif %}
 
-    <!-- 3 Info Panels: Origin, Destination, Carrier -->
+    <!-- 3 Clean Panels: Route, Carrier, Gate Info -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         
-        <!-- Panel 1: Origin -->
-        <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 space-y-2.5">
-            <div class="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
-                <span>🏢</span>
-                <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">Origin (From)</h3>
-            </div>
+        <!-- Panel 1: Route -->
+        <div class="bg-white dark:bg-navy-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-2">
+            <h3 class="text-xs font-black uppercase tracking-wider text-slate-400 pb-2 border-b border-slate-100 dark:border-slate-800">
+                🏢 {{ T.from_dept }}
+            </h3>
             <div class="text-xs space-y-1.5">
-                <div>
-                    <span class="text-slate-400 text-[11px] block">Department:</span>
-                    <span class="font-bold text-slate-800 dark:text-slate-200">{{ pass_card.from_department.name|default:'General Facility' }}</span>
-                </div>
-                <div>
-                    <span class="text-slate-400 text-[11px] block">Sender Staff:</span>
-                    <span class="font-semibold text-slate-800 dark:text-slate-200">{{ pass_card.sender_name }}</span>
-                </div>
-                {% if pass_card.sender_phone %}
-                <div>
-                    <span class="text-slate-400 text-[11px] block">Phone / WA:</span>
-                    <span class="font-mono text-slate-700 dark:text-slate-300">{{ pass_card.sender_phone }}</span>
-                </div>
-                {% endif %}
-                {% if pass_card.sender_email %}
-                <div>
-                    <span class="text-slate-400 text-[11px] block">Email:</span>
-                    <span class="text-slate-600 dark:text-slate-400 truncate block">{{ pass_card.sender_email }}</span>
-                </div>
-                {% endif %}
+                <div><span class="text-slate-400 text-[11px] block">Dept:</span> <strong class="text-slate-800 dark:text-slate-200">{{ pass_card.from_department.name|default:'General' }}</strong></div>
+                <div><span class="text-slate-400 text-[11px] block">Staff:</span> <span class="text-slate-700 dark:text-slate-300">{{ pass_card.sender_name }}</span></div>
+                {% if pass_card.sender_phone %}<div><span class="text-slate-400 text-[11px] block">Phone:</span> <span class="font-mono text-slate-700 dark:text-slate-300">{{ pass_card.sender_phone }}</span></div>{% endif %}
             </div>
         </div>
 
         <!-- Panel 2: Destination -->
-        <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 space-y-2.5">
-            <div class="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
-                <span>📍</span>
-                <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">Destination (To)</h3>
-            </div>
+        <div class="bg-white dark:bg-navy-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-2">
+            <h3 class="text-xs font-black uppercase tracking-wider text-slate-400 pb-2 border-b border-slate-100 dark:border-slate-800">
+                📍 {{ T.to_destination }}
+            </h3>
             <div class="text-xs space-y-1.5">
-                <div>
-                    <span class="text-slate-400 text-[11px] block">Recipient Entity:</span>
-                    <span class="font-bold text-slate-800 dark:text-slate-200">{{ pass_card.destination_entity }}</span>
-                </div>
-                {% if pass_card.destination_address %}
-                <div>
-                    <span class="text-slate-400 text-[11px] block">Address / City:</span>
-                    <span class="text-slate-600 dark:text-slate-300">{{ pass_card.destination_address }}</span>
-                </div>
-                {% endif %}
-                {% if pass_card.destination_contact_name %}
-                <div>
-                    <span class="text-slate-400 text-[11px] block">Contact Person:</span>
-                    <span class="font-semibold text-slate-700 dark:text-slate-300">{{ pass_card.destination_contact_name }}</span>
-                </div>
-                {% endif %}
-                {% if pass_card.destination_phone %}
-                <div>
-                    <span class="text-slate-400 text-[11px] block">Phone:</span>
-                    <span class="font-mono text-slate-700 dark:text-slate-300">{{ pass_card.destination_phone }}</span>
-                </div>
-                {% endif %}
+                <div><span class="text-slate-400 text-[11px] block">Recipient:</span> <strong class="text-slate-800 dark:text-slate-200">{{ pass_card.destination_entity }}</strong></div>
+                {% if pass_card.destination_address %}<div><span class="text-slate-400 text-[11px] block">Address:</span> <span class="text-slate-600 dark:text-slate-400">{{ pass_card.destination_address }}</span></div>{% endif %}
+                <div><span class="text-slate-400 text-[11px] block">Purpose:</span> <span class="text-slate-700 dark:text-slate-300">{{ pass_card.get_purpose_display }}</span></div>
             </div>
         </div>
 
-        <!-- Panel 3: Carrier & Vehicle -->
-        <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 space-y-2.5">
-            <div class="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
-                <span>🚚</span>
-                <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">Carrier & Transport</h3>
-            </div>
+        <!-- Panel 3: Carrier & Gate -->
+        <div class="bg-white dark:bg-navy-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-2">
+            <h3 class="text-xs font-black uppercase tracking-wider text-slate-400 pb-2 border-b border-slate-100 dark:border-slate-800">
+                🚚 {{ T.carrier_transport }}
+            </h3>
             <div class="text-xs space-y-1.5">
-                <div>
-                    <span class="text-slate-400 text-[11px] block">Driver / Carrier:</span>
-                    <span class="font-bold text-slate-800 dark:text-slate-200">{{ pass_card.carrier_name }}</span>
-                </div>
-                <div>
-                    <span class="text-slate-400 text-[11px] block">Mobile / WhatsApp:</span>
-                    <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ pass_card.carrier_phone }}</span>
-                </div>
-                {% if pass_card.vehicle_plate %}
-                <div>
-                    <span class="text-slate-400 text-[11px] block">Vehicle Plate & Model:</span>
-                    <span class="font-mono font-bold text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-[11px]">{{ pass_card.vehicle_plate }}</span>
-                    {% if pass_card.vehicle_model %}<span class="text-slate-500 text-[11px] ml-1">({{ pass_card.vehicle_model }})</span>{% endif %}
-                </div>
-                {% endif %}
-                {% if pass_card.carrier_company %}
-                <div>
-                    <span class="text-slate-400 text-[11px] block">Transport Company:</span>
-                    <span class="text-slate-600 dark:text-slate-400">{{ pass_card.carrier_company }}</span>
-                </div>
-                {% endif %}
+                <div><span class="text-slate-400 text-[11px] block">Driver:</span> <strong class="text-slate-800 dark:text-slate-200">{{ pass_card.carrier_name }}</strong></div>
+                <div><span class="text-slate-400 text-[11px] block">Phone:</span> <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ pass_card.carrier_phone }}</span></div>
+                {% if pass_card.vehicle_plate %}<div><span class="text-slate-400 text-[11px] block">Plate:</span> <span class="font-mono font-bold bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-[11px]">{{ pass_card.vehicle_plate }}</span></div>{% endif %}
             </div>
         </div>
 
     </div>
 
-    <!-- Items Manifest (Cargo Cart Table) -->
-    <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+    <!-- Items Manifest (Clean Cart Table) -->
+    <div class="bg-white dark:bg-navy-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <span class="text-base">🛒</span>
-                <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">Items Manifest (Cart Line Items)</h3>
-                <span class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono font-bold text-xs">{{ pass_card.total_items_count }} total items</span>
+                <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">{{ T.cart_manifest_title }}</h3>
+                <span class="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 font-mono font-bold text-xs">{{ pass_card.total_items_count }} items</span>
             </div>
             {% if pass_card.is_green_card and pass_card.status in 'active partially_returned' %}
             <a href="{% url 'gatepass_return' pass_card.pk %}" class="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline">
-                Process Return Check-In →
+                {{ T.inward_return_btn }} →
             </a>
             {% endif %}
         </div>
 
         <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
+            <table class="w-full text-left {% if is_rtl %}text-right{% endif %} text-xs">
                 <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800">
                     <tr>
                         <th class="py-3 px-4 w-12">#</th>
-                        <th class="py-3 px-4">Item Description</th>
-                        <th class="py-3 px-4">Qty Out</th>
-                        <th class="py-3 px-4">Serial / Asset Tag</th>
-                        <th class="py-3 px-4">Condition Out</th>
+                        <th class="py-3 px-4">{{ T.item_desc }}</th>
+                        <th class="py-3 px-4">{{ T.item_qty }}</th>
+                        <th class="py-3 px-4">{{ T.item_serial }}</th>
+                        <th class="py-3 px-4">{{ T.item_cond_out }}</th>
                         {% if pass_card.is_green_card %}
-                        <th class="py-3 px-4">Qty Returned</th>
-                        <th class="py-3 px-4">Return Condition</th>
-                        <th class="py-3 px-4">Return Status</th>
+                        <th class="py-3 px-4">{{ T.returned_qty }}</th>
+                        <th class="py-3 px-4">{{ T.tbl_status }}</th>
                         {% endif %}
                     </tr>
                 </thead>
@@ -280,40 +228,26 @@
                             {{ item.serial_asset_tag|default:'—' }}
                         </td>
                         <td class="py-3 px-4">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase
-                                {% if item.condition_out == 'good' %}bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300
-                                {% elif item.condition_out == 'for_repair' %}bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300
-                                {% else %}bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300{% endif %}">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                                 {{ item.get_condition_out_display }}
                             </span>
                         </td>
                         {% if pass_card.is_green_card %}
                         <td class="py-3 px-4 font-mono font-bold">
-                            {% if item.is_returned %}
-                            <span class="text-teal-600 dark:text-teal-400">{{ item.quantity_returned }} / {{ item.quantity }}</span>
-                            {% else %}
-                            <span class="text-amber-600 dark:text-amber-400">{{ item.quantity_returned }} / {{ item.quantity }}</span>
-                            {% endif %}
-                        </td>
-                        <td class="py-3 px-4 text-slate-600 dark:text-slate-300">
-                            {{ item.get_condition_returned_display|default:'—' }}
+                            {{ item.quantity_returned }} / {{ item.quantity }}
                         </td>
                         <td class="py-3 px-4">
                             {% if item.is_returned %}
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 text-teal-800 dark:bg-teal-950/60 dark:text-teal-300">
-                                ✓ Returned
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 text-teal-800 dark:bg-teal-950/60 dark:text-teal-300">
+                                ✓ {{ T.status_returned }}
                             </span>
                             {% else %}
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 animate-pulse">
-                                ⏳ In-Transit
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 animate-pulse">
+                                ⏳ {{ T.status_active }}
                             </span>
                             {% endif %}
                         </td>
                         {% endif %}
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="8" class="py-6 text-center text-slate-400">No items registered in manifest.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -321,85 +255,41 @@
         </div>
     </div>
 
-    <!-- Cargo Inspection Photos (Exit & Inward Return) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        
-        <!-- Exit Photo -->
-        <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-4">
-            <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
-                <span>📸</span> Departure Cargo Photo
-            </h4>
-            {% if pass_card.exit_cargo_photo %}
-            <div class="h-48 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
-                <img src="{{ pass_card.exit_cargo_photo.url }}" alt="Exit cargo" class="w-full h-full object-cover">
-            </div>
-            {% else %}
-            <div class="h-32 rounded-xl bg-slate-50 dark:bg-slate-800 border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center text-xs text-slate-400">
-                No departure photo attached
-            </div>
-            {% endif %}
-        </div>
-
-        <!-- Return Photo -->
-        <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-4">
-            <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
-                <span>📸</span> Inward Return Inspection Photo
-            </h4>
-            {% if pass_card.return_cargo_photo %}
-            <div class="h-48 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
-                <img src="{{ pass_card.return_cargo_photo.url }}" alt="Return cargo" class="w-full h-full object-cover">
-            </div>
-            {% else %}
-            <div class="h-32 rounded-xl bg-slate-50 dark:bg-slate-800 border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center text-xs text-slate-400">
-                {% if pass_card.is_green_card and pass_card.status == 'fully_returned' %}
-                No return photo uploaded
-                {% elif pass_card.is_green_card %}
-                Pending inward return verification
-                {% else %}
-                N/A (Permanent exit)
-                {% endif %}
-            </div>
-            {% endif %}
-        </div>
-
-    </div>
-
-    <!-- Security Gate Audit & Authorization Footer Card -->
-    <div class="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-3">
-        <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white pb-2 border-b border-slate-100 dark:border-slate-800">
-            Security Gate Operations & Approvals
+    <!-- Security Approvals Card -->
+    <div class="bg-white dark:bg-navy-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-3">
+        <h4 class="text-xs font-black uppercase tracking-wider text-slate-400 pb-2 border-b border-slate-100 dark:border-slate-800">
+            Security Approvals & Gate Stamp
         </h4>
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
             <div>
-                <span class="text-slate-400 text-[11px] block">Manager Approval:</span>
+                <span class="text-slate-400 text-[11px] block">{{ T.authorized_by }}:</span>
                 <span class="font-bold text-slate-800 dark:text-slate-200">{{ pass_card.authorized_by_manager }}</span>
             </div>
             <div>
-                <span class="text-slate-400 text-[11px] block">Gate Dispatched By:</span>
-                <span class="font-bold text-emerald-600 dark:text-emerald-400">Officer {{ pass_card.dispatched_by.username }}</span>
-                <span class="text-[10px] text-slate-400 block">{{ pass_card.dispatched_at|date:"d M Y • H:i" }}</span>
+                <span class="text-slate-400 text-[11px] block">{{ T.dispatched_by }}:</span>
+                <span class="font-bold text-emerald-600 dark:text-emerald-400">{{ pass_card.dispatched_by.username }}</span>
+                <span class="text-[10px] text-slate-400 block">{{ pass_card.dispatched_at|date:"d M H:i" }}</span>
             </div>
             <div>
-                <span class="text-slate-400 text-[11px] block">Gate Location:</span>
-                <span class="font-semibold text-slate-800 dark:text-slate-200">{{ pass_card.gate_location }}</span>
+                <span class="text-slate-400 text-[11px] block">Gate Station:</span>
+                <span class="font-bold text-slate-800 dark:text-slate-200">
+                    {% if pass_card.gate %}
+                        {% if lang == 'ar' and pass_card.gate.name_ar %}{{ pass_card.gate.name_ar }}{% else %}{{ pass_card.gate.name }}{% endif %}
+                    {% else %}
+                        {{ pass_card.gate_location }}
+                    {% endif %}
+                </span>
             </div>
             <div>
-                <span class="text-slate-400 text-[11px] block">Inward Receiving Officer:</span>
+                <span class="text-slate-400 text-[11px] block">Return Receiving Officer:</span>
                 {% if pass_card.received_by %}
-                <span class="font-bold text-teal-600 dark:text-teal-400">Officer {{ pass_card.received_by.username }}</span>
-                <span class="text-[10px] text-slate-400 block">{{ pass_card.actual_return_date|date:"d M Y • H:i" }}</span>
+                <span class="font-bold text-teal-600 dark:text-teal-400">{{ pass_card.received_by.username }}</span>
+                <span class="text-[10px] text-slate-400 block">{{ pass_card.actual_return_date|date:"d M H:i" }}</span>
                 {% else %}
-                <span class="text-slate-400 italic">Pending return</span>
+                <span class="text-slate-400 italic block">Pending</span>
                 {% endif %}
             </div>
         </div>
-
-        {% if pass_card.security_notes %}
-        <div class="mt-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 text-xs">
-            <span class="font-bold text-slate-500 block mb-1">Gate Notes:</span>
-            <p class="text-slate-700 dark:text-slate-300 font-mono text-[11px] whitespace-pre-line">{{ pass_card.security_notes }}</p>
-        </div>
-        {% endif %}
     </div>
 
 </div>

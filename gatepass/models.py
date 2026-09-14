@@ -75,7 +75,8 @@ class GatePass(models.Model):
     dispatched_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='passes_dispatched')
     created_at = models.DateTimeField(auto_now_add=True)
     dispatched_at = models.DateTimeField(default=timezone.now)
-    gate_location = models.CharField(max_length=50, default='Loading Dock Gate')
+    gate = models.ForeignKey('core.SecurityGate', on_delete=models.SET_NULL, null=True, blank=True, related_name='gate_passes')
+    gate_location = models.CharField(max_length=100, default='Loading Dock Gate')
     exit_cargo_photo = models.ImageField(upload_to='gatepass_cargo_exit/', blank=True, null=True)
 
     # 7. Timestamps & Return Flow (Green Card)
