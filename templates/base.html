@@ -96,11 +96,11 @@
                     {% if user.is_authenticated %}
                     <!-- Facility Picker Pill Dropdown -->
                     <div class="relative dropdown-container">
-                        <button onclick="toggleDropdown('propDropdownMenu')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700/80 border border-slate-700 text-xs font-bold text-slate-200 transition max-w-[120px] sm:max-w-[150px]" title="Active Property">
+                        <button onclick="toggleDropdown('propDropdownMenu')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700/80 border border-slate-700 text-xs font-bold text-slate-200 transition max-w-[130px] sm:max-w-[170px]" title="Active Property">
                             <span class="text-indigo-400 text-xs">🏢</span>
                             <span class="truncate text-[11px]">
                                 {% if is_global_property_mode %}
-                                    {{ T.global_hq_mode }}
+                                    {% if is_cluster_director %}{{ T.cluster_all_mode }}{% else %}{{ T.global_hq_mode }}{% endif %}
                                 {% elif current_property %}
                                     {% if lang == 'ar' and current_property.name_ar %}{{ current_property.name_ar }}{% else %}{{ current_property.name }}{% endif %}
                                 {% else %}
@@ -112,11 +112,11 @@
                         <div id="propDropdownMenu" class="dropdown-menu absolute {% if is_rtl %}right-0{% else %}left-0{% endif %} mt-1.5 w-72 bg-navy-900 border border-slate-700 rounded-2xl shadow-2xl py-2 hidden z-50">
                             <div class="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800 flex items-center justify-between">
                                 <span>{{ T.property_switcher }}</span>
-                                <span class="font-mono text-[9px] text-indigo-400">HQ Mode</span>
+                                <span class="font-mono text-[9px] text-indigo-400">{% if is_cluster_director %}{{ T.cluster_badge }} ({{ cluster_count }}){% else %}HQ Mode{% endif %}</span>
                             </div>
                             <a href="{% url 'property_switch' 'ALL' %}" class="flex items-center justify-between px-3 py-2 text-xs hover:bg-slate-800 transition {% if is_global_property_mode %}text-indigo-400 font-bold bg-slate-800/60{% else %}text-slate-300{% endif %}">
-                                <span class="flex items-center gap-2"><span>🌐</span> {{ T.global_hq_mode }}</span>
-                                <span class="font-mono text-[10px] text-slate-400">ALL</span>
+                                <span class="flex items-center gap-2"><span>🌐</span> {% if is_cluster_director %}{{ T.cluster_all_mode }}{% else %}{{ T.global_hq_mode }}{% endif %}</span>
+                                <span class="font-mono text-[10px] text-slate-400">ALL ({{ cluster_count }})</span>
                             </a>
                             <div class="border-t border-slate-800/60 my-1"></div>
                             {% for p in all_properties %}
@@ -140,6 +140,12 @@
                 {% if user.is_authenticated %}
                 <!-- Center: Navigation Tabs (Concise, Clean, High-Contrast) -->
                 <nav class="hidden lg:flex items-center gap-1 text-xs font-bold shrink-0">
+                    {% if is_saas_owner %}
+                    <a href="{% url 'super_admin_dashboard' %}" class="px-2.5 py-1.5 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap {% if 'super-admin' in request.path %}bg-indigo-600 text-white shadow-sm{% else %}text-indigo-300 hover:bg-indigo-950/60 hover:text-white border border-indigo-700/40{% endif %}">
+                        <span>👑</span> <span>{{ T.saas_vendor_hub }}</span>
+                    </a>
+                    {% endif %}
+
                     <a href="{% url 'dashboard' %}" class="px-2.5 py-1.5 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap {% if request.resolver_match.url_name == 'dashboard' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
                         <span>📊</span> <span>{{ T.nav_dashboard }}</span>
                     </a>
@@ -158,14 +164,14 @@
                         <span>🚧</span> <span>{{ T.nav_gates }}</span>
                     </a>
 
-                    {% if user.is_superuser or user.role == 'director' or user.role == 'supervisor' %}
+                    {% if is_admin_user %}
                     <!-- Admin & Audit Dropdown Pill -->
                     <div class="relative dropdown-container">
                         <button onclick="toggleDropdown('adminNavMenu')" class="px-2.5 py-1.5 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap {% if 'super-admin' in request.path or request.resolver_match.url_name == 'audit_log' %}bg-indigo-600 text-white shadow-sm{% else %}text-indigo-300 hover:bg-indigo-950/60 border border-indigo-800/40{% endif %}">
                             <span>👑</span> <span>{{ T.nav_admin }}</span> <span class="text-[9px] text-indigo-400">▼</span>
                         </button>
                         <div id="adminNavMenu" class="dropdown-menu absolute {% if is_rtl %}right-0{% else %}left-0{% endif %} mt-1.5 w-52 bg-navy-900 border border-slate-700 rounded-2xl shadow-2xl py-2 hidden z-50 text-xs">
-                            {% if user.is_superuser or user.role == 'director' %}
+                            {% if is_admin_user %}
                             <a href="{% url 'super_admin_dashboard' %}" class="flex items-center gap-2 px-3.5 py-2 hover:bg-slate-800 text-indigo-300 font-bold transition">
                                 <span>👑</span> {{ T.super_admin_hub }}
                             </a>
@@ -184,6 +190,13 @@
                 <!-- Right: Duty Station Pill, Language Toggle, Dark Mode, Profile Dropdown -->
                 <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
                     
+                    {% if is_saas_owner %}
+                    <!-- SaaS Platform Owner Pill -->
+                    <a href="{% url 'super_admin_dashboard' %}" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600/30 to-purple-600/30 text-indigo-300 border border-indigo-500/40 text-xs font-bold transition hover:border-indigo-400 shadow-sm" title="SaaS Platform Owner & Commercial Billing Hub">
+                        <span class="text-xs">👑</span>
+                        <span class="text-[11px] font-extrabold tracking-tight">{{ T.saas_badge }}</span>
+                    </a>
+                    {% else %}
                     <!-- Duty Gate Station Selector Pill -->
                     <div class="relative dropdown-container hidden xl:block">
                         <button onclick="toggleDropdown('gateDropdownMenu')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-xs font-bold text-slate-200 transition max-w-[120px]" title="Active Duty Gate Station">
@@ -214,6 +227,7 @@
                             </div>
                         </div>
                     </div>
+                    {% endif %}
 
                     <!-- Language Switcher Button (1-Click EN / عربي) -->
                     <a href="{% url 'set_language' %}?lang={{ T.switch_lang_target }}" class="px-2 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition flex items-center gap-1 shrink-0" title="Switch Language">
@@ -244,7 +258,7 @@
                                 {% if user.badge_number %}<div class="text-[10px] text-slate-400 font-mono mt-1">Badge: {{ user.badge_number }}</div>{% endif %}
                                 {% if current_gate %}<div class="text-[10px] text-slate-400 mt-0.5">Duty: 📍 {% if lang == 'ar' and current_gate.name_ar %}{{ current_gate.name_ar }}{% else %}{{ current_gate.name }}{% endif %}</div>{% endif %}
                             </div>
-                            {% if user.is_superuser or user.role == 'director' %}
+                            {% if is_admin_user %}
                             <a href="{% url 'super_admin_dashboard' %}" class="flex items-center gap-2 px-4 py-2 hover:bg-slate-800 text-indigo-300 font-bold transition">
                                 <span>👑</span> {{ T.super_admin_hub }}
                             </a>
@@ -298,12 +312,12 @@
                 <a href="{% url 'gates_list' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-amber-400 hover:bg-slate-800">
                     <span>🚧</span> {{ T.nav_gates }}
                 </a>
-                {% if user.is_superuser or user.role == 'director' %}
+                {% if is_admin_user %}
                 <a href="{% url 'super_admin_dashboard' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-indigo-400 hover:bg-slate-800">
-                    <span>👑</span> {{ T.super_admin_hub }}
+                    <span>👑</span> {{ T.saas_vendor_hub }}
                 </a>
                 {% endif %}
-                {% if user.is_superuser or user.role in 'director,supervisor' %}
+                {% if is_admin_user %}
                 <a href="{% url 'audit_log' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-400 hover:bg-slate-800">
                     <span>🔒</span> {{ T.shift_audit }}
                 </a>

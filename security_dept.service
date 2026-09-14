@@ -4,7 +4,6 @@ After=network.target
 
 [Service]
 Type=simple
-User=tserver
 WorkingDirectory=/home/tserver/security_dept
 ExecStart=/home/tserver/security_dept/venv/bin/gunicorn config.wsgi:application -c /home/tserver/security_dept/gunicorn.conf.py
 Restart=always

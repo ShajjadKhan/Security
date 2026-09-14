@@ -6,13 +6,19 @@ from django.db.models import Q
 from .models import Visitor, DepartmentHost
 from core.models import Property, SecurityGate, SecurityAuditLog
 
+def accessible_properties_for(user):
+    if hasattr(user, 'get_accessible_properties'):
+        return user.get_accessible_properties()
+    return Property.objects.none()
+
 @login_required
 def visitor_list(request):
     status_filter = request.GET.get('status', 'all')
     cat_filter = request.GET.get('category', 'all')
     q = request.GET.get('q', '').strip()
     
-    queryset = Visitor.objects.select_related('host_department', 'checked_in_by').all()
+    accessible_properties = accessible_properties_for(request.user)
+    queryset = Visitor.objects.select_related('host_department', 'checked_in_by').filter(property__in=accessible_properties)
     current_prop_id = request.session.get('current_property_id')
     if current_prop_id and current_prop_id != 'ALL':
         queryset = queryset.filter(property_id=current_prop_id)
@@ -50,7 +56,8 @@ def visitor_list(request):
 
 @login_required
 def visitor_checkin(request):
-    departments = DepartmentHost.objects.all().order_by('name')
+    accessible_properties = accessible_properties_for(request.user)
+    departments = DepartmentHost.objects.filter(property__in=accessible_properties).order_by('name')
     
     if request.method == 'POST':
         full_name = request.POST.get('full_name', '').strip()
@@ -61,7 +68,7 @@ def visitor_checkin(request):
         id_number = request.POST.get('id_number', '').strip()
         
         dept_id = request.POST.get('host_department')
-        host_dept = DepartmentHost.objects.filter(pk=dept_id).first() if dept_id else None
+        host_dept = departments.filter(pk=dept_id).first() if dept_id else None
         host_person = request.POST.get('host_person', '').strip()
         purpose = request.POST.get('purpose', '').strip()
         
@@ -78,12 +85,14 @@ def visitor_checkin(request):
         current_prop_id = request.session.get('current_property_id')
         current_prop = None
         if current_prop_id and current_prop_id != 'ALL':
-            current_prop = Property.objects.filter(id=current_prop_id).first()
+            current_prop = accessible_properties.filter(id=current_prop_id).first()
         elif not current_prop_id:
-            current_prop = getattr(request.user, 'assigned_property', None) or Property.objects.filter(is_active=True).first()
+            current_prop = getattr(request.user, 'assigned_property', None) if getattr(request.user, 'assigned_property', None) in accessible_properties else accessible_properties.first()
+        elif current_prop_id == 'ALL':
+            current_prop = accessible_properties.first()
 
         current_gate_id = request.session.get('current_gate_id')
-        current_gate = SecurityGate.objects.filter(id=current_gate_id).first() if current_gate_id else getattr(request.user, 'assigned_gate', None)
+        current_gate = SecurityGate.objects.filter(property__in=accessible_properties, id=current_gate_id).first() if current_gate_id else getattr(request.user, 'assigned_gate', None)
 
         visitor = Visitor.objects.create(
             property=current_prop,
@@ -117,6 +126,8 @@ def visitor_checkin(request):
         # Log audit
         SecurityAuditLog.objects.create(
             user=request.user,
+            property=visitor.property,
+            gate=visitor.gate,
             action='CHECK_IN',
             reference=visitor.pass_number,
             details=f"Checked in {visitor.full_name} ({visitor.get_category_display()}) at {visitor.gate_location}. Host: {host_person or (host_dept.name if host_dept else 'General')}",
@@ -132,12 +143,12 @@ def visitor_checkin(request):
 
 @login_required
 def visitor_detail(request, pk):
-    visitor = get_object_or_404(Visitor.objects.select_related('host_department', 'checked_in_by', 'checked_out_by'), pk=pk)
+    visitor = get_object_or_404(Visitor.objects.filter(property__in=accessible_properties_for(request.user)).select_related('host_department', 'checked_in_by', 'checked_out_by'), pk=pk)
     return render(request, 'visitors/detail.html', {'visitor': visitor})
 
 @login_required
 def visitor_checkout(request, pk):
-    visitor = get_object_or_404(Visitor, pk=pk)
+    visitor = get_object_or_404(Visitor.objects.filter(property__in=accessible_properties_for(request.user)), pk=pk)
     if visitor.status != 'checked_out':
         visitor.status = 'checked_out'
         visitor.check_out_time = timezone.now()
@@ -150,6 +161,8 @@ def visitor_checkout(request, pk):
         
         SecurityAuditLog.objects.create(
             user=request.user,
+            property=visitor.property,
+            gate=visitor.gate,
             action='CHECK_OUT',
             reference=visitor.pass_number,
             details=f"Checked out {visitor.full_name}. Duration: {visitor.duration_formatted}. Badge returned.",
@@ -164,5 +177,5 @@ def visitor_checkout(request, pk):
 
 @login_required
 def visitor_pass_print(request, pk):
-    visitor = get_object_or_404(Visitor.objects.select_related('host_department', 'checked_in_by'), pk=pk)
+    visitor = get_object_or_404(Visitor.objects.filter(property__in=accessible_properties_for(request.user)).select_related('host_department', 'checked_in_by'), pk=pk)
     return render(request, 'visitors/pass_print.html', {'visitor': visitor})

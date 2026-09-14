@@ -27,8 +27,12 @@ def security_context(request):
     
     now = timezone.now()
 
-    # 2. Multi-Property Support
-    all_properties = Property.objects.filter(is_active=True).order_by('code')
+    # 2. Multi-Property & Cluster Support
+    if hasattr(request.user, 'get_accessible_properties'):
+        accessible_properties = request.user.get_accessible_properties()
+    else:
+        accessible_properties = Property.objects.filter(is_active=True).order_by('code')
+
     current_property_id = request.session.get('current_property_id')
     current_property = None
     is_global_property_mode = False
@@ -36,21 +40,25 @@ def security_context(request):
     if current_property_id == 'ALL':
         is_global_property_mode = True
     elif current_property_id:
-        current_property = all_properties.filter(id=current_property_id).first()
+        current_property = accessible_properties.filter(id=current_property_id).first()
     
     if not current_property and not is_global_property_mode:
-        if getattr(request.user, 'assigned_property', None):
+        if getattr(request.user, 'role', '') in ('cluster_director', 'saas_owner') or (request.user.is_superuser and not getattr(request.user, 'assigned_property', None)):
+            is_global_property_mode = True
+            request.session['current_property_id'] = 'ALL'
+        elif getattr(request.user, 'assigned_property', None) and request.user.assigned_property in accessible_properties:
             current_property = request.user.assigned_property
-        else:
-            current_property = all_properties.first()
-        if current_property:
             request.session['current_property_id'] = current_property.id
+        else:
+            current_property = accessible_properties.first()
+            if current_property:
+                request.session['current_property_id'] = current_property.id
 
     # 3. Gates
     if current_property:
         all_gates = current_property.gates.filter(is_active=True).order_by('code')
     else:
-        all_gates = SecurityGate.objects.filter(is_active=True).order_by('code')
+        all_gates = SecurityGate.objects.filter(property__in=accessible_properties, is_active=True).order_by('code')
     
     current_gate_id = request.session.get('current_gate_id')
     current_gate = None
@@ -65,7 +73,7 @@ def security_context(request):
         if current_gate:
             request.session['current_gate_id'] = current_gate.id
 
-    # 4. Filtered Telemetry by Current Property (or Global if ALL)
+    # 4. Filtered Telemetry by Current Property (or Cluster/Global if ALL)
     vis_qs = Visitor.objects.filter(status='active')
     lf_qs = LostFoundItem.objects.filter(status='unclaimed')
     gp_active_qs = GatePass.objects.filter(card_type='GREEN', status__in=['active', 'partially_returned'])
@@ -81,6 +89,11 @@ def security_context(request):
         lf_qs = lf_qs.filter(property=current_property)
         gp_active_qs = gp_active_qs.filter(property=current_property)
         gp_overdue_qs = gp_overdue_qs.filter(property=current_property)
+    else:
+        vis_qs = vis_qs.filter(property__in=accessible_properties)
+        lf_qs = lf_qs.filter(property__in=accessible_properties)
+        gp_active_qs = gp_active_qs.filter(property__in=accessible_properties)
+        gp_overdue_qs = gp_overdue_qs.filter(property__in=accessible_properties)
 
     active_visitors_count = vis_qs.count()
     unclaimed_lf_count = lf_qs.count()
@@ -94,17 +107,24 @@ def security_context(request):
     )
     if current_property:
         overstay_count = overstay_count.filter(property=current_property)
+    else:
+        overstay_count = overstay_count.filter(property__in=accessible_properties)
     overstay_count = overstay_count.count()
 
-    is_admin_user = (request.user.is_superuser or request.user.role in ('director', 'supervisor'))
+    is_saas_owner = getattr(request.user, 'is_saas_owner', False)
+    is_admin_user = (request.user.is_superuser or request.user.role in ('saas_owner', 'director', 'cluster_director', 'supervisor'))
+    is_cluster_director = getattr(request.user, 'is_cluster_director', False)
 
     return {
         'T': T,
         'lang': lang,
         'is_rtl': (lang == 'ar'),
-        'all_properties': all_properties,
+        'all_properties': accessible_properties,
         'current_property': current_property,
         'is_global_property_mode': is_global_property_mode,
+        'is_saas_owner': is_saas_owner,
+        'is_cluster_director': is_cluster_director,
+        'cluster_count': accessible_properties.count(),
         'all_gates': all_gates,
         'current_gate': current_gate,
         'active_visitors_count': active_visitors_count,

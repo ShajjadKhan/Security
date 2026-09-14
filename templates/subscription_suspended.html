@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Subscription Suspended • {{ T.app_title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto my-12 p-8 bg-white dark:bg-navy-900 rounded-3xl border border-rose-200 dark:border-rose-900/60 shadow-xl text-center space-y-6">
+    <div class="w-20 h-20 rounded-3xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 flex items-center justify-center text-4xl mx-auto shadow-inner">
+        🔒
+    </div>
+
+    <div>
+        <span class="px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-300 dark:border-rose-800 font-mono">
+            Subscription Suspended • حساب موقوف لعدم السداد
+        </span>
+        <h1 class="text-2xl font-black text-slate-900 dark:text-white mt-3">
+            Operational Workspace Temporarily Locked
+        </h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-lg mx-auto">
+            The subscription for <strong class="text-slate-800 dark:text-slate-200">{{ prop_name }}</strong> {% if prop_code %}[<span class="font-mono">{{ prop_code }}</span>]{% endif %} is currently suspended due to pending monthly subscription fees.
+        </p>
+    </div>
+
+    <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs text-left {% if is_rtl %}text-right{% endif %} space-y-2">
+        <div class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+            <span>ℹ️</span> <span>How to Restore Access / تعليمات إعادة التفعيل:</span>
+        </div>
+        <p class="text-slate-600 dark:text-slate-400">
+            Please contact your organization's finance or security director, or reach out directly to the Software Vendor / SaaS Platform Billing Department to settle outstanding dues and immediately restore barrier and gate pass controls.
+        </p>
+        <div class="pt-2 border-t border-slate-200 dark:border-slate-700/60 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-slate-500">
+            <span>SaaS Vendor Billing: finance@antigravity-saas.com</span>
+            <span>WhatsApp: +966 50 000 7000</span>
+        </div>
+    </div>
+
+    <div class="pt-4 flex items-center justify-center gap-3">
+        <a href="{% url 'logout' %}" class="px-5 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs shadow-md transition">
+            Log Out / تسجيل الخروج
+        </a>
+    </div>
+</div>
+{% endblock %}

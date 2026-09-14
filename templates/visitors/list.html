@@ -73,7 +73,15 @@
                             </span>
                         </td>
                         <td class="py-3 px-4">
-                            <div>{{ v.host_person|default:v.host_department.name|default:'General' }}</div>
+                            <div>
+                                {% if v.host_person %}
+                                    {{ v.host_person }}
+                                {% elif v.host_department %}
+                                    {{ v.host_department.name }}
+                                {% else %}
+                                    General
+                                {% endif %}
+                            </div>
                             <div class="text-[10px] text-slate-400 truncate max-w-xs">{{ v.purpose }}</div>
                         </td>
                         <td class="py-3 px-4">

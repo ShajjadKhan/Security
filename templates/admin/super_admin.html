@@ -1,118 +1,168 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ T.super_admin_title }} | {{ T.app_title }}{% endblock %}
+{% block title %}{{ T.saas_vendor_title }} | {{ T.app_title }}{% endblock %}
 
 {% block content %}
-<div class="space-y-6 pb-12">
+<div class="space-y-6 pb-16">
 
-    <!-- Top Executive Banner -->
-    <div class="bg-gradient-to-r from-navy-900 via-slate-900 to-indigo-950 rounded-3xl p-6 sm:p-8 text-white border border-slate-800 shadow-xl relative overflow-hidden">
-        <div class="absolute -top-12 -right-12 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -bottom-12 -left-12 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    <!-- Top Executive SaaS Vendor Banner -->
+    <div class="bg-gradient-to-r from-navy-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white border border-indigo-800/40 shadow-2xl relative overflow-hidden">
+        <div class="absolute -top-16 -right-16 w-80 h-80 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-16 -left-16 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div class="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
-                <div class="flex items-center gap-3 mb-2">
-                    <span class="px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 flex items-center gap-1.5">
-                        <span>👑</span> {{ T.super_admin_hub }}
+                <div class="flex items-center gap-3 mb-2.5 flex-wrap">
+                    <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-gradient-to-r from-indigo-500/30 to-purple-500/30 text-indigo-300 border border-indigo-400/40 flex items-center gap-1.5 shadow-sm">
+                        <span>👑</span> {{ T.saas_badge }}
                     </span>
-                    <span class="text-xs text-slate-400 font-mono">HQ Multi-Property Master Control</span>
+                    <span class="text-xs text-indigo-300/80 font-mono">B2B Security SaaS Platform Owner Hub</span>
                 </div>
                 <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white">
-                    {{ T.super_admin_title }}
+                    {{ T.saas_vendor_title }}
                 </h1>
-                <p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl font-medium">
-                    {{ T.super_admin_sub }}
+                <p class="text-xs sm:text-sm text-slate-300 mt-1.5 max-w-3xl font-medium leading-relaxed">
+                    {{ T.saas_vendor_sub }}
                 </p>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="flex flex-wrap items-center gap-2.5">
-                <a href="{% url 'property_switch' 'ALL' %}" class="px-4 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-2 {% if is_global_property_mode %}bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 border border-indigo-400{% else %}bg-slate-800/90 text-slate-200 hover:bg-slate-700 border border-slate-700{% endif %}">
-                    <span>🌐</span> {{ T.global_hq_mode }}
+            <!-- Global Action Buttons -->
+            <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+                <a href="{% url 'generate_monthly_invoices' %}" class="px-4 py-2.5 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-amber-300 hover:text-amber-200 text-xs font-bold border border-slate-700 shadow-md transition flex items-center gap-2" title="Generate current month subscription invoices for all active clients">
+                    <span>⚡</span> {{ T.generate_invoices_btn }}
                 </a>
-                <button onclick="openModal('createPropertyModal')" class="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-700/30 transition flex items-center gap-2">
-                    <span>🏢</span> {{ T.create_property_btn }}
-                </button>
-                <button onclick="openModal('createUserModal')" class="px-4 py-2.5 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold shadow-lg shadow-sky-700/30 transition flex items-center gap-2">
-                    <span>👮</span> {{ T.add_user_btn }}
+                <button onclick="openModal('createPropertyModal')" class="px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black shadow-lg shadow-emerald-700/30 transition flex items-center gap-2">
+                    <span>🏢</span> {{ T.onboard_client_btn }}
                 </button>
             </div>
         </div>
 
-        <!-- Portfolio Telemetry Counters Grid -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mt-6 pt-6 border-t border-slate-800/80">
-            <div class="bg-slate-800/50 rounded-2xl p-3 border border-slate-700/50">
-                <span class="text-[11px] text-slate-400 block font-semibold">Registered Properties</span>
-                <div class="flex items-baseline gap-1.5 mt-1">
-                    <span class="text-xl font-black text-indigo-400 font-mono">{{ active_properties }}</span>
-                    <span class="text-[11px] text-slate-500 font-mono">/ {{ total_properties }}</span>
+        <!-- SaaS Financial & Commercial Revenue Telemetry Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 mt-7 pt-6 border-t border-indigo-900/60">
+            
+            <!-- MRR Card -->
+            <div class="bg-indigo-950/50 backdrop-blur-sm rounded-2xl p-3.5 border border-indigo-800/50 shadow-sm hover:border-indigo-500/50 transition">
+                <div class="flex items-center justify-between text-[11px] text-indigo-300 font-semibold">
+                    <span>{{ T.mrr_title }}</span>
+                    <span>📈</span>
                 </div>
-            </div>
-
-            <div class="bg-slate-800/50 rounded-2xl p-3 border border-slate-700/50">
-                <span class="text-[11px] text-slate-400 block font-semibold">Perimeter Gates</span>
-                <div class="text-xl font-black text-emerald-400 font-mono mt-1">{{ total_gates }}</div>
-            </div>
-
-            <div class="bg-slate-800/50 rounded-2xl p-3 border border-slate-700/50">
-                <span class="text-[11px] text-slate-400 block font-semibold">Security Personnel</span>
-                <div class="flex items-baseline gap-1.5 mt-1">
-                    <span class="text-xl font-black text-sky-400 font-mono">{{ on_duty_users }}</span>
-                    <span class="text-[11px] text-slate-500 font-mono">on duty ({{ total_users }} total)</span>
+                <div class="flex items-baseline gap-1 mt-1.5">
+                    <span class="text-xl sm:text-2xl font-black text-emerald-400 font-mono tracking-tight">{{ total_mrr|floatformat:0 }}</span>
+                    <span class="text-[11px] font-bold text-emerald-500/90 font-mono">SAR/mo</span>
                 </div>
+                <span class="text-[10px] text-slate-400 block mt-1 truncate">{{ active_subscriptions }} paying properties</span>
             </div>
 
-            <div class="bg-slate-800/50 rounded-2xl p-3 border border-slate-700/50">
-                <span class="text-[11px] text-slate-400 block font-semibold">Active Visitors</span>
-                <div class="text-xl font-black text-amber-400 font-mono mt-1">{{ total_active_visitors }}</div>
-            </div>
-
-            <div class="bg-slate-800/50 rounded-2xl p-3 border border-slate-700/50">
-                <span class="text-[11px] text-slate-400 block font-semibold">Green Cards Out</span>
-                <div class="text-xl font-black text-emerald-400 font-mono mt-1">{{ total_active_greencards }}</div>
-            </div>
-
-            <div class="bg-slate-800/50 rounded-2xl p-3 border border-slate-700/50 {% if total_overdue_greencards > 0 %}border-rose-700 bg-rose-950/40{% endif %}">
-                <span class="text-[11px] {% if total_overdue_greencards > 0 %}text-rose-300 font-bold{% else %}text-slate-400{% endif %} block font-semibold">Overdue Alert</span>
-                <div class="text-xl font-black {% if total_overdue_greencards > 0 %}text-rose-400 animate-pulse{% else %}text-slate-400{% endif %} font-mono mt-1">
-                    {{ total_overdue_greencards }}
+            <!-- Total Collected -->
+            <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-3.5 border border-slate-700/50 shadow-sm hover:border-slate-600 transition">
+                <div class="flex items-center justify-between text-[11px] text-slate-300 font-semibold">
+                    <span>{{ T.total_collected_title }}</span>
+                    <span>💰</span>
                 </div>
+                <div class="flex items-baseline gap-1 mt-1.5">
+                    <span class="text-xl sm:text-2xl font-black text-white font-mono tracking-tight">{{ total_collected|floatformat:0 }}</span>
+                    <span class="text-[11px] font-bold text-slate-400 font-mono">SAR</span>
+                </div>
+                <span class="text-[10px] text-slate-400 block mt-1 truncate">Invoices paid to date</span>
             </div>
+
+            <!-- Overdue / Due Dues -->
+            <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-3.5 border {% if total_due > 0 %}border-amber-500/50 bg-amber-950/30{% else %}border-slate-700/50{% endif %} shadow-sm transition">
+                <div class="flex items-center justify-between text-[11px] {% if total_due > 0 %}text-amber-300 font-bold{% else %}text-slate-300 font-semibold{% endif %}">
+                    <span>{{ T.total_due_title }}</span>
+                    <span>⚠️</span>
+                </div>
+                <div class="flex items-baseline gap-1 mt-1.5">
+                    <span class="text-xl sm:text-2xl font-black {% if total_due > 0 %}text-amber-400{% else %}text-slate-400{% endif %} font-mono tracking-tight">{{ total_due|floatformat:0 }}</span>
+                    <span class="text-[11px] font-bold {% if total_due > 0 %}text-amber-400{% else %}text-slate-500{% endif %} font-mono">SAR</span>
+                </div>
+                <span class="text-[10px] {% if total_due > 0 %}text-amber-300/80{% else %}text-slate-400{% endif %} block mt-1 truncate">
+                    {% if past_due_subscriptions > 0 %}{{ past_due_subscriptions }} clients past due{% else %}All accounts in good standing{% endif %}
+                </span>
+            </div>
+
+            <!-- Active Subscriptions -->
+            <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-3.5 border border-slate-700/50 shadow-sm">
+                <span class="text-[11px] text-slate-300 block font-semibold">{{ T.active_subscriptions_title }}</span>
+                <div class="flex items-baseline gap-1.5 mt-1.5">
+                    <span class="text-xl sm:text-2xl font-black text-indigo-400 font-mono">{{ active_subscriptions }}</span>
+                    <span class="text-[11px] text-slate-400 font-mono">/ {{ total_properties }}</span>
+                </div>
+                <span class="text-[10px] text-slate-400 block mt-1">
+                    {% if suspended_subscriptions > 0 %}<strong class="text-rose-400">{{ suspended_subscriptions }} suspended</strong>{% else %}0 locked{% endif %}
+                </span>
+            </div>
+
+            <!-- Hosted Users (Personnel) -->
+            <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-3.5 border border-slate-700/50 shadow-sm">
+                <span class="text-[11px] text-slate-300 block font-semibold">{{ T.total_hosted_users_title }}</span>
+                <div class="flex items-baseline gap-1.5 mt-1.5">
+                    <span class="text-xl sm:text-2xl font-black text-sky-400 font-mono">{{ total_users }}</span>
+                    <span class="text-[11px] text-slate-400 font-mono">users</span>
+                </div>
+                <span class="text-[10px] text-slate-400 block mt-1">{{ on_duty_users }} currently on duty</span>
+            </div>
+
+            <!-- Security Footprint (Gates & Passes) -->
+            <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-3.5 border border-slate-700/50 shadow-sm">
+                <span class="text-[11px] text-slate-300 block font-semibold">Security Gates Managed</span>
+                <div class="flex items-baseline gap-1.5 mt-1.5">
+                    <span class="text-xl sm:text-2xl font-black text-emerald-400 font-mono">{{ total_gates }}</span>
+                    <span class="text-[11px] text-slate-400 font-mono">checkpoints</span>
+                </div>
+                <span class="text-[10px] text-slate-400 block mt-1">{{ total_active_visitors }} visitors on-premises</span>
+            </div>
+
         </div>
     </div>
 
-    <!-- Navigation Tabs -->
-    <div class="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2 text-xs font-bold">
-        <button onclick="switchTab('tab-properties')" id="btn-tab-properties" class="tab-btn active-tab px-4 py-2 rounded-xl transition flex items-center gap-2 bg-indigo-600 text-white shadow-sm">
-            <span>🏢</span> {{ T.properties_portfolio }} ({{ total_properties }})
+    <!-- Navigation Tabs Bar -->
+    <div class="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2 text-xs font-bold overflow-x-auto">
+        <button onclick="switchTab('tab-properties')" id="btn-tab-properties" class="tab-btn active-tab px-4 py-2.5 rounded-xl transition flex items-center gap-2 bg-indigo-600 text-white shadow-sm shrink-0">
+            <span>🏢</span> {{ T.tab_clients }} ({{ total_properties }})
         </button>
-        <button onclick="switchTab('tab-users')" id="btn-tab-users" class="tab-btn px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition flex items-center gap-2">
-            <span>👮</span> {{ T.guards_personnel }} ({{ total_users }})
+        <button onclick="switchTab('tab-billing')" id="btn-tab-billing" class="tab-btn px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition flex items-center gap-2 shrink-0">
+            <span>💳</span> {{ T.tab_billing }} ({{ invoices_list|length }})
         </button>
-        <button onclick="switchTab('tab-audit')" id="btn-tab-audit" class="tab-btn px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition flex items-center gap-2">
-            <span>🛡️</span> {{ T.super_admin_audit }} ({{ admin_audits|length }})
+        <button onclick="switchTab('tab-users')" id="btn-tab-users" class="tab-btn px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition flex items-center gap-2 shrink-0">
+            <span>👤</span> {{ T.tab_first_admins }} ({{ users_list|length }})
+        </button>
+        <button onclick="switchTab('tab-audit')" id="btn-tab-audit" class="tab-btn px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition flex items-center gap-2 shrink-0">
+            <span>🛡️</span> {{ T.tab_saas_audit }} ({{ admin_audits|length }})
         </button>
     </div>
 
-    <!-- TAB 1: PROPERTIES PORTFOLIO -->
+    <!-- TAB 1: CLIENT PROPERTIES & SUBSCRIPTIONS -->
     <div id="tab-properties" class="tab-content space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for item in properties_data %}
-            <div class="bg-white dark:bg-navy-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition flex flex-col justify-between relative overflow-hidden group">
-                {% if not item.property.is_active %}
-                <div class="absolute top-0 right-0 left-0 bg-rose-500/20 text-rose-600 dark:text-rose-400 text-[10px] font-bold py-0.5 text-center uppercase tracking-wider border-b border-rose-500/30">
-                    {{ T.property_inactive }}
+            <div class="bg-white dark:bg-navy-900 rounded-3xl p-6 border {% if item.subscription_status == 'suspended' %}border-rose-300 dark:border-rose-900/60 bg-rose-50/20 dark:bg-rose-950/10{% elif item.subscription_status == 'past_due' %}border-amber-300 dark:border-amber-900/60{% else %}border-slate-200 dark:border-slate-800{% endif %} shadow-sm hover:shadow-md transition flex flex-col justify-between relative overflow-hidden group">
+                
+                <!-- Status Bar Ribbon -->
+                {% if item.subscription_status == 'suspended' %}
+                <div class="absolute top-0 right-0 left-0 bg-rose-600 text-white text-[10px] font-black py-0.5 text-center uppercase tracking-wider">
+                    🔒 {{ T.status_suspended_sub }} — Operational Access Locked
+                </div>
+                {% elif item.subscription_status == 'past_due' %}
+                <div class="absolute top-0 right-0 left-0 bg-amber-500 text-slate-900 text-[10px] font-black py-0.5 text-center uppercase tracking-wider">
+                    ⚠️ {{ T.status_past_due_sub }} — Unpaid Invoice
                 </div>
                 {% endif %}
 
-                <div>
-                    <!-- Header -->
-                    <div class="flex items-start justify-between gap-3 mt-1">
+                <div class="{% if item.subscription_status == 'suspended' or item.subscription_status == 'past_due' %}mt-2.5{% endif %}">
+                    <!-- Card Top Header -->
+                    <div class="flex items-start justify-between gap-3">
                         <div>
-                            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-700">
-                                {{ item.property.code }}
-                            </span>
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
+                                    {{ item.property.code }}
+                                </span>
+                                <!-- Plan Tier Chip -->
+                                <span class="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider {% if item.property.plan_tier == 'enterprise' %}bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30{% elif item.property.plan_tier == 'professional' %}bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30{% else %}bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300{% endif %}">
+                                    ⭐ {{ item.plan_tier_display }}
+                                </span>
+                            </div>
+
                             <h3 class="text-base font-extrabold text-slate-900 dark:text-white mt-1.5 leading-snug">
                                 {% if lang == 'ar' and item.property.name_ar %}
                                     {{ item.property.name_ar }}
@@ -123,31 +173,60 @@
                                 {% endif %}
                             </h3>
                         </div>
-                        <span class="px-2.5 py-1 rounded-xl text-[11px] font-bold shrink-0 {% if item.property.is_active %}bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30{% else %}bg-slate-200 dark:bg-slate-800 text-slate-500{% endif %}">
-                            {{ item.property.get_property_type_display|truncatechars:18 }}
+
+                        <!-- Status Badge -->
+                        <span class="px-2.5 py-1 rounded-xl text-[10px] font-black shrink-0 uppercase tracking-wider {% if item.subscription_status == 'active' %}bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30{% elif item.subscription_status == 'trial' %}bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30{% elif item.subscription_status == 'past_due' %}bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30{% else %}bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30{% endif %}">
+                            {{ item.subscription_status_display }}
                         </span>
                     </div>
 
-                    <!-- Details -->
-                    <div class="mt-3 space-y-1 text-xs text-slate-600 dark:text-slate-400">
-                        <div class="flex items-center gap-1.5">
-                            <span>📍</span> <span>{{ item.property.city }}{% if item.property.address %}, {{ item.property.address }}{% endif %}</span>
+                    <!-- Commercial & Subscription Pricing Banner -->
+                    <div class="mt-3.5 p-3 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider block">{{ T.monthly_fee }}</span>
+                            <div class="flex items-baseline gap-1 mt-0.5">
+                                <span class="text-lg font-black text-indigo-700 dark:text-indigo-300 font-mono">{{ item.monthly_fee|floatformat:0 }}</span>
+                                <span class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 font-mono">SAR / mo</span>
+                            </div>
                         </div>
-                        {% if item.property.manager_name %}
+                        <div class="text-right">
+                            <span class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 block">{{ T.total_collected_title }}</span>
+                            <span class="text-xs font-black text-emerald-600 dark:text-emerald-400 font-mono">{{ item.total_collected|floatformat:0 }} SAR</span>
+                        </div>
+                    </div>
+
+                    <!-- Buyer & First Admin Information -->
+                    <div class="mt-3.5 space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
+                        <div class="flex items-center gap-1.5 truncate">
+                            <span>🏢</span> <span class="font-bold text-slate-800 dark:text-slate-200 truncate">{{ item.buyer_company|default:item.property.name }}</span>
+                            <span class="text-[11px] text-slate-400">({{ item.property.city }})</span>
+                        </div>
+                        
                         <div class="flex items-center gap-1.5">
-                            <span>👤</span> <span>Director: <strong class="text-slate-800 dark:text-slate-200">{{ item.property.manager_name }}</strong></span>
+                            <span>👤</span> <span class="text-[11px] text-slate-500">{{ T.buyer_name }}:</span>
+                            <span class="font-bold text-slate-800 dark:text-slate-200">{{ item.buyer_name|default:"—" }}</span>
+                        </div>
+
+                        {% if item.first_admin %}
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span>🔑</span> <span class="text-[11px] text-slate-500">{{ T.first_admin_account }}:</span>
+                            <span class="font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.5 rounded text-[11px]">
+                                @{{ item.first_admin.username }}
+                            </span>
+                            <span class="text-[10px] text-slate-400">({{ item.first_admin.get_full_name }})</span>
                         </div>
                         {% endif %}
-                        {% if item.property.contact_phone or item.property.contact_email %}
-                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-mono text-slate-500 pt-1">
-                            {% if item.property.contact_phone %}<span class="inline-flex items-center gap-1 shrink-0">📞 {{ item.property.contact_phone }}</span>{% endif %}
-                            {% if item.property.contact_email %}<span class="inline-flex items-center gap-1 truncate max-w-[210px]" title="{{ item.property.contact_email }}">✉️ {{ item.property.contact_email }}</span>{% endif %}
+
+                        {% if item.buyer_phone or item.buyer_email %}
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-mono text-slate-500 pt-0.5">
+                            {% if item.buyer_phone %}<span class="inline-flex items-center gap-1 shrink-0">📞 {{ item.buyer_phone }}</span>{% endif %}
+                            {% if item.buyer_email %}<span class="inline-flex items-center gap-1 truncate max-w-[210px]" title="{{ item.buyer_email }}">✉️ {{ item.buyer_email }}</span>{% endif %}
                         </div>
                         {% endif %}
                     </div>
 
-                    <!-- Telemetry Stats Grid -->
-                    <div class="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/80 text-center">
+                    <!-- Footprint Telemetry (Gates, Personnel, Passes) -->
+                    <div class="grid grid-cols-4 gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 text-center">
                         <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
                             <span class="text-[10px] text-slate-400 block font-semibold">Gates</span>
                             <span class="text-sm font-black text-slate-800 dark:text-slate-100 font-mono">{{ item.gates_count }}</span>
@@ -167,32 +246,133 @@
                     </div>
                 </div>
 
-                <!-- Footer Actions -->
-                <div class="flex items-center gap-2 mt-5 pt-3 border-t border-slate-100 dark:border-slate-800/80">
-                    <a href="{% url 'property_switch' item.property.id %}" class="flex-1 py-2 rounded-xl text-xs font-bold text-center transition flex items-center justify-center gap-1.5 {% if current_property and current_property.id == item.property.id %}bg-emerald-600 text-white shadow-sm{% else %}bg-slate-100 dark:bg-slate-800 hover:bg-emerald-600 hover:text-white text-slate-700 dark:text-slate-300{% endif %}">
-                        <span>🏢</span> {{ T.switch_to_property }}
+                <!-- Footer Action Buttons (SaaS Vendor Toolset) -->
+                <div class="space-y-2 mt-5 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+                    
+                    <div class="flex items-center gap-2">
+                        <!-- Collect Fee Modal Trigger -->
+                        <button onclick="openCollectFeeModal({{ item.property.id }}, '{{ item.property.name|escapejs }}', '{{ item.property.code|escapejs }}', '{{ item.monthly_fee }}')" class="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold text-center transition flex items-center justify-center gap-1.5 shadow-sm shadow-emerald-700/20">
+                            <span>💳</span> {{ T.collect_fee_btn }}
+                        </button>
+
+                        <!-- Suspend / Lock Access Toggle -->
+                        <a href="{% url 'property_suspend_toggle' item.property.id %}" class="px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 {% if item.subscription_status == 'suspended' %}bg-emerald-600 hover:bg-emerald-500 text-white{% else %}bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/40{% endif %}" title="{% if item.subscription_status == 'suspended' %}{{ T.reactivate_client_btn }}{% else %}{{ T.suspend_client_btn }}{% endif %}">
+                            {% if item.subscription_status == 'suspended' %}
+                            <span>🔓</span> {{ T.reactivate_client_btn }}
+                            {% else %}
+                            <span>🔒</span> {{ T.suspend_client_btn }}
+                            {% endif %}
+                        </a>
+
+                        <!-- Edit Contract & Property Metadata -->
+                        <button onclick="openEditPropertyModal({{ item.property.id }}, '{{ item.property.name|escapejs }}', '{{ item.property.name_ar|escapejs }}', '{{ item.property.code|escapejs }}', '{{ item.property.property_type|escapejs }}', '{{ item.property.city|escapejs }}', '{{ item.property.address|escapejs }}', '{{ item.property.contact_email|escapejs }}', '{{ item.property.contact_phone|escapejs }}', '{{ item.property.manager_name|escapejs }}', '{{ item.property.plan_tier }}', '{{ item.monthly_fee }}', '{{ item.property.billing_cycle }}', '{{ item.subscription_status }}', '{{ item.buyer_company|escapejs }}', '{{ item.buyer_name|escapejs }}', '{{ item.buyer_phone|escapejs }}', '{{ item.buyer_email|escapejs }}', '{{ item.property.subscription_notes|escapejs }}', {{ item.property.is_active|yesno:'true,false' }})" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition" title="{{ T.edit_property }}">
+                            ✏️
+                        </button>
+                    </div>
+
+                    <!-- Client Portal Quick Access -->
+                    <a href="{% url 'property_switch' item.property.id %}" class="w-full py-1.5 rounded-xl text-[11px] font-bold text-center transition flex items-center justify-center gap-1.5 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+                        <span>🏢</span> {{ T.access_client_portal }}
                     </a>
 
-                    <button onclick="openEditPropertyModal({{ item.property.id }}, '{{ item.property.name|escapejs }}', '{{ item.property.name_ar|escapejs }}', '{{ item.property.code|escapejs }}', '{{ item.property.property_type|escapejs }}', '{{ item.property.city|escapejs }}', '{{ item.property.address|escapejs }}', '{{ item.property.contact_email|escapejs }}', '{{ item.property.contact_phone|escapejs }}', '{{ item.property.manager_name|escapejs }}', {{ item.property.is_active|yesno:'true,false' }})" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold transition" title="{{ T.edit_property }}">
-                        ✏️
-                    </button>
-
-                    <a href="{% url 'property_toggle' item.property.id %}" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-rose-900/40 hover:text-rose-400 text-slate-600 dark:text-slate-400 text-xs font-bold transition" title="{% if item.property.is_active %}{{ T.deactivate_property }}{% else %}{{ T.activate_property }}{% endif %}">
-                        {% if item.property.is_active %}⏸️{% else %}▶️{% endif %}
-                    </a>
                 </div>
             </div>
             {% endfor %}
         </div>
     </div>
 
-    <!-- TAB 2: SECURITY PERSONNEL & GUARD ROSTER -->
+    <!-- TAB 2: MONTHLY FEE LEDGER & INVOICES -->
+    <div id="tab-billing" class="tab-content hidden space-y-6">
+        <div class="bg-white dark:bg-navy-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h3 class="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>💳</span> {{ T.tab_billing }}
+                    </h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Recurring subscription fee ledger, generated monthly invoices, and payment receipts.</p>
+                </div>
+                <a href="{% url 'generate_monthly_invoices' %}" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-900 text-xs font-black shadow-md transition flex items-center gap-1.5 self-start sm:self-auto">
+                    <span>⚡</span> {{ T.generate_invoices_btn }}
+                </a>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs text-left {% if is_rtl %}text-right{% endif %}">
+                    <thead class="bg-slate-50 dark:bg-slate-800/60 text-slate-500 uppercase text-[10px] font-bold tracking-wider">
+                        <tr>
+                            <th class="px-4 py-3">{{ T.invoice_num }}</th>
+                            <th class="px-4 py-3">Client Property</th>
+                            <th class="px-4 py-3">{{ T.billing_period }}</th>
+                            <th class="px-4 py-3">Amount</th>
+                            <th class="px-4 py-3">Due Date</th>
+                            <th class="px-4 py-3">Status</th>
+                            <th class="px-4 py-3">{{ T.payment_method }}</th>
+                            <th class="px-4 py-3">{{ T.payment_ref }}</th>
+                            <th class="px-4 py-3 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800/80 font-medium text-slate-700 dark:text-slate-300">
+                        {% for inv in invoices_list %}
+                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition">
+                            <td class="px-4 py-3.5 font-mono font-bold text-slate-900 dark:text-white">
+                                {{ inv.invoice_number }}
+                            </td>
+                            <td class="px-4 py-3.5">
+                                <div class="font-bold text-slate-900 dark:text-white">
+                                    {% if lang == 'ar' and inv.property.name_ar %}{{ inv.property.name_ar }}{% else %}{{ inv.property.name }}{% endif %}
+                                </div>
+                                <span class="font-mono text-[10px] text-indigo-500 dark:text-indigo-400 font-bold">[{{ inv.property.code }}]</span>
+                            </td>
+                            <td class="px-4 py-3.5 font-semibold text-slate-700 dark:text-slate-300">
+                                {{ inv.billing_period }}
+                            </td>
+                            <td class="px-4 py-3.5 font-mono font-black text-slate-900 dark:text-white">
+                                {{ inv.amount|floatformat:2 }} SAR
+                            </td>
+                            <td class="px-4 py-3.5 font-mono text-[11px] text-slate-500">
+                                {{ inv.due_date|date:"Y-m-d" }}
+                            </td>
+                            <td class="px-4 py-3.5">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider {% if inv.status == 'paid' %}bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30{% elif inv.status == 'overdue' %}bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 animate-pulse{% else %}bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30{% endif %}">
+                                    {{ inv.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3.5 capitalize text-[11px]">
+                                {{ inv.get_payment_method_display|default:"—" }}
+                            </td>
+                            <td class="px-4 py-3.5 font-mono text-[11px] text-slate-600 dark:text-slate-400">
+                                {{ inv.payment_reference|default:"—" }}
+                            </td>
+                            <td class="px-4 py-3.5 text-center">
+                                {% if inv.status != 'paid' %}
+                                <button onclick="openCollectFeeModal({{ inv.property.id }}, '{{ inv.property.name|escapejs }}', '{{ inv.property.code|escapejs }}', '{{ inv.amount }}', '{{ inv.billing_period|escapejs }}')" class="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition">
+                                    💳 {{ T.collect_fee_btn }}
+                                </button>
+                                {% else %}
+                                <span class="text-emerald-500 text-xs font-bold">✓ Settled</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center py-10 text-slate-400 italic">
+                                No invoices found. Click "Generate Monthly Invoices" to issue monthly fee billings.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: CLIENT ADMINS & STAFF -->
     <div id="tab-users" class="tab-content hidden space-y-6">
         <div class="bg-white dark:bg-navy-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
             <div class="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h3 class="text-base font-extrabold text-slate-900 dark:text-white">{{ T.guards_personnel }}</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Manage guards, shift assignments, and gate duty authorizations across all properties.</p>
+                    <h3 class="text-base font-extrabold text-slate-900 dark:text-white">{{ T.tab_first_admins }}</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Buyer accounts, cluster directors, and provisioned facility personnel.</p>
                 </div>
                 <button onclick="openModal('createUserModal')" class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold shadow-md transition flex items-center gap-1.5 self-start sm:self-auto">
                     <span>+</span> {{ T.add_user_btn }}
@@ -203,12 +383,12 @@
                 <table class="w-full text-xs text-left {% if is_rtl %}text-right{% endif %}">
                     <thead class="bg-slate-50 dark:bg-slate-800/60 text-slate-500 uppercase text-[10px] font-bold tracking-wider">
                         <tr>
-                            <th class="px-4 py-3">Security Personnel</th>
+                            <th class="px-4 py-3">Account & User</th>
                             <th class="px-4 py-3">Role</th>
                             <th class="px-4 py-3">Badge / ID</th>
-                            <th class="px-4 py-3">Facility & Gate Station</th>
+                            <th class="px-4 py-3">Client Facility Assignment</th>
                             <th class="px-4 py-3">Shift</th>
-                            <th class="px-4 py-3">Duty Status</th>
+                            <th class="px-4 py-3">Status</th>
                             <th class="px-4 py-3 text-center">Actions</th>
                         </tr>
                     </thead>
@@ -220,7 +400,7 @@
                                 <div class="text-[11px] text-slate-400 font-mono">@{{ u.username }} {% if u.phone %}• {{ u.phone }}{% endif %}</div>
                             </td>
                             <td class="px-4 py-3.5">
-                                <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider {% if u.role == 'director' %}bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30{% elif u.role == 'supervisor' %}bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30{% else %}bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30{% endif %}">
+                                <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider {% if u.role == 'saas_owner' %}bg-purple-500/20 text-purple-400 border border-purple-500/40{% elif u.role == 'cluster_director' %}bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30{% elif u.role == 'director' %}bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30{% elif u.role == 'supervisor' %}bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30{% else %}bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30{% endif %}">
                                     {{ u.get_role_display }}
                                 </span>
                             </td>
@@ -228,14 +408,27 @@
                                 {{ u.badge_number|default:"—" }}
                             </td>
                             <td class="px-4 py-3.5">
-                                {% if u.assigned_property %}
+                                {% if u.role == 'saas_owner' %}
+                                <span class="font-black text-purple-400 block text-xs">👑 SaaS Platform Owner</span>
+                                <span class="text-[10px] text-slate-400">Master Commercial Access</span>
+                                {% elif u.role == 'cluster_director' or u.cluster_properties.all %}
+                                <div class="space-y-1">
+                                    <span class="font-bold text-indigo-600 dark:text-indigo-400 block text-xs flex items-center gap-1">
+                                        <span>🏢</span> Cluster ({{ u.cluster_properties.count }} Facilities)
+                                    </span>
+                                    <div class="flex flex-wrap gap-1">
+                                        {% for cp in u.cluster_properties.all %}
+                                        <span class="px-1.5 py-0.2 rounded text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700" title="{{ cp.name }}">
+                                            {{ cp.code }}
+                                        </span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% elif u.assigned_property %}
                                 <span class="font-bold text-slate-900 dark:text-white block">{% if lang == 'ar' and u.assigned_property.name_ar %}{{ u.assigned_property.name_ar }}{% else %}{{ u.assigned_property.name }}{% endif %}</span>
                                 <span class="text-[10px] text-slate-400 font-mono">{{ u.assigned_property.code }}</span>
                                 {% else %}
-                                <span class="text-slate-400 italic">Global HQ / Unassigned</span>
-                                {% endif %}
-                                {% if u.assigned_gate %}
-                                <div class="text-[11px] text-emerald-500 font-semibold mt-0.5">📍 {% if lang == 'ar' and u.assigned_gate.name_ar %}{{ u.assigned_gate.name_ar }}{% else %}{{ u.assigned_gate.name }}{% endif %}</div>
+                                <span class="text-slate-400 italic">Unassigned</span>
                                 {% endif %}
                             </td>
                             <td class="px-4 py-3.5 capitalize">
@@ -253,7 +446,7 @@
                                 {% endif %}
                             </td>
                             <td class="px-4 py-3.5 text-center">
-                                <button onclick="openEditUserModal({{ u.id }}, '{{ u.username|escapejs }}', '{{ u.first_name|escapejs }}', '{{ u.last_name|escapejs }}', '{{ u.email|escapejs }}', '{{ u.role|escapejs }}', '{{ u.badge_number|default:""|escapejs }}', '{{ u.phone|default:""|escapejs }}', '{{ u.shift|escapejs }}', '{{ u.assigned_property.id|default:"" }}', '{{ u.assigned_gate.id|default:"" }}', {{ u.is_on_duty|yesno:'true,false' }})" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition">
+                                <button onclick="openEditUserModal({{ u.id }}, '{{ u.username|escapejs }}', '{{ u.first_name|escapejs }}', '{{ u.last_name|escapejs }}', '{{ u.email|escapejs }}', '{{ u.role|escapejs }}', '{{ u.badge_number|default:""|escapejs }}', '{{ u.phone|default:""|escapejs }}', '{{ u.shift|escapejs }}', '{{ u.assigned_property.id|default:"" }}', '{{ u.assigned_gate.id|default:"" }}', {{ u.is_on_duty|yesno:'true,false' }}, [{% for cp in u.cluster_properties.all %}{{ cp.id }}{% if not forloop.last %},{% endif %}{% endfor %}])" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition">
                                     ✏️ Edit
                                 </button>
                             </td>
@@ -265,12 +458,12 @@
         </div>
     </div>
 
-    <!-- TAB 3: EXECUTIVE AUDIT TRAIL -->
+    <!-- TAB 4: COMMERCIAL & PLATFORM AUDIT -->
     <div id="tab-audit" class="tab-content hidden space-y-6">
         <div class="bg-white dark:bg-navy-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
             <div class="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800">
-                <h3 class="text-base font-extrabold text-slate-900 dark:text-white">{{ T.super_admin_audit }}</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Master immutable ledger recording all property registrations, facility modifications, guard assignments, and gate operations.</p>
+                <h3 class="text-base font-extrabold text-slate-900 dark:text-white">{{ T.tab_saas_audit }}</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Immutable audit record of commercial onboarding, fee collections, invoice generation, and account suspensions.</p>
             </div>
 
             <div class="overflow-x-auto">
@@ -278,10 +471,10 @@
                     <thead class="bg-slate-50 dark:bg-slate-800/60 text-slate-500 uppercase text-[10px] font-bold tracking-wider">
                         <tr>
                             <th class="px-4 py-3">Timestamp</th>
-                            <th class="px-4 py-3">Executive / Officer</th>
+                            <th class="px-4 py-3">Operator</th>
                             <th class="px-4 py-3">Action</th>
                             <th class="px-4 py-3">Reference</th>
-                            <th class="px-4 py-3">Facility / Gate</th>
+                            <th class="px-4 py-3">Property</th>
                             <th class="px-4 py-3">Details</th>
                             <th class="px-4 py-3">IP</th>
                         </tr>
@@ -296,7 +489,7 @@
                                 👤 {{ a.user.username|default:"System" }}
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap">
-                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold font-mono uppercase {% if 'CREATED' in a.action or 'ADDED' in a.action %}bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30{% elif 'EDITED' in a.action %}bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30{% else %}bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30{% endif %}">
+                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold font-mono uppercase {% if 'CLIENT_ONBOARDED' in a.action or 'FEE_COLLECTED' in a.action or 'REACTIVATED' in a.action %}bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30{% elif 'SUSPENDED' in a.action %}bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30{% else %}bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30{% endif %}">
                                     {{ a.action }}
                                 </span>
                             </td>
@@ -305,7 +498,6 @@
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap">
                                 {% if a.property %}<span class="text-indigo-400 font-bold font-mono">[{{ a.property.code }}]</span>{% endif %}
-                                {% if a.gate %}<span class="text-emerald-400 text-[11px] font-mono">{{ a.gate.code }}</span>{% endif %}
                             </td>
                             <td class="px-4 py-3 text-slate-600 dark:text-slate-300 max-w-md truncate" title="{{ a.details }}">
                                 {{ a.details }}
@@ -317,7 +509,7 @@
                         {% empty %}
                         <tr>
                             <td colspan="7" class="text-center py-8 text-slate-400 italic">
-                                No administrative audit events logged yet.
+                                No SaaS commercial audit events logged yet.
                             </td>
                         </tr>
                         {% endfor %}
@@ -329,102 +521,262 @@
 
 </div>
 
-<!-- MODAL: CREATE PROPERTY -->
-<div id="createPropertyModal" class="fixed inset-0 bg-navy-950/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white dark:bg-navy-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5 my-8">
+<!-- MODAL 1: ONBOARD NEW CLIENT PROPERTY & PROVISION FIRST ADMIN -->
+<div id="createPropertyModal" class="fixed inset-0 bg-navy-950/75 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-navy-900 rounded-3xl max-w-3xl w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6 my-8 max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
             <div>
                 <h3 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
-                    <span>🏢</span> {{ T.create_property_btn }}
+                    <span>🏢</span> {{ T.onboard_modal_title }}
                 </h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Register a new hotel, tower, compound, or logistics hub into the centralized command hierarchy.</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Create client facility, contract plan tier, monthly fee, and provision first admin credentials.</p>
             </div>
             <button onclick="closeModal('createPropertyModal')" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">✕</button>
         </div>
 
-        <form action="{% url 'property_create' %}" method="POST" class="space-y-4 text-xs">
+        <form action="{% url 'property_create' %}" method="POST" class="space-y-6 text-xs">
             {% csrf_token %}
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_name_en }} *</label>
-                    <input type="text" name="name" required placeholder="e.g. Riyadh Grand Palace Hotel" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            <!-- SECTION 1: FACILITY PROFILE -->
+            <div class="space-y-3">
+                <div class="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-extrabold uppercase text-[11px] tracking-wider">
+                    <span>1.</span> <span>Facility Profile & Location</span>
                 </div>
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_name_ar }}</label>
-                    <input type="text" name="name_ar" placeholder="مثال: فندق قصر الرياض الكبير" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                </div>
-            </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_code }} *</label>
-                    <input type="text" name="code" required placeholder="e.g. PROP-RUH-01" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_name_en }} *</label>
+                        <input type="text" name="name" required placeholder="e.g. Al Faisaliah Tower & Compound" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_name_ar }}</label>
+                        <input type="text" name="name_ar" placeholder="مثال: برج ومجمع الفيصلية السكني" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
                 </div>
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_type }}</label>
-                    <select name="property_type" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        {% for val, label in property_types %}
-                        <option value="{{ val }}">{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.city }}</label>
-                    <input type="text" name="city" value="Riyadh" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_code }} *</label>
+                        <input type="text" name="code" required placeholder="PROP-RUH-05" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono uppercase focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_type }}</label>
+                        <select name="property_type" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                            {% for val, label in property_types %}
+                            <option value="{{ val }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.city }}</label>
+                        <input type="text" name="city" value="Riyadh" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
                 </div>
+
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.address }}</label>
-                    <input type="text" name="address" placeholder="e.g. King Fahd Road, Al Olaya" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <input type="text" name="address" placeholder="e.g. King Fahd Road, Al Olaya District" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.manager_name }}</label>
-                    <input type="text" name="manager_name" placeholder="e.g. Col. Fahad Al-Otaibi" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            <!-- SECTION 2: SAAS SUBSCRIPTION & COMMERCIAL PRICING -->
+            <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-extrabold uppercase text-[11px] tracking-wider">
+                    <span>2.</span> <span>Commercial Plan, Monthly Fee & Client Buyer</span>
                 </div>
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.contact_phone }}</label>
-                    <input type="text" name="contact_phone" placeholder="e.g. +966 50 123 4567" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500">
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.plan_tier }} *</label>
+                        <select name="plan_tier" id="onboard_plan_tier" onchange="autoFillFee(this.value)" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 font-semibold">
+                            <option value="starter">Starter (500 SAR/mo)</option>
+                            <option value="professional" selected>Professional (1,500 SAR/mo)</option>
+                            <option value="enterprise">Enterprise (3,500 SAR/mo)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.monthly_fee }} (SAR) *</label>
+                        <input type="number" step="0.01" name="monthly_fee" id="onboard_monthly_fee" value="1500.00" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono font-bold focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.billing_cycle }}</label>
+                        <select name="billing_cycle" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500">
+                            {% for cval, clabel in billing_cycle_choices %}
+                            <option value="{{ cval }}">{{ clabel }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.contact_email }}</label>
-                    <input type="email" name="contact_email" placeholder="security@grandpalace.sa" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_company }}</label>
+                        <input type="text" name="buyer_company" placeholder="e.g. Al Faisaliah Real Estate Holding" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_name }}</label>
+                        <input type="text" name="buyer_name" placeholder="e.g. Eng. Tariq Al-Ghamdi" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_phone }}</label>
+                        <input type="text" name="buyer_phone" placeholder="+966 50 882 1199" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_email }}</label>
+                        <input type="email" name="buyer_email" placeholder="billing@faisaliah.sa" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.subscription_status }}</label>
+                        <select name="subscription_status" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 font-semibold">
+                            <option value="active" selected>Active Subscription</option>
+                            <option value="trial">Trial Period</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
-            <div class="p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800 flex items-center gap-3">
-                <input type="checkbox" name="create_default_gate" id="create_default_gate" checked class="w-4 h-4 text-emerald-600 rounded">
-                <label for="create_default_gate" class="font-bold text-indigo-900 dark:text-indigo-200 cursor-pointer">
-                    {{ T.auto_create_main_gate }}
-                </label>
+            <!-- SECTION 3: PROVISION FIRST ADMIN USER (BUYER CREDENTIALS) -->
+            <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2 text-sky-600 dark:text-sky-400 font-extrabold uppercase text-[11px] tracking-wider">
+                    <span>3.</span> <span>{{ T.first_admin_account }}</span>
+                </div>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400">These credentials allow the buyer / property security director to immediately log into their facility command dashboard.</p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.admin_username }} *</label>
+                        <input type="text" name="admin_username" required placeholder="e.g. dir_faisaliah" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.admin_password }} *</label>
+                        <input type="password" name="admin_password" required placeholder="••••••••" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.admin_first_name }}</label>
+                        <input type="text" name="admin_first_name" placeholder="Tariq" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.admin_last_name }}</label>
+                        <input type="text" name="admin_last_name" placeholder="Al-Ghamdi" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.admin_role }}</label>
+                        <select name="admin_role" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
+                            <option value="director" selected>Security Director (Property Lead)</option>
+                            <option value="cluster_director">Cluster Security Director (Multi-Property)</option>
+                            <option value="supervisor">Shift Supervisor</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 4: AUTOMATION OPTIONS -->
+            <div class="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div class="p-3 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800/60 flex items-center gap-3">
+                    <input type="checkbox" name="create_default_gate" id="create_default_gate" checked class="w-4 h-4 text-emerald-600 rounded">
+                    <label for="create_default_gate" class="font-bold text-indigo-900 dark:text-indigo-200 cursor-pointer text-xs">
+                        {{ T.auto_create_main_gate }}
+                    </label>
+                </div>
+
+                <div class="p-3 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-3">
+                    <input type="checkbox" name="generate_initial_invoice" id="generate_initial_invoice" checked class="w-4 h-4 text-emerald-600 rounded">
+                    <label for="generate_initial_invoice" class="font-bold text-emerald-900 dark:text-emerald-200 cursor-pointer text-xs">
+                        {{ T.initial_invoice_gen }}
+                    </label>
+                </div>
             </div>
 
             <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
                 <button type="button" onclick="closeModal('createPropertyModal')" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition">
                     Cancel
                 </button>
-                <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-md shadow-emerald-700/30 transition flex items-center gap-2">
-                    <span>✓</span> {{ T.save_property_btn }}
+                <button type="submit" class="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black shadow-lg shadow-emerald-700/30 transition flex items-center gap-2">
+                    <span>🚀</span> Complete Client Onboarding
                 </button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- MODAL: EDIT PROPERTY -->
-<div id="editPropertyModal" class="fixed inset-0 bg-navy-950/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white dark:bg-navy-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5 my-8">
+<!-- MODAL 2: COLLECT MONTHLY SUBSCRIPTION FEE -->
+<div id="collectFeeModal" class="fixed inset-0 bg-navy-950/75 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-navy-900 rounded-3xl max-w-lg w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5 my-8">
         <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
             <div>
                 <h3 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
-                    <span>✏️</span> {{ T.edit_property }}
+                    <span>💳</span> {{ T.record_payment_modal_title }}
                 </h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Update property metadata, location, contact details, and operational status.</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5" id="collect_fee_target_desc">Record subscription payment and renew facility access.</p>
+            </div>
+            <button onclick="closeModal('collectFeeModal')" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">✕</button>
+        </div>
+
+        <form id="collectFeeForm" method="POST" class="space-y-4 text-xs">
+            {% csrf_token %}
+
+            <div class="p-3.5 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/50">
+                <span class="text-[10px] uppercase font-bold text-indigo-900 dark:text-indigo-300 block">Facility Name & Code</span>
+                <span class="text-sm font-black text-slate-900 dark:text-white block mt-0.5" id="collect_prop_title">—</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Fee Amount (SAR) *</label>
+                    <input type="number" step="0.01" name="amount" id="collect_amount" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono font-black text-base focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.billing_period }} *</label>
+                    <input type="text" name="billing_period" id="collect_period" value="September 2026" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-semibold focus:ring-2 focus:ring-emerald-500">
+                </div>
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.payment_method }} *</label>
+                <select name="payment_method" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 font-semibold">
+                    {% for pval, plabel in payment_method_choices %}
+                    <option value="{{ pval }}">{{ plabel }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.payment_ref }} *</label>
+                <input type="text" name="payment_reference" required placeholder="e.g. TRX-994812-SNB or MADA-771249" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-emerald-500">
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.payment_notes }}</label>
+                <textarea name="notes" rows="2" placeholder="e.g. Paid via corporate wire transfer from buyer bank account." class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500"></textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button type="button" onclick="closeModal('collectFeeModal')" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+                    Cancel
+                </button>
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black shadow-lg shadow-emerald-700/30 transition flex items-center gap-2">
+                    <span>✓</span> {{ T.save_payment_btn }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL 3: EDIT CLIENT CONTRACT & PROPERTY METADATA -->
+<div id="editPropertyModal" class="fixed inset-0 bg-navy-950/75 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-navy-900 rounded-3xl max-w-3xl w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5 my-8 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+            <div>
+                <h3 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    <span>✏️</span> Edit Client Contract & Property Metadata
+                </h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Update subscription pricing, billing cycle, buyer contact, or facility parameters.</p>
             </div>
             <button onclick="closeModal('editPropertyModal')" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">✕</button>
         </div>
@@ -435,59 +787,87 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_name_en }} *</label>
-                    <input type="text" name="name" id="edit_prop_name" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="text" name="name" id="edit_prop_name" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_name_ar }}</label>
-                    <input type="text" name="name_ar" id="edit_prop_name_ar" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_code }} *</label>
-                    <input type="text" name="code" id="edit_prop_code" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_type }}</label>
-                    <select name="property_type" id="edit_prop_type" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        {% for val, label in property_types %}
-                        <option value="{{ val }}">{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.city }}</label>
-                    <input type="text" name="city" id="edit_prop_city" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.address }}</label>
-                    <input type="text" name="address" id="edit_prop_address" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="text" name="name_ar" id="edit_prop_name_ar" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
                 </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.manager_name }}</label>
-                    <input type="text" name="manager_name" id="edit_prop_manager" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_code }} *</label>
+                    <input type="text" name="code" id="edit_prop_code" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono uppercase focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.contact_phone }}</label>
-                    <input type="text" name="contact_phone" id="edit_prop_phone" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_type }}</label>
+                    <select name="property_type" id="edit_prop_type" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                        {% for val, label in property_types %}
+                        <option value="{{ val }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.contact_email }}</label>
-                    <input type="email" name="contact_email" id="edit_prop_email" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.city }}</label>
+                    <input type="text" name="city" id="edit_prop_city" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+
+            <!-- SaaS Subscription fields in Edit -->
+            <div class="p-3.5 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/50 space-y-3">
+                <span class="text-[11px] font-extrabold uppercase text-indigo-900 dark:text-indigo-300 block">SaaS Commercial Contract & Status</span>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.plan_tier }}</label>
+                        <select name="plan_tier" id="edit_prop_plan_tier" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                            {% for pval, plabel in plan_tier_choices %}
+                            <option value="{{ pval }}">{{ plabel }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.monthly_fee }} (SAR)</label>
+                        <input type="number" step="0.01" name="monthly_fee" id="edit_prop_monthly_fee" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono font-bold focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.subscription_status }}</label>
+                        <select name="subscription_status" id="edit_prop_sub_status" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-indigo-500">
+                            {% for sval, slabel in subscription_status_choices %}
+                            <option value="{{ sval }}">{{ slabel }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_company }}</label>
+                        <input type="text" name="buyer_company" id="edit_prop_buyer_company" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_name }}</label>
+                        <input type="text" name="buyer_name" id="edit_prop_buyer_name" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_phone }}</label>
+                        <input type="text" name="buyer_phone" id="edit_prop_buyer_phone" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_email }}</label>
+                        <input type="email" name="buyer_email" id="edit_prop_buyer_email" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
                 </div>
             </div>
 
             <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center gap-3">
                 <input type="checkbox" name="is_active" id="edit_prop_is_active" class="w-4 h-4 text-emerald-600 rounded">
                 <label for="edit_prop_is_active" class="font-bold text-slate-800 dark:text-slate-200 cursor-pointer">
-                    Facility is Active & Fully Operational
+                    Client Facility is Active & Service Enabled
                 </label>
             </div>
 
@@ -496,22 +876,22 @@
                     Cancel
                 </button>
                 <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-md shadow-indigo-700/30 transition flex items-center gap-2">
-                    <span>✓</span> Save Changes
+                    <span>✓</span> Save Contract Changes
                 </button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- MODAL: PROVISION SECURITY STAFF -->
-<div id="createUserModal" class="fixed inset-0 bg-navy-950/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
+<!-- MODAL 4: PROVISION SECURITY STAFF -->
+<div id="createUserModal" class="fixed inset-0 bg-navy-950/75 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-white dark:bg-navy-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5 my-8">
         <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
             <div>
                 <h3 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
-                    <span>👮</span> {{ T.add_user_btn }}
+                    <span>👤</span> {{ T.add_user_btn }}
                 </h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Issue credentials for security officers, shift supervisors, and gate attendants.</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Provision security officers, supervisors, or client directors.</p>
             </div>
             <button onclick="closeModal('createUserModal')" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">✕</button>
         </div>
@@ -522,29 +902,29 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Username *</label>
-                    <input type="text" name="username" required placeholder="e.g. guard_khalid" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    <input type="text" name="username" required placeholder="e.g. guard_khalid" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-sky-500">
                 </div>
                 <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Temporary Password *</label>
-                    <input type="password" name="password" required placeholder="••••••••" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Password *</label>
+                    <input type="password" name="password" required placeholder="••••••••" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
                 </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">First Name</label>
-                    <input type="text" name="first_name" placeholder="e.g. Khalid" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    <input type="text" name="first_name" placeholder="e.g. Khalid" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
                 </div>
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Last Name</label>
-                    <input type="text" name="last_name" placeholder="e.g. Al-Zahrani" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    <input type="text" name="last_name" placeholder="e.g. Al-Zahrani" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
                 </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Security Role *</label>
-                    <select name="role" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Role *</label>
+                    <select name="role" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
                         {% for rval, rname in role_choices %}
                         <option value="{{ rval }}">{{ rname }}</option>
                         {% endfor %}
@@ -552,19 +932,19 @@
                 </div>
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.badge_number }}</label>
-                    <input type="text" name="badge_number" placeholder="e.g. SEC-8842" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    <input type="text" name="badge_number" placeholder="e.g. SEC-8842" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-sky-500">
                 </div>
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Phone / WhatsApp</label>
-                    <input type="text" name="phone" placeholder="e.g. +966 55 999 1122" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    <input type="text" name="phone" placeholder="+966 55 999 1122" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-sky-500">
                 </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.assigned_property }}</label>
-                    <select name="property_id" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
-                        <option value="">-- Global HQ / Multi-Site --</option>
+                    <select name="property_id" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
+                        <option value="">-- Unassigned --</option>
                         {% for p in all_properties %}
                         <option value="{{ p.id }}">[{{ p.code }}] {% if lang == 'ar' and p.name_ar %}{{ p.name_ar }}{% else %}{{ p.name }}{% endif %}</option>
                         {% endfor %}
@@ -572,7 +952,7 @@
                 </div>
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.assigned_gate }}</label>
-                    <select name="gate_id" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    <select name="gate_id" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
                         <option value="">-- Any Gate / Roaming --</option>
                         {% for g in all_gates %}
                         <option value="{{ g.id }}">[{{ g.property.code|default:"" }}] {{ g.code }} - {% if lang == 'ar' and g.name_ar %}{{ g.name_ar }}{% else %}{{ g.name }}{% endif %}</option>
@@ -581,11 +961,30 @@
                 </div>
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Shift</label>
-                    <select name="shift" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    <select name="shift" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
                         {% for sval, sname in shift_choices %}
                         <option value="{{ sval }}">{{ sname }}</option>
                         {% endfor %}
                     </select>
+                </div>
+            </div>
+
+            <!-- Cluster Properties Multi-select -->
+            <div class="p-3.5 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800/60 space-y-2">
+                <div class="flex items-center justify-between">
+                    <label class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <span>🏢</span> {{ T.assigned_cluster_properties }} (Cluster Access)
+                    </label>
+                    <span class="text-[10px] font-semibold text-indigo-500 dark:text-indigo-400">Multi-Facility Jurisdiction</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 max-h-36 overflow-y-auto">
+                    {% for p in all_properties %}
+                    <label class="flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 cursor-pointer hover:border-indigo-400 transition text-xs">
+                        <input type="checkbox" name="cluster_properties" value="{{ p.id }}" class="w-4 h-4 text-indigo-600 rounded">
+                        <span class="font-mono font-bold text-[10px] text-indigo-600 dark:text-indigo-400">[{{ p.code }}]</span>
+                        <span class="truncate font-medium text-slate-800 dark:text-slate-200">{% if lang == 'ar' and p.name_ar %}{{ p.name_ar }}{% else %}{{ p.name }}{% endif %}</span>
+                    </label>
+                    {% endfor %}
                 </div>
             </div>
 
@@ -608,13 +1007,13 @@
     </div>
 </div>
 
-<!-- MODAL: EDIT SECURITY STAFF -->
-<div id="editUserModal" class="fixed inset-0 bg-navy-950/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
+<!-- MODAL 5: EDIT SECURITY STAFF -->
+<div id="editUserModal" class="fixed inset-0 bg-navy-950/75 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-white dark:bg-navy-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5 my-8">
         <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
             <div>
                 <h3 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
-                    <span>✏️</span> Edit Security Personnel
+                    <span>✏️</span> Edit User Profile & Roles
                 </h3>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5" id="edit_user_title_sub">Update role, property assignments, shift, or reset password.</p>
             </div>
@@ -627,18 +1026,18 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">First Name</label>
-                    <input type="text" name="first_name" id="edit_user_first_name" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    <input type="text" name="first_name" id="edit_user_first_name" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
                 </div>
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Last Name</label>
-                    <input type="text" name="last_name" id="edit_user_last_name" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    <input type="text" name="last_name" id="edit_user_last_name" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
                 </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Security Role</label>
-                    <select name="role" id="edit_user_role" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Role</label>
+                    <select name="role" id="edit_user_role" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
                         {% for rval, rname in role_choices %}
                         <option value="{{ rval }}">{{ rname }}</option>
                         {% endfor %}
@@ -646,19 +1045,19 @@
                 </div>
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.badge_number }}</label>
-                    <input type="text" name="badge_number" id="edit_user_badge" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    <input type="text" name="badge_number" id="edit_user_badge" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-sky-500">
                 </div>
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Phone</label>
-                    <input type="text" name="phone" id="edit_user_phone" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    <input type="text" name="phone" id="edit_user_phone" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-sky-500">
                 </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.assigned_property }}</label>
-                    <select name="property_id" id="edit_user_property" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
-                        <option value="">-- Global HQ / Multi-Site --</option>
+                    <select name="property_id" id="edit_user_property" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
+                        <option value="">-- Unassigned --</option>
                         {% for p in all_properties %}
                         <option value="{{ p.id }}">[{{ p.code }}] {% if lang == 'ar' and p.name_ar %}{{ p.name_ar }}{% else %}{{ p.name }}{% endif %}</option>
                         {% endfor %}
@@ -666,7 +1065,7 @@
                 </div>
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.assigned_gate }}</label>
-                    <select name="gate_id" id="edit_user_gate" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    <select name="gate_id" id="edit_user_gate" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
                         <option value="">-- Any Gate / Roaming --</option>
                         {% for g in all_gates %}
                         <option value="{{ g.id }}">[{{ g.property.code|default:"" }}] {{ g.code }} - {% if lang == 'ar' and g.name_ar %}{{ g.name_ar }}{% else %}{{ g.name }}{% endif %}</option>
@@ -675,7 +1074,7 @@
                 </div>
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Shift</label>
-                    <select name="shift" id="edit_user_shift" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    <select name="shift" id="edit_user_shift" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
                         {% for sval, sname in shift_choices %}
                         <option value="{{ sval }}">{{ sname }}</option>
                         {% endfor %}
@@ -683,15 +1082,34 @@
                 </div>
             </div>
 
+            <!-- Cluster Properties Multi-select -->
+            <div class="p-3.5 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800/60 space-y-2">
+                <div class="flex items-center justify-between">
+                    <label class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <span>🏢</span> {{ T.assigned_cluster_properties }} (Cluster Access)
+                    </label>
+                    <span class="text-[10px] font-semibold text-indigo-500 dark:text-indigo-400">Multi-Facility Jurisdiction</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 max-h-36 overflow-y-auto">
+                    {% for p in all_properties %}
+                    <label class="flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 cursor-pointer hover:border-indigo-400 transition text-xs">
+                        <input type="checkbox" name="cluster_properties" value="{{ p.id }}" class="edit-cluster-prop-cb w-4 h-4 text-indigo-600 rounded" id="edit_cp_{{ p.id }}">
+                        <span class="font-mono font-bold text-[10px] text-indigo-600 dark:text-indigo-400">[{{ p.code }}]</span>
+                        <span class="truncate font-medium text-slate-800 dark:text-slate-200">{% if lang == 'ar' and p.name_ar %}{{ p.name_ar }}{% else %}{{ p.name }}{% endif %}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
             <div>
                 <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">New Password (leave blank to keep unchanged)</label>
-                <input type="password" name="password" placeholder="••••••••" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                <input type="password" name="password" placeholder="••••••••" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
             </div>
 
             <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center gap-3">
                 <input type="checkbox" name="is_on_duty" id="edit_user_is_on_duty" class="w-4 h-4 text-sky-600 rounded">
                 <label for="edit_user_is_on_duty" class="font-bold text-slate-800 dark:text-slate-200 cursor-pointer">
-                    Officer is On Duty
+                    User is Active & On Duty
                 </label>
             </div>
 
@@ -717,8 +1135,10 @@
 
         document.getElementById(tabId).classList.remove('hidden');
         const activeBtn = document.getElementById('btn-' + tabId);
-        activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
-        activeBtn.classList.remove('text-slate-600', 'dark:text-slate-400');
+        if (activeBtn) {
+            activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+            activeBtn.classList.remove('text-slate-600', 'dark:text-slate-400');
+        }
     }
 
     function openModal(id) {
@@ -729,7 +1149,29 @@
         document.getElementById(id).classList.add('hidden');
     }
 
-    function openEditPropertyModal(id, name, name_ar, code, propType, city, address, email, phone, manager, isActive) {
+    function autoFillFee(plan) {
+        const feeInput = document.getElementById('onboard_monthly_fee');
+        if (plan === 'starter') {
+            feeInput.value = '500.00';
+        } else if (plan === 'professional') {
+            feeInput.value = '1500.00';
+        } else if (plan === 'enterprise') {
+            feeInput.value = '3500.00';
+        }
+    }
+
+    function openCollectFeeModal(propId, propName, propCode, defaultFee, billingPeriod) {
+        const form = document.getElementById('collectFeeForm');
+        form.action = '/super-admin/billing/collect/' + propId + '/';
+        document.getElementById('collect_prop_title').innerText = '[' + propCode + '] ' + propName;
+        document.getElementById('collect_amount').value = parseFloat(defaultFee || 0).toFixed(2);
+        if (billingPeriod) {
+            document.getElementById('collect_period').value = billingPeriod;
+        }
+        openModal('collectFeeModal');
+    }
+
+    function openEditPropertyModal(id, name, name_ar, code, propType, city, address, email, phone, manager, planTier, monthlyFee, billingCycle, subStatus, buyerComp, buyerName, buyerPhone, buyerEmail, notes, isActive) {
         const form = document.getElementById('editPropertyForm');
         form.action = '/super-admin/properties/' + id + '/edit/';
         document.getElementById('edit_prop_name').value = name;
@@ -737,18 +1179,21 @@
         document.getElementById('edit_prop_code').value = code;
         document.getElementById('edit_prop_type').value = propType;
         document.getElementById('edit_prop_city').value = city;
-        document.getElementById('edit_prop_address').value = address || '';
-        document.getElementById('edit_prop_email').value = email || '';
-        document.getElementById('edit_prop_phone').value = phone || '';
-        document.getElementById('edit_prop_manager').value = manager || '';
+        document.getElementById('edit_prop_plan_tier').value = planTier || 'professional';
+        document.getElementById('edit_prop_monthly_fee').value = monthlyFee || '1500.00';
+        document.getElementById('edit_prop_sub_status').value = subStatus || 'active';
+        document.getElementById('edit_prop_buyer_company').value = buyerComp || '';
+        document.getElementById('edit_prop_buyer_name').value = buyerName || '';
+        document.getElementById('edit_prop_buyer_phone').value = buyerPhone || '';
+        document.getElementById('edit_prop_buyer_email').value = buyerEmail || '';
         document.getElementById('edit_prop_is_active').checked = isActive;
         openModal('editPropertyModal');
     }
 
-    function openEditUserModal(id, username, firstName, lastName, email, role, badge, phone, shift, propId, gateId, isOnDuty) {
+    function openEditUserModal(id, username, firstName, lastName, email, role, badge, phone, shift, propId, gateId, isOnDuty, clusterPropIds) {
         const form = document.getElementById('editUserForm');
         form.action = '/super-admin/users/' + id + '/edit/';
-        document.getElementById('edit_user_title_sub').innerText = 'Editing Officer: @' + username;
+        document.getElementById('edit_user_title_sub').innerText = 'Editing Account: @' + username;
         document.getElementById('edit_user_first_name').value = firstName || '';
         document.getElementById('edit_user_last_name').value = lastName || '';
         document.getElementById('edit_user_role').value = role;
@@ -758,6 +1203,12 @@
         document.getElementById('edit_user_property').value = propId || '';
         document.getElementById('edit_user_gate').value = gateId || '';
         document.getElementById('edit_user_is_on_duty').checked = isOnDuty;
+
+        const ids = Array.isArray(clusterPropIds) ? clusterPropIds.map(Number) : [];
+        document.querySelectorAll('.edit-cluster-prop-cb').forEach(cb => {
+            cb.checked = ids.includes(Number(cb.value));
+        });
+
         openModal('editUserModal');
     }
 </script>

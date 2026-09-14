@@ -6,6 +6,11 @@ from django.db.models import Q
 from .models import LostFoundItem, ItemPhoto
 from core.models import Property, SecurityAuditLog
 
+def accessible_properties_for(user):
+    if hasattr(user, 'get_accessible_properties'):
+        return user.get_accessible_properties()
+    return Property.objects.none()
+
 @login_required
 def lostfound_list(request):
     status_filter = request.GET.get('status', 'all')
@@ -13,7 +18,8 @@ def lostfound_list(request):
     tier_filter = request.GET.get('tier', 'all')
     q = request.GET.get('q', '').strip()
     
-    queryset = LostFoundItem.objects.select_related('logged_by', 'released_by').all()
+    accessible_properties = accessible_properties_for(request.user)
+    queryset = LostFoundItem.objects.select_related('logged_by', 'released_by').filter(property__in=accessible_properties)
     current_prop_id = request.session.get('current_property_id')
     if current_prop_id and current_prop_id != 'ALL':
         queryset = queryset.filter(property_id=current_prop_id)
@@ -65,9 +71,12 @@ def lostfound_create(request):
         current_prop_id = request.session.get('current_property_id')
         current_prop = None
         if current_prop_id and current_prop_id != 'ALL':
-            current_prop = Property.objects.filter(id=current_prop_id).first()
+            current_prop = accessible_properties_for(request.user).filter(id=current_prop_id).first()
         elif not current_prop_id:
-            current_prop = getattr(request.user, 'assigned_property', None) or Property.objects.filter(is_active=True).first()
+            accessible_properties = accessible_properties_for(request.user)
+            current_prop = getattr(request.user, 'assigned_property', None) if getattr(request.user, 'assigned_property', None) in accessible_properties else accessible_properties.first()
+        elif current_prop_id == 'ALL':
+            current_prop = accessible_properties_for(request.user).first()
 
         item = LostFoundItem.objects.create(
             property=current_prop,
@@ -98,6 +107,7 @@ def lostfound_create(request):
             
         SecurityAuditLog.objects.create(
             user=request.user,
+            property=item.property,
             action='LF_LOGGED',
             reference=item.reference_number,
             details=f"Logged {item.title} ({item.get_category_display()}) found at {item.found_location} by {finder_name or finder_type}. Storage: {item.storage_location}",
@@ -111,12 +121,12 @@ def lostfound_create(request):
 
 @login_required
 def lostfound_detail(request, pk):
-    item = get_object_or_404(LostFoundItem.objects.select_related('logged_by', 'released_by').prefetch_related('photos'), pk=pk)
+    item = get_object_or_404(LostFoundItem.objects.filter(property__in=accessible_properties_for(request.user)).select_related('logged_by', 'released_by').prefetch_related('photos'), pk=pk)
     return render(request, 'lostfound/detail.html', {'item': item})
 
 @login_required
 def lostfound_claim(request, pk):
-    item = get_object_or_404(LostFoundItem, pk=pk)
+    item = get_object_or_404(LostFoundItem.objects.filter(property__in=accessible_properties_for(request.user)), pk=pk)
     
     if request.method == 'POST':
         claimant_name = request.POST.get('claimant_name', '').strip()
@@ -140,6 +150,7 @@ def lostfound_claim(request, pk):
         
         SecurityAuditLog.objects.create(
             user=request.user,
+            property=item.property,
             action='LF_CLAIMED',
             reference=item.reference_number,
             details=f"Item {item.reference_number} ({item.title}) returned to {claimant_name} (ID: {claimant_id_number}). Released by {request.user.get_full_name() or request.user.username}.",

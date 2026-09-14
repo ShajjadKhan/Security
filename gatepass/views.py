@@ -7,13 +7,19 @@ from .models import GatePass, GatePassItem
 from visitors.models import DepartmentHost
 from core.models import Property, SecurityAuditLog, SecurityGate
 
+def accessible_properties_for(user):
+    if hasattr(user, 'get_accessible_properties'):
+        return user.get_accessible_properties()
+    return Property.objects.none()
+
 @login_required
 def gatepass_list(request):
     card_filter = request.GET.get('card', 'all')
     status_filter = request.GET.get('status', 'all')
     q = request.GET.get('q', '').strip()
 
-    queryset = GatePass.objects.select_related('from_department', 'dispatched_by').prefetch_related('items').all()
+    accessible_properties = accessible_properties_for(request.user)
+    queryset = GatePass.objects.select_related('from_department', 'dispatched_by').prefetch_related('items').filter(property__in=accessible_properties)
     current_prop_id = request.session.get('current_property_id')
     if current_prop_id and current_prop_id != 'ALL':
         queryset = queryset.filter(property_id=current_prop_id)
@@ -49,14 +55,15 @@ def gatepass_list(request):
         ).distinct()
 
     # Telemetry counts
-    green_active_count = GatePass.objects.filter(card_type='GREEN', status='active').count()
+    green_active_count = GatePass.objects.filter(property__in=accessible_properties, card_type='GREEN', status='active').count()
     green_overdue_count = GatePass.objects.filter(
+        property__in=accessible_properties,
         card_type='GREEN',
         status__in=['active', 'partially_returned'],
         expected_return_date__isnull=False,
         expected_return_date__lt=now
     ).count()
-    red_total_count = GatePass.objects.filter(card_type='RED').count()
+    red_total_count = GatePass.objects.filter(property__in=accessible_properties, card_type='RED').count()
 
     return render(request, 'gatepass/list.html', {
         'passes': queryset[:100],
@@ -70,7 +77,8 @@ def gatepass_list(request):
 
 @login_required
 def gatepass_create(request):
-    departments = DepartmentHost.objects.all().order_by('name')
+    accessible_properties = accessible_properties_for(request.user)
+    departments = DepartmentHost.objects.filter(property__in=accessible_properties).order_by('name')
     initial_card = request.GET.get('type', 'GREEN').upper()
     if initial_card not in ('GREEN', 'RED'):
         initial_card = 'GREEN'
@@ -80,7 +88,7 @@ def gatepass_create(request):
         physical_card_ref = request.POST.get('physical_card_ref', '').strip()
         
         dept_id = request.POST.get('from_department')
-        from_dept = DepartmentHost.objects.filter(pk=dept_id).first() if dept_id else None
+        from_dept = departments.filter(pk=dept_id).first() if dept_id else None
         sender_name = request.POST.get('sender_name', '').strip()
         sender_email = request.POST.get('sender_email', '').strip()
         sender_phone = request.POST.get('sender_phone', '').strip()
@@ -101,9 +109,9 @@ def gatepass_create(request):
         purpose_notes = request.POST.get('purpose_notes', '').strip()
         authorized_by_manager = request.POST.get('authorized_by_manager', '').strip()
         gate_id = request.POST.get('gate_id')
-        gate_obj = SecurityGate.objects.filter(pk=gate_id).first() if gate_id else None
+        gate_obj = SecurityGate.objects.filter(property__in=accessible_properties, pk=gate_id).first() if gate_id else None
         if not gate_obj and request.session.get('current_gate_id'):
-            gate_obj = SecurityGate.objects.filter(pk=request.session.get('current_gate_id')).first()
+            gate_obj = SecurityGate.objects.filter(property__in=accessible_properties, pk=request.session.get('current_gate_id')).first()
         gate_location = gate_obj.name if gate_obj else request.POST.get('gate_location', 'Loading Dock Gate')
 
         # Return date calculation
@@ -115,12 +123,14 @@ def gatepass_create(request):
         current_prop_id = request.session.get('current_property_id')
         current_prop = None
         if current_prop_id and current_prop_id != 'ALL':
-            current_prop = Property.objects.filter(id=current_prop_id).first()
+            current_prop = accessible_properties.filter(id=current_prop_id).first()
         elif not current_prop_id:
-            current_prop = getattr(request.user, 'assigned_property', None) or Property.objects.filter(is_active=True).first()
+            current_prop = getattr(request.user, 'assigned_property', None) if getattr(request.user, 'assigned_property', None) in accessible_properties else accessible_properties.first()
+        elif current_prop_id == 'ALL':
+            current_prop = accessible_properties.first()
 
         current_gate_id = request.session.get('current_gate_id')
-        current_gate = SecurityGate.objects.filter(id=current_gate_id).first() if current_gate_id else getattr(request.user, 'assigned_gate', None)
+        current_gate = SecurityGate.objects.filter(property__in=accessible_properties, id=current_gate_id).first() if current_gate_id else getattr(request.user, 'assigned_gate', None)
 
         gate_pass = GatePass.objects.create(
             property=current_prop,
@@ -182,6 +192,8 @@ def gatepass_create(request):
         card_label = "Green Card (Returnable)" if card_type == 'GREEN' else "Red Card (Non-Returnable)"
         SecurityAuditLog.objects.create(
             user=request.user,
+            property=gate_pass.property,
+            gate=gate_pass.gate,
             action=action_name,
             reference=gate_pass.pass_number,
             details=f"Dispatched {card_label} to {destination_entity}. Carrier: {carrier_name}. Items: {gate_pass.total_items_count}.",
@@ -198,12 +210,12 @@ def gatepass_create(request):
 
 @login_required
 def gatepass_detail(request, pk):
-    pass_card = get_object_or_404(GatePass.objects.select_related('from_department', 'dispatched_by', 'received_by').prefetch_related('items'), pk=pk)
+    pass_card = get_object_or_404(GatePass.objects.filter(property__in=accessible_properties_for(request.user)).select_related('from_department', 'dispatched_by', 'received_by').prefetch_related('items'), pk=pk)
     return render(request, 'gatepass/detail.html', {'pass_card': pass_card})
 
 @login_required
 def gatepass_return(request, pk):
-    pass_card = get_object_or_404(GatePass, pk=pk)
+    pass_card = get_object_or_404(GatePass.objects.filter(property__in=accessible_properties_for(request.user)), pk=pk)
     if not pass_card.is_green_card:
         messages.error(request, "Only Green Cards (Returnable Material Passes) require inward return.")
         return redirect('gatepass_detail', pk=pass_card.pk)
@@ -238,6 +250,8 @@ def gatepass_return(request, pk):
         # Audit log
         SecurityAuditLog.objects.create(
             user=request.user,
+            property=pass_card.property,
+            gate=pass_card.gate,
             action='CHECK_IN',
             reference=pass_card.pass_number,
             details=f"Inward Gate Handover: {pass_card.pass_number} marked {pass_card.get_status_display()}. Received by {request.user.get_full_name() or request.user.username}.",
@@ -251,15 +265,16 @@ def gatepass_return(request, pk):
 
 @login_required
 def gatepass_print(request, pk):
-    pass_card = get_object_or_404(GatePass.objects.select_related('from_department', 'dispatched_by').prefetch_related('items'), pk=pk)
+    pass_card = get_object_or_404(GatePass.objects.filter(property__in=accessible_properties_for(request.user)).select_related('from_department', 'dispatched_by').prefetch_related('items'), pk=pk)
     return render(request, 'gatepass/print.html', {'pass_card': pass_card})
 
 
 @login_required
 def gatepass_edit(request, pk):
-    pass_card = get_object_or_404(GatePass.objects.select_related('from_department', 'gate').prefetch_related('items'), pk=pk)
-    departments = DepartmentHost.objects.all().order_by('name')
-    gates = SecurityGate.objects.filter(is_active=True).order_by('code')
+    accessible_properties = accessible_properties_for(request.user)
+    pass_card = get_object_or_404(GatePass.objects.filter(property__in=accessible_properties).select_related('from_department', 'gate').prefetch_related('items'), pk=pk)
+    departments = DepartmentHost.objects.filter(property__in=accessible_properties).order_by('name')
+    gates = SecurityGate.objects.filter(property__in=accessible_properties, is_active=True).order_by('code')
 
     if request.method == 'POST':
         old_carrier = pass_card.carrier_name
@@ -269,7 +284,7 @@ def gatepass_edit(request, pk):
         
         dept_id = request.POST.get('from_department')
         if dept_id:
-            pass_card.from_department = DepartmentHost.objects.filter(pk=dept_id).first()
+            pass_card.from_department = departments.filter(pk=dept_id).first()
         pass_card.sender_name = request.POST.get('sender_name', '').strip()
         pass_card.sender_phone = request.POST.get('sender_phone', '').strip()
         
@@ -287,7 +302,7 @@ def gatepass_edit(request, pk):
         
         gate_id = request.POST.get('gate_id')
         if gate_id:
-            pass_card.gate = SecurityGate.objects.filter(pk=gate_id).first()
+            pass_card.gate = gates.filter(pk=gate_id).first()
             if pass_card.gate:
                 pass_card.gate_location = pass_card.gate.name
 
@@ -327,6 +342,7 @@ def gatepass_edit(request, pk):
         # Audit Log
         SecurityAuditLog.objects.create(
             user=request.user,
+            property=pass_card.property,
             gate=pass_card.gate,
             action='PASS_EDITED',
             reference=pass_card.pass_number,
@@ -346,7 +362,7 @@ def gatepass_edit(request, pk):
 
 @login_required
 def gatepass_delete(request, pk):
-    pass_card = get_object_or_404(GatePass.objects.select_related('from_department', 'gate').prefetch_related('items'), pk=pk)
+    pass_card = get_object_or_404(GatePass.objects.filter(property__in=accessible_properties_for(request.user)).select_related('from_department', 'gate').prefetch_related('items'), pk=pk)
 
     if request.method == 'POST':
         reason = request.POST.get('deletion_reason', '').strip()
@@ -365,6 +381,7 @@ def gatepass_delete(request, pk):
         # Permanent audit log entry
         SecurityAuditLog.objects.create(
             user=request.user,
+            property=pass_card.property,
             gate=pass_card.gate,
             action='PASS_DELETED',
             reference=pass_num,
