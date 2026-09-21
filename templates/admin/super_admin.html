@@ -277,6 +277,19 @@
 
                 </div>
             </div>
+            {% empty %}
+            <div class="col-span-full bg-white dark:bg-navy-900 rounded-3xl p-8 sm:p-12 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 space-y-4">
+                <div class="w-16 h-16 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-3xl mx-auto shadow-sm">
+                    🏢
+                </div>
+                <div class="max-w-md mx-auto">
+                    <h3 class="text-base sm:text-lg font-black text-slate-900 dark:text-white">No Client Properties Registered</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">The database has been cleaned and is ready for real operations. As Super Admin, click the button below to onboard your first facility, configure its plan tier, and provision its security director.</p>
+                </div>
+                <button onclick="openModal('createPropertyModal')" class="px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black shadow-lg shadow-emerald-700/30 transition inline-flex items-center gap-2">
+                    <span>🏢</span> {{ T.onboard_client_btn }}
+                </button>
+            </div>
             {% endfor %}
         </div>
     </div>
@@ -451,6 +464,12 @@
                                 </button>
                             </td>
                         </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-10 text-slate-400 italic">
+                                No users found. Click "+ Provision User" to create an account.
+                            </td>
+                        </tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -522,179 +541,184 @@
 </div>
 
 <!-- MODAL 1: ONBOARD NEW CLIENT PROPERTY & PROVISION FIRST ADMIN -->
-<div id="createPropertyModal" class="fixed inset-0 bg-navy-950/75 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white dark:bg-navy-900 rounded-3xl max-w-3xl w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6 my-8 max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+<div id="createPropertyModal" class="fixed inset-0 bg-navy-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-navy-900 rounded-2xl sm:rounded-3xl max-w-3xl w-full border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col max-h-[85vh] my-auto overflow-hidden">
+        <!-- Sticky Header -->
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-6 py-4 shrink-0 bg-white dark:bg-navy-900">
             <div>
-                <h3 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                <h3 class="text-base sm:text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                     <span>🏢</span> {{ T.onboard_modal_title }}
                 </h3>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Create client facility, contract plan tier, monthly fee, and provision first admin credentials.</p>
             </div>
-            <button onclick="closeModal('createPropertyModal')" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">✕</button>
+            <button type="button" onclick="closeModal('createPropertyModal')" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition">✕</button>
         </div>
 
-        <form action="{% url 'property_create' %}" method="POST" class="space-y-6 text-xs">
+        <form action="{% url 'property_create' %}" method="POST" class="flex flex-col flex-1 overflow-hidden m-0">
             {% csrf_token %}
             
-            <!-- SECTION 1: FACILITY PROFILE -->
-            <div class="space-y-3">
-                <div class="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-extrabold uppercase text-[11px] tracking-wider">
-                    <span>1.</span> <span>Facility Profile & Location</span>
+            <!-- Scrollable Body -->
+            <div class="p-6 overflow-y-auto space-y-6 text-xs flex-1">
+                <!-- SECTION 1: FACILITY PROFILE -->
+                <div class="space-y-3">
+                    <div class="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-extrabold uppercase text-[11px] tracking-wider">
+                        <span>1.</span> <span>Facility Profile & Location</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_name_en }} *</label>
+                            <input type="text" name="name" required placeholder="e.g. Al Faisaliah Tower & Compound" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_name_ar }}</label>
+                            <input type="text" name="name_ar" placeholder="مثال: برج ومجمع الفيصلية السكني" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_code }} *</label>
+                            <input type="text" name="code" required placeholder="PROP-RUH-05" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono uppercase focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_type }}</label>
+                            <select name="property_type" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                                {% for val, label in property_types %}
+                                <option value="{{ val }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.city }}</label>
+                            <input type="text" name="city" value="Riyadh" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.address }}</label>
+                        <input type="text" name="address" placeholder="e.g. King Fahd Road, Al Olaya District" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_name_en }} *</label>
-                        <input type="text" name="name" required placeholder="e.g. Al Faisaliah Tower & Compound" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                <!-- SECTION 2: SAAS SUBSCRIPTION & COMMERCIAL PRICING -->
+                <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <div class="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-extrabold uppercase text-[11px] tracking-wider">
+                        <span>2.</span> <span>Commercial Plan, Monthly Fee & Client Buyer</span>
                     </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_name_ar }}</label>
-                        <input type="text" name="name_ar" placeholder="مثال: برج ومجمع الفيصلية السكني" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.plan_tier }} *</label>
+                            <select name="plan_tier" id="onboard_plan_tier" onchange="autoFillFee(this.value)" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 font-semibold">
+                                <option value="starter">Starter (500 SAR/mo)</option>
+                                <option value="professional" selected>Professional (1,500 SAR/mo)</option>
+                                <option value="enterprise">Enterprise (3,500 SAR/mo)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.monthly_fee }} (SAR) *</label>
+                            <input type="number" step="0.01" name="monthly_fee" id="onboard_monthly_fee" value="1500.00" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono font-bold focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.billing_cycle }}</label>
+                            <select name="billing_cycle" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500">
+                                {% for cval, clabel in billing_cycle_choices %}
+                                <option value="{{ cval }}">{{ clabel }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_company }}</label>
+                            <input type="text" name="buyer_company" placeholder="e.g. Al Faisaliah Real Estate Holding" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_name }}</label>
+                            <input type="text" name="buyer_name" placeholder="e.g. Eng. Tariq Al-Ghamdi" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_phone }}</label>
+                            <input type="text" name="buyer_phone" placeholder="+966 50 882 1199" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_email }}</label>
+                            <input type="email" name="buyer_email" placeholder="billing@faisaliah.sa" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.subscription_status }}</label>
+                            <select name="subscription_status" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 font-semibold">
+                                <option value="active" selected>Active Subscription</option>
+                                <option value="trial">Trial Period</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_code }} *</label>
-                        <input type="text" name="code" required placeholder="PROP-RUH-05" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono uppercase focus:ring-2 focus:ring-indigo-500">
+                <!-- SECTION 3: PROVISION FIRST ADMIN USER (BUYER CREDENTIALS) -->
+                <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <div class="flex items-center gap-2 text-sky-600 dark:text-sky-400 font-extrabold uppercase text-[11px] tracking-wider">
+                        <span>3.</span> <span>{{ T.first_admin_account }}</span>
                     </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_type }}</label>
-                        <select name="property_type" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
-                            {% for val, label in property_types %}
-                            <option value="{{ val }}">{{ label }}</option>
-                            {% endfor %}
-                        </select>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400">These credentials allow the buyer / property security director to immediately log into their facility command dashboard.</p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.admin_username }} *</label>
+                            <input type="text" name="admin_username" required placeholder="e.g. dir_faisaliah" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-sky-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.admin_password }} *</label>
+                            <input type="password" name="admin_password" required placeholder="••••••••" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
+                        </div>
                     </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.city }}</label>
-                        <input type="text" name="city" value="Riyadh" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.admin_first_name }}</label>
+                            <input type="text" name="admin_first_name" placeholder="Tariq" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.admin_last_name }}</label>
+                            <input type="text" name="admin_last_name" placeholder="Al-Ghamdi" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.admin_role }}</label>
+                            <select name="admin_role" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
+                                <option value="director" selected>Security Director (Property Lead)</option>
+                                <option value="cluster_director">Cluster Security Director (Multi-Property)</option>
+                                <option value="supervisor">Shift Supervisor</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.address }}</label>
-                    <input type="text" name="address" placeholder="e.g. King Fahd Road, Al Olaya District" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                <!-- SECTION 4: AUTOMATION OPTIONS -->
+                <div class="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <div class="p-3 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800/60 flex items-center gap-3">
+                        <input type="checkbox" name="create_default_gate" id="create_default_gate" checked class="w-4 h-4 text-emerald-600 rounded">
+                        <label for="create_default_gate" class="font-bold text-indigo-900 dark:text-indigo-200 cursor-pointer text-xs">
+                            {{ T.auto_create_main_gate }}
+                        </label>
+                    </div>
+
+                    <div class="p-3 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-3">
+                        <input type="checkbox" name="generate_initial_invoice" id="generate_initial_invoice" checked class="w-4 h-4 text-emerald-600 rounded">
+                        <label for="generate_initial_invoice" class="font-bold text-emerald-900 dark:text-emerald-200 cursor-pointer text-xs">
+                            {{ T.initial_invoice_gen }}
+                        </label>
+                    </div>
                 </div>
             </div>
 
-            <!-- SECTION 2: SAAS SUBSCRIPTION & COMMERCIAL PRICING -->
-            <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                <div class="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-extrabold uppercase text-[11px] tracking-wider">
-                    <span>2.</span> <span>Commercial Plan, Monthly Fee & Client Buyer</span>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.plan_tier }} *</label>
-                        <select name="plan_tier" id="onboard_plan_tier" onchange="autoFillFee(this.value)" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 font-semibold">
-                            <option value="starter">Starter (500 SAR/mo)</option>
-                            <option value="professional" selected>Professional (1,500 SAR/mo)</option>
-                            <option value="enterprise">Enterprise (3,500 SAR/mo)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.monthly_fee }} (SAR) *</label>
-                        <input type="number" step="0.01" name="monthly_fee" id="onboard_monthly_fee" value="1500.00" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono font-bold focus:ring-2 focus:ring-emerald-500">
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.billing_cycle }}</label>
-                        <select name="billing_cycle" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500">
-                            {% for cval, clabel in billing_cycle_choices %}
-                            <option value="{{ cval }}">{{ clabel }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_company }}</label>
-                        <input type="text" name="buyer_company" placeholder="e.g. Al Faisaliah Real Estate Holding" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500">
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_name }}</label>
-                        <input type="text" name="buyer_name" placeholder="e.g. Eng. Tariq Al-Ghamdi" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_phone }}</label>
-                        <input type="text" name="buyer_phone" placeholder="+966 50 882 1199" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-emerald-500">
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_email }}</label>
-                        <input type="email" name="buyer_email" placeholder="billing@faisaliah.sa" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500">
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.subscription_status }}</label>
-                        <select name="subscription_status" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 font-semibold">
-                            <option value="active" selected>Active Subscription</option>
-                            <option value="trial">Trial Period</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SECTION 3: PROVISION FIRST ADMIN USER (BUYER CREDENTIALS) -->
-            <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                <div class="flex items-center gap-2 text-sky-600 dark:text-sky-400 font-extrabold uppercase text-[11px] tracking-wider">
-                    <span>3.</span> <span>{{ T.first_admin_account }}</span>
-                </div>
-                <p class="text-[11px] text-slate-500 dark:text-slate-400">These credentials allow the buyer / property security director to immediately log into their facility command dashboard.</p>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.admin_username }} *</label>
-                        <input type="text" name="admin_username" required placeholder="e.g. dir_faisaliah" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-sky-500">
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.admin_password }} *</label>
-                        <input type="password" name="admin_password" required placeholder="••••••••" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.admin_first_name }}</label>
-                        <input type="text" name="admin_first_name" placeholder="Tariq" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.admin_last_name }}</label>
-                        <input type="text" name="admin_last_name" placeholder="Al-Ghamdi" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.admin_role }}</label>
-                        <select name="admin_role" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
-                            <option value="director" selected>Security Director (Property Lead)</option>
-                            <option value="cluster_director">Cluster Security Director (Multi-Property)</option>
-                            <option value="supervisor">Shift Supervisor</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SECTION 4: AUTOMATION OPTIONS -->
-            <div class="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                <div class="p-3 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800/60 flex items-center gap-3">
-                    <input type="checkbox" name="create_default_gate" id="create_default_gate" checked class="w-4 h-4 text-emerald-600 rounded">
-                    <label for="create_default_gate" class="font-bold text-indigo-900 dark:text-indigo-200 cursor-pointer text-xs">
-                        {{ T.auto_create_main_gate }}
-                    </label>
-                </div>
-
-                <div class="p-3 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-3">
-                    <input type="checkbox" name="generate_initial_invoice" id="generate_initial_invoice" checked class="w-4 h-4 text-emerald-600 rounded">
-                    <label for="generate_initial_invoice" class="font-bold text-emerald-900 dark:text-emerald-200 cursor-pointer text-xs">
-                        {{ T.initial_invoice_gen }}
-                    </label>
-                </div>
-            </div>
-
-            <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                <button type="button" onclick="closeModal('createPropertyModal')" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+            <!-- Sticky Footer -->
+            <div class="flex items-center justify-end gap-3 px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 shrink-0 bg-slate-50 dark:bg-navy-950/80">
+                <button type="button" onclick="closeModal('createPropertyModal')" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition">
                     Cancel
                 </button>
                 <button type="submit" class="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black shadow-lg shadow-emerald-700/30 transition flex items-center gap-2">
@@ -706,58 +730,63 @@
 </div>
 
 <!-- MODAL 2: COLLECT MONTHLY SUBSCRIPTION FEE -->
-<div id="collectFeeModal" class="fixed inset-0 bg-navy-950/75 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white dark:bg-navy-900 rounded-3xl max-w-lg w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5 my-8">
-        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+<div id="collectFeeModal" class="fixed inset-0 bg-navy-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-navy-900 rounded-2xl sm:rounded-3xl max-w-lg w-full border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col max-h-[85vh] my-auto overflow-hidden">
+        <!-- Sticky Header -->
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-6 py-4 shrink-0 bg-white dark:bg-navy-900">
             <div>
-                <h3 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                <h3 class="text-base sm:text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                     <span>💳</span> {{ T.record_payment_modal_title }}
                 </h3>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5" id="collect_fee_target_desc">Record subscription payment and renew facility access.</p>
             </div>
-            <button onclick="closeModal('collectFeeModal')" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">✕</button>
+            <button type="button" onclick="closeModal('collectFeeModal')" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition">✕</button>
         </div>
 
-        <form id="collectFeeForm" method="POST" class="space-y-4 text-xs">
+        <form id="collectFeeForm" method="POST" class="flex flex-col flex-1 overflow-hidden m-0">
             {% csrf_token %}
 
-            <div class="p-3.5 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/50">
-                <span class="text-[10px] uppercase font-bold text-indigo-900 dark:text-indigo-300 block">Facility Name & Code</span>
-                <span class="text-sm font-black text-slate-900 dark:text-white block mt-0.5" id="collect_prop_title">—</span>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Fee Amount (SAR) *</label>
-                    <input type="number" step="0.01" name="amount" id="collect_amount" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono font-black text-base focus:ring-2 focus:ring-emerald-500">
+            <!-- Scrollable Body -->
+            <div class="p-6 overflow-y-auto space-y-4 text-xs flex-1">
+                <div class="p-3.5 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/50">
+                    <span class="text-[10px] uppercase font-bold text-indigo-900 dark:text-indigo-300 block">Facility Name & Code</span>
+                    <span class="text-sm font-black text-slate-900 dark:text-white block mt-0.5" id="collect_prop_title">—</span>
                 </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Fee Amount (SAR) *</label>
+                        <input type="number" step="0.01" name="amount" id="collect_amount" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono font-black text-base focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.billing_period }} *</label>
+                        <input type="text" name="billing_period" id="collect_period" value="September 2026" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-semibold focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+
                 <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.billing_period }} *</label>
-                    <input type="text" name="billing_period" id="collect_period" value="September 2026" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-semibold focus:ring-2 focus:ring-emerald-500">
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.payment_method }} *</label>
+                    <select name="payment_method" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 font-semibold">
+                        {% for pval, plabel in payment_method_choices %}
+                        <option value="{{ pval }}">{{ plabel }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.payment_ref }} *</label>
+                    <input type="text" name="payment_reference" required placeholder="e.g. TRX-994812-SNB or MADA-771249" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.payment_notes }}</label>
+                    <textarea name="notes" rows="2" placeholder="e.g. Paid via corporate wire transfer from buyer bank account." class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500"></textarea>
                 </div>
             </div>
 
-            <div>
-                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.payment_method }} *</label>
-                <select name="payment_method" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 font-semibold">
-                    {% for pval, plabel in payment_method_choices %}
-                    <option value="{{ pval }}">{{ plabel }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div>
-                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.payment_ref }} *</label>
-                <input type="text" name="payment_reference" required placeholder="e.g. TRX-994812-SNB or MADA-771249" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-emerald-500">
-            </div>
-
-            <div>
-                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.payment_notes }}</label>
-                <textarea name="notes" rows="2" placeholder="e.g. Paid via corporate wire transfer from buyer bank account." class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500"></textarea>
-            </div>
-
-            <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                <button type="button" onclick="closeModal('collectFeeModal')" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+            <!-- Sticky Footer -->
+            <div class="flex items-center justify-end gap-3 px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 shrink-0 bg-slate-50 dark:bg-navy-950/80">
+                <button type="button" onclick="closeModal('collectFeeModal')" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition">
                     Cancel
                 </button>
                 <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black shadow-lg shadow-emerald-700/30 transition flex items-center gap-2">
@@ -769,110 +798,115 @@
 </div>
 
 <!-- MODAL 3: EDIT CLIENT CONTRACT & PROPERTY METADATA -->
-<div id="editPropertyModal" class="fixed inset-0 bg-navy-950/75 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white dark:bg-navy-900 rounded-3xl max-w-3xl w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5 my-8 max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+<div id="editPropertyModal" class="fixed inset-0 bg-navy-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-navy-900 rounded-2xl sm:rounded-3xl max-w-3xl w-full border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col max-h-[85vh] my-auto overflow-hidden">
+        <!-- Sticky Header -->
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-6 py-4 shrink-0 bg-white dark:bg-navy-900">
             <div>
-                <h3 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                <h3 class="text-base sm:text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                     <span>✏️</span> Edit Client Contract & Property Metadata
                 </h3>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Update subscription pricing, billing cycle, buyer contact, or facility parameters.</p>
             </div>
-            <button onclick="closeModal('editPropertyModal')" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">✕</button>
+            <button type="button" onclick="closeModal('editPropertyModal')" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition">✕</button>
         </div>
 
-        <form id="editPropertyForm" method="POST" class="space-y-4 text-xs">
+        <form id="editPropertyForm" method="POST" class="flex flex-col flex-1 overflow-hidden m-0">
             {% csrf_token %}
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_name_en }} *</label>
-                    <input type="text" name="name" id="edit_prop_name" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+            <!-- Scrollable Body -->
+            <div class="p-6 overflow-y-auto space-y-5 text-xs flex-1">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_name_en }} *</label>
+                        <input type="text" name="name" id="edit_prop_name" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_name_ar }}</label>
+                        <input type="text" name="name_ar" id="edit_prop_name_ar" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
                 </div>
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_name_ar }}</label>
-                    <input type="text" name="name_ar" id="edit_prop_name_ar" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
-                </div>
-            </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_code }} *</label>
-                    <input type="text" name="code" id="edit_prop_code" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono uppercase focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_type }}</label>
-                    <select name="property_type" id="edit_prop_type" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
-                        {% for val, label in property_types %}
-                        <option value="{{ val }}">{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.city }}</label>
-                    <input type="text" name="city" id="edit_prop_city" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
-                </div>
-            </div>
-
-            <!-- SaaS Subscription fields in Edit -->
-            <div class="p-3.5 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/50 space-y-3">
-                <span class="text-[11px] font-extrabold uppercase text-indigo-900 dark:text-indigo-300 block">SaaS Commercial Contract & Status</span>
-                
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.plan_tier }}</label>
-                        <select name="plan_tier" id="edit_prop_plan_tier" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
-                            {% for pval, plabel in plan_tier_choices %}
-                            <option value="{{ pval }}">{{ plabel }}</option>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_code }} *</label>
+                        <input type="text" name="code" id="edit_prop_code" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono uppercase focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.property_type }}</label>
+                        <select name="property_type" id="edit_prop_type" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                            {% for val, label in property_types %}
+                            <option value="{{ val }}">{{ label }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.monthly_fee }} (SAR)</label>
-                        <input type="number" step="0.01" name="monthly_fee" id="edit_prop_monthly_fee" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono font-bold focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.subscription_status }}</label>
-                        <select name="subscription_status" id="edit_prop_sub_status" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-indigo-500">
-                            {% for sval, slabel in subscription_status_choices %}
-                            <option value="{{ sval }}">{{ slabel }}</option>
-                            {% endfor %}
-                        </select>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.city }}</label>
+                        <input type="text" name="city" id="edit_prop_city" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_company }}</label>
-                        <input type="text" name="buyer_company" id="edit_prop_buyer_company" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                <!-- SaaS Subscription fields in Edit -->
+                <div class="p-3.5 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/50 space-y-3">
+                    <span class="text-[11px] font-extrabold uppercase text-indigo-900 dark:text-indigo-300 block">SaaS Commercial Contract & Status</span>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.plan_tier }}</label>
+                            <select name="plan_tier" id="edit_prop_plan_tier" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                                {% for pval, plabel in plan_tier_choices %}
+                                <option value="{{ pval }}">{{ plabel }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.monthly_fee }} (SAR)</label>
+                            <input type="number" step="0.01" name="monthly_fee" id="edit_prop_monthly_fee" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono font-bold focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.subscription_status }}</label>
+                            <select name="subscription_status" id="edit_prop_sub_status" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-indigo-500">
+                                {% for sval, slabel in subscription_status_choices %}
+                                <option value="{{ sval }}">{{ slabel }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_name }}</label>
-                        <input type="text" name="buyer_name" id="edit_prop_buyer_name" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_company }}</label>
+                            <input type="text" name="buyer_company" id="edit_prop_buyer_company" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_name }}</label>
+                            <input type="text" name="buyer_name" id="edit_prop_buyer_name" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_phone }}</label>
+                            <input type="text" name="buyer_phone" id="edit_prop_buyer_phone" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_email }}</label>
+                            <input type="email" name="buyer_email" id="edit_prop_buyer_email" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                        </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_phone }}</label>
-                        <input type="text" name="buyer_phone" id="edit_prop_buyer_phone" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.buyer_email }}</label>
-                        <input type="email" name="buyer_email" id="edit_prop_buyer_email" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
-                    </div>
+                <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center gap-3">
+                    <input type="checkbox" name="is_active" id="edit_prop_is_active" class="w-4 h-4 text-emerald-600 rounded">
+                    <label for="edit_prop_is_active" class="font-bold text-slate-800 dark:text-slate-200 cursor-pointer">
+                        Client Facility is Active & Service Enabled
+                    </label>
                 </div>
             </div>
 
-            <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center gap-3">
-                <input type="checkbox" name="is_active" id="edit_prop_is_active" class="w-4 h-4 text-emerald-600 rounded">
-                <label for="edit_prop_is_active" class="font-bold text-slate-800 dark:text-slate-200 cursor-pointer">
-                    Client Facility is Active & Service Enabled
-                </label>
-            </div>
-
-            <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                <button type="button" onclick="closeModal('editPropertyModal')" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+            <!-- Sticky Footer -->
+            <div class="flex items-center justify-end gap-3 px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 shrink-0 bg-slate-50 dark:bg-navy-950/80">
+                <button type="button" onclick="closeModal('editPropertyModal')" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition">
                     Cancel
                 </button>
                 <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-md shadow-indigo-700/30 transition flex items-center gap-2">
@@ -884,119 +918,126 @@
 </div>
 
 <!-- MODAL 4: PROVISION SECURITY STAFF -->
-<div id="createUserModal" class="fixed inset-0 bg-navy-950/75 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white dark:bg-navy-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5 my-8">
-        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+<div id="createUserModal" class="fixed inset-0 bg-navy-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-navy-900 rounded-2xl sm:rounded-3xl max-w-2xl w-full border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col max-h-[85vh] my-auto overflow-hidden">
+        <!-- Sticky Header -->
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-6 py-4 shrink-0 bg-white dark:bg-navy-900">
             <div>
-                <h3 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                <h3 class="text-base sm:text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                     <span>👤</span> {{ T.add_user_btn }}
                 </h3>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Provision security officers, supervisors, or client directors.</p>
             </div>
-            <button onclick="closeModal('createUserModal')" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">✕</button>
+            <button type="button" onclick="closeModal('createUserModal')" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition">✕</button>
         </div>
 
-        <form action="{% url 'user_create' %}" method="POST" class="space-y-4 text-xs">
+        <form action="{% url 'user_create' %}" method="POST" class="flex flex-col flex-1 overflow-hidden m-0">
             {% csrf_token %}
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Username *</label>
-                    <input type="text" name="username" required placeholder="e.g. guard_khalid" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-sky-500">
+            <!-- Scrollable Body -->
+            <div class="p-6 overflow-y-auto space-y-4 text-xs flex-1">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Username *</label>
+                        <input type="text" name="username" required placeholder="e.g. dir_hotel or guard_khalid" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Password *</label>
+                        <input type="password" name="password" required placeholder="••••••••" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
+                    </div>
                 </div>
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Password *</label>
-                    <input type="password" name="password" required placeholder="••••••••" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
-                </div>
-            </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">First Name</label>
-                    <input type="text" name="first_name" placeholder="e.g. Khalid" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">First Name</label>
+                        <input type="text" name="first_name" placeholder="e.g. Khalid" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Last Name</label>
+                        <input type="text" name="last_name" placeholder="e.g. Al-Zahrani" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
+                    </div>
                 </div>
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Last Name</label>
-                    <input type="text" name="last_name" placeholder="e.g. Al-Zahrani" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
-                </div>
-            </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Role *</label>
-                    <select name="role" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
-                        {% for rval, rname in role_choices %}
-                        <option value="{{ rval }}">{{ rname }}</option>
-                        {% endfor %}
-                    </select>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Role *</label>
+                        <select name="role" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500 font-semibold">
+                            {% for rval, rname in role_choices %}
+                            <option value="{{ rval }}">{{ rname }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.badge_number }}</label>
+                        <input type="text" name="badge_number" placeholder="e.g. SEC-8842" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Phone / WhatsApp</label>
+                        <input type="text" name="phone" placeholder="+966 55 999 1122" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-sky-500">
+                    </div>
                 </div>
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.badge_number }}</label>
-                    <input type="text" name="badge_number" placeholder="e.g. SEC-8842" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-sky-500">
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Phone / WhatsApp</label>
-                    <input type="text" name="phone" placeholder="+966 55 999 1122" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-sky-500">
-                </div>
-            </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.assigned_property }}</label>
-                    <select name="property_id" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
-                        <option value="">-- Unassigned --</option>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.assigned_property }}</label>
+                        <select name="property_id" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
+                            <option value="">-- Unassigned --</option>
+                            {% for p in all_properties %}
+                            <option value="{{ p.id }}">[{{ p.code }}] {% if lang == 'ar' and p.name_ar %}{{ p.name_ar }}{% else %}{{ p.name }}{% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.assigned_gate }}</label>
+                        <select name="gate_id" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
+                            <option value="">-- Any Gate / Roaming --</option>
+                            {% for g in all_gates %}
+                            <option value="{{ g.id }}">[{{ g.property.code|default:"" }}] {{ g.code }} - {% if lang == 'ar' and g.name_ar %}{{ g.name_ar }}{% else %}{{ g.name }}{% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Shift</label>
+                        <select name="shift" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
+                            {% for sval, sname in shift_choices %}
+                            <option value="{{ sval }}">{{ sname }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Cluster Properties Multi-select -->
+                <div class="p-3.5 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800/60 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                            <span>🏢</span> {{ T.assigned_cluster_properties }} (Cluster Access)
+                        </label>
+                        <span class="text-[10px] font-semibold text-indigo-500 dark:text-indigo-400">Multi-Facility Jurisdiction</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 max-h-36 overflow-y-auto">
                         {% for p in all_properties %}
-                        <option value="{{ p.id }}">[{{ p.code }}] {% if lang == 'ar' and p.name_ar %}{{ p.name_ar }}{% else %}{{ p.name }}{% endif %}</option>
+                        <label class="flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 cursor-pointer hover:border-indigo-400 transition text-xs">
+                            <input type="checkbox" name="cluster_properties" value="{{ p.id }}" class="w-4 h-4 text-indigo-600 rounded">
+                            <span class="font-mono font-bold text-[10px] text-indigo-600 dark:text-indigo-400">[{{ p.code }}]</span>
+                            <span class="truncate font-medium text-slate-800 dark:text-slate-200">{% if lang == 'ar' and p.name_ar %}{{ p.name_ar }}{% else %}{{ p.name }}{% endif %}</span>
+                        </label>
+                        {% empty %}
+                        <span class="text-[11px] text-slate-400 italic col-span-2">No facilities onboarded yet.</span>
                         {% endfor %}
-                    </select>
+                    </div>
                 </div>
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.assigned_gate }}</label>
-                    <select name="gate_id" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
-                        <option value="">-- Any Gate / Roaming --</option>
-                        {% for g in all_gates %}
-                        <option value="{{ g.id }}">[{{ g.property.code|default:"" }}] {{ g.code }} - {% if lang == 'ar' and g.name_ar %}{{ g.name_ar }}{% else %}{{ g.name }}{% endif %}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Shift</label>
-                    <select name="shift" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
-                        {% for sval, sname in shift_choices %}
-                        <option value="{{ sval }}">{{ sname }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
 
-            <!-- Cluster Properties Multi-select -->
-            <div class="p-3.5 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800/60 space-y-2">
-                <div class="flex items-center justify-between">
-                    <label class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                        <span>🏢</span> {{ T.assigned_cluster_properties }} (Cluster Access)
+                <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center gap-3">
+                    <input type="checkbox" name="is_on_duty" id="create_user_is_on_duty" checked class="w-4 h-4 text-sky-600 rounded">
+                    <label for="create_user_is_on_duty" class="font-bold text-slate-800 dark:text-slate-200 cursor-pointer">
+                        Active & Currently On Duty
                     </label>
-                    <span class="text-[10px] font-semibold text-indigo-500 dark:text-indigo-400">Multi-Facility Jurisdiction</span>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 max-h-36 overflow-y-auto">
-                    {% for p in all_properties %}
-                    <label class="flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 cursor-pointer hover:border-indigo-400 transition text-xs">
-                        <input type="checkbox" name="cluster_properties" value="{{ p.id }}" class="w-4 h-4 text-indigo-600 rounded">
-                        <span class="font-mono font-bold text-[10px] text-indigo-600 dark:text-indigo-400">[{{ p.code }}]</span>
-                        <span class="truncate font-medium text-slate-800 dark:text-slate-200">{% if lang == 'ar' and p.name_ar %}{{ p.name_ar }}{% else %}{{ p.name }}{% endif %}</span>
-                    </label>
-                    {% endfor %}
                 </div>
             </div>
 
-            <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center gap-3">
-                <input type="checkbox" name="is_on_duty" id="create_user_is_on_duty" checked class="w-4 h-4 text-sky-600 rounded">
-                <label for="create_user_is_on_duty" class="font-bold text-slate-800 dark:text-slate-200 cursor-pointer">
-                    Active & Currently On Duty
-                </label>
-            </div>
-
-            <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                <button type="button" onclick="closeModal('createUserModal')" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+            <!-- Sticky Footer -->
+            <div class="flex items-center justify-end gap-3 px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 shrink-0 bg-slate-50 dark:bg-navy-950/80">
+                <button type="button" onclick="closeModal('createUserModal')" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition">
                     Cancel
                 </button>
                 <button type="submit" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold shadow-md shadow-sky-700/30 transition flex items-center gap-2">
@@ -1008,116 +1049,123 @@
 </div>
 
 <!-- MODAL 5: EDIT SECURITY STAFF -->
-<div id="editUserModal" class="fixed inset-0 bg-navy-950/75 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white dark:bg-navy-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5 my-8">
-        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+<div id="editUserModal" class="fixed inset-0 bg-navy-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-navy-900 rounded-2xl sm:rounded-3xl max-w-2xl w-full border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col max-h-[85vh] my-auto overflow-hidden">
+        <!-- Sticky Header -->
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-6 py-4 shrink-0 bg-white dark:bg-navy-900">
             <div>
-                <h3 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                <h3 class="text-base sm:text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                     <span>✏️</span> Edit User Profile & Roles
                 </h3>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5" id="edit_user_title_sub">Update role, property assignments, shift, or reset password.</p>
             </div>
-            <button onclick="closeModal('editUserModal')" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">✕</button>
+            <button type="button" onclick="closeModal('editUserModal')" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition">✕</button>
         </div>
 
-        <form id="editUserForm" method="POST" class="space-y-4 text-xs">
+        <form id="editUserForm" method="POST" class="flex flex-col flex-1 overflow-hidden m-0">
             {% csrf_token %}
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">First Name</label>
-                    <input type="text" name="first_name" id="edit_user_first_name" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
+            <!-- Scrollable Body -->
+            <div class="p-6 overflow-y-auto space-y-4 text-xs flex-1">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">First Name</label>
+                        <input type="text" name="first_name" id="edit_user_first_name" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Last Name</label>
+                        <input type="text" name="last_name" id="edit_user_last_name" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
+                    </div>
                 </div>
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Last Name</label>
-                    <input type="text" name="last_name" id="edit_user_last_name" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
-                </div>
-            </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Role</label>
-                    <select name="role" id="edit_user_role" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
-                        {% for rval, rname in role_choices %}
-                        <option value="{{ rval }}">{{ rname }}</option>
-                        {% endfor %}
-                    </select>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Role</label>
+                        <select name="role" id="edit_user_role" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500 font-semibold">
+                            {% for rval, rname in role_choices %}
+                            <option value="{{ rval }}">{{ rname }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.badge_number }}</label>
+                        <input type="text" name="badge_number" id="edit_user_badge" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Phone</label>
+                        <input type="text" name="phone" id="edit_user_phone" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-sky-500">
+                    </div>
                 </div>
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.badge_number }}</label>
-                    <input type="text" name="badge_number" id="edit_user_badge" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-sky-500">
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Phone</label>
-                    <input type="text" name="phone" id="edit_user_phone" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-sky-500">
-                </div>
-            </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.assigned_property }}</label>
-                    <select name="property_id" id="edit_user_property" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
-                        <option value="">-- Unassigned --</option>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.assigned_property }}</label>
+                        <select name="property_id" id="edit_user_property" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
+                            <option value="">-- Unassigned --</option>
+                            {% for p in all_properties %}
+                            <option value="{{ p.id }}">[{{ p.code }}] {% if lang == 'ar' and p.name_ar %}{{ p.name_ar }}{% else %}{{ p.name }}{% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.assigned_gate }}</label>
+                        <select name="gate_id" id="edit_user_gate" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
+                            <option value="">-- Any Gate / Roaming --</option>
+                            {% for g in all_gates %}
+                            <option value="{{ g.id }}">[{{ g.property.code|default:"" }}] {{ g.code }} - {% if lang == 'ar' and g.name_ar %}{{ g.name_ar }}{% else %}{{ g.name }}{% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Shift</label>
+                        <select name="shift" id="edit_user_shift" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
+                            {% for sval, sname in shift_choices %}
+                            <option value="{{ sval }}">{{ sname }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Cluster Properties Multi-select -->
+                <div class="p-3.5 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800/60 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                            <span>🏢</span> {{ T.assigned_cluster_properties }} (Cluster Access)
+                        </label>
+                        <span class="text-[10px] font-semibold text-indigo-500 dark:text-indigo-400">Multi-Facility Jurisdiction</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 max-h-36 overflow-y-auto">
                         {% for p in all_properties %}
-                        <option value="{{ p.id }}">[{{ p.code }}] {% if lang == 'ar' and p.name_ar %}{{ p.name_ar }}{% else %}{{ p.name }}{% endif %}</option>
+                        <label class="flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 cursor-pointer hover:border-indigo-400 transition text-xs">
+                            <input type="checkbox" name="cluster_properties" value="{{ p.id }}" class="edit-cluster-prop-cb w-4 h-4 text-indigo-600 rounded" id="edit_cp_{{ p.id }}">
+                            <span class="font-mono font-bold text-[10px] text-indigo-600 dark:text-indigo-400">[{{ p.code }}]</span>
+                            <span class="truncate font-medium text-slate-800 dark:text-slate-200">{% if lang == 'ar' and p.name_ar %}{{ p.name_ar }}{% else %}{{ p.name }}{% endif %}</span>
+                        </label>
+                        {% empty %}
+                        <span class="text-[11px] text-slate-400 italic col-span-2">No facilities onboarded yet.</span>
                         {% endfor %}
-                    </select>
+                    </div>
                 </div>
+
                 <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.assigned_gate }}</label>
-                    <select name="gate_id" id="edit_user_gate" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
-                        <option value="">-- Any Gate / Roaming --</option>
-                        {% for g in all_gates %}
-                        <option value="{{ g.id }}">[{{ g.property.code|default:"" }}] {{ g.code }} - {% if lang == 'ar' and g.name_ar %}{{ g.name_ar }}{% else %}{{ g.name }}{% endif %}</option>
-                        {% endfor %}
-                    </select>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">New Password (leave blank to keep unchanged)</label>
+                    <input type="password" name="password" placeholder="••••••••" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
                 </div>
-                <div>
-                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Shift</label>
-                    <select name="shift" id="edit_user_shift" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
-                        {% for sval, sname in shift_choices %}
-                        <option value="{{ sval }}">{{ sname }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
 
-            <!-- Cluster Properties Multi-select -->
-            <div class="p-3.5 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800/60 space-y-2">
-                <div class="flex items-center justify-between">
-                    <label class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                        <span>🏢</span> {{ T.assigned_cluster_properties }} (Cluster Access)
+                <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center gap-3">
+                    <input type="checkbox" name="is_on_duty" id="edit_user_is_on_duty" class="w-4 h-4 text-sky-600 rounded">
+                    <label for="edit_user_is_on_duty" class="font-bold text-slate-800 dark:text-slate-200 cursor-pointer">
+                        User is Active & On Duty
                     </label>
-                    <span class="text-[10px] font-semibold text-indigo-500 dark:text-indigo-400">Multi-Facility Jurisdiction</span>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 max-h-36 overflow-y-auto">
-                    {% for p in all_properties %}
-                    <label class="flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 cursor-pointer hover:border-indigo-400 transition text-xs">
-                        <input type="checkbox" name="cluster_properties" value="{{ p.id }}" class="edit-cluster-prop-cb w-4 h-4 text-indigo-600 rounded" id="edit_cp_{{ p.id }}">
-                        <span class="font-mono font-bold text-[10px] text-indigo-600 dark:text-indigo-400">[{{ p.code }}]</span>
-                        <span class="truncate font-medium text-slate-800 dark:text-slate-200">{% if lang == 'ar' and p.name_ar %}{{ p.name_ar }}{% else %}{{ p.name }}{% endif %}</span>
-                    </label>
-                    {% endfor %}
                 </div>
             </div>
 
-            <div>
-                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">New Password (leave blank to keep unchanged)</label>
-                <input type="password" name="password" placeholder="••••••••" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500">
-            </div>
-
-            <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center gap-3">
-                <input type="checkbox" name="is_on_duty" id="edit_user_is_on_duty" class="w-4 h-4 text-sky-600 rounded">
-                <label for="edit_user_is_on_duty" class="font-bold text-slate-800 dark:text-slate-200 cursor-pointer">
-                    User is Active & On Duty
-                </label>
-            </div>
-
-            <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                <button type="button" onclick="closeModal('editUserModal')" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+            <!-- Sticky Footer -->
+            <div class="flex items-center justify-end gap-3 px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 shrink-0 bg-slate-50 dark:bg-navy-950/80">
+                <button type="button" onclick="closeModal('editUserModal')" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition">
                     Cancel
                 </button>
-                <button type="submit" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold shadow-md shadow-sky-700/30 transition flex items-center gap-2">
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold shadow-md shadow-sky-700/30 transition flex items-center gap-2">
                     <span>✓</span> Update Profile
                 </button>
             </div>

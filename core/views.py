@@ -418,3 +418,27 @@ def subscription_suspended_view(request):
         'prop_name': prop_name,
         'prop_code': prop_code
     })
+
+
+from django.http import HttpResponse
+from django.conf import settings
+import os
+
+def service_worker_view(request):
+    sw_path = os.path.join(settings.BASE_DIR, 'static', 'sw.js')
+    if os.path.exists(sw_path):
+        with open(sw_path, 'rb') as f:
+            response = HttpResponse(f.read(), content_type='application/javascript')
+            response['Service-Worker-Allowed'] = '/'
+            response['Cache-Control'] = 'no-cache'
+            return response
+    return HttpResponse("// sw.js not found", content_type='application/javascript', status=404)
+
+def manifest_view(request):
+    m_path = os.path.join(settings.BASE_DIR, 'static', 'manifest.json')
+    if os.path.exists(m_path):
+        with open(m_path, 'rb') as f:
+            response = HttpResponse(f.read(), content_type='application/manifest+json')
+            response['Cache-Control'] = 'public, max-age=86400'
+            return response
+    return HttpResponse("{}", content_type='application/manifest+json', status=404)

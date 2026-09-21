@@ -100,16 +100,46 @@ def security_context(request):
     active_greencards_count = gp_active_qs.count()
     overdue_greencards_count = gp_overdue_qs.count()
 
-    overstay_count = Visitor.objects.filter(
+    overstay_visitors = Visitor.objects.filter(
         status='active',
         expected_checkout_time__isnull=False,
         expected_checkout_time__lt=now
     )
     if current_property:
-        overstay_count = overstay_count.filter(property=current_property)
+        overstay_visitors = overstay_visitors.filter(property=current_property)
     else:
-        overstay_count = overstay_count.filter(property__in=accessible_properties)
-    overstay_count = overstay_count.count()
+        overstay_visitors = overstay_visitors.filter(property__in=accessible_properties)
+    overstay_count = overstay_visitors.count()
+
+    # 5. Live Notifications / Operational Alerts
+    live_alerts = []
+    for p in gp_overdue_qs.select_related('property')[:4]:
+        live_alerts.append({
+            'type': 'danger',
+            'icon': '🚨',
+            'title': f"Overdue Return: {p.pass_number}",
+            'desc': f"Cargo for {p.carrier_company or p.carrier_name} exceeded return window.",
+            'url': f"/gatepass/{p.id}/",
+            'time': p.expected_return_date,
+        })
+    for v in overstay_visitors[:4]:
+        live_alerts.append({
+            'type': 'warning',
+            'icon': '⏱️',
+            'title': f"Visitor Overstay: {v.full_name}",
+            'desc': f"Pass #{v.pass_number} on site past checkout time.",
+            'url': f"/visitors/{v.id}/",
+            'time': v.expected_checkout_time,
+        })
+    for lf in lf_qs.filter(value_tier='high_value')[:3]:
+        live_alerts.append({
+            'type': 'info',
+            'icon': '💎',
+            'title': f"High-Value Item in Custody: {lf.title}",
+            'desc': f"Ref #{lf.reference_number} stored in {lf.storage_location}.",
+            'url': f"/lost-and-found/{lf.id}/",
+            'time': lf.created_at,
+        })
 
     is_saas_owner = getattr(request.user, 'is_saas_owner', False)
     is_admin_user = (request.user.is_superuser or request.user.role in ('saas_owner', 'director', 'cluster_director', 'supervisor'))
@@ -132,6 +162,8 @@ def security_context(request):
         'overstay_count': overstay_count,
         'active_greencards_count': active_greencards_count,
         'overdue_greencards_count': overdue_greencards_count,
+        'live_alerts': live_alerts,
+        'total_alert_notifications': len(live_alerts),
         'is_admin_user': is_admin_user,
         'current_time': now,
     }

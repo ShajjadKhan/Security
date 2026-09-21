@@ -2,8 +2,19 @@
 <html lang="{{ lang }}" dir="{% if is_rtl %}rtl{% else %}ltr{% endif %}" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{% block title %}{{ T.app_title }}{% endblock %}</title>
+
+    <!-- PWA & Mobile Web App Meta -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="GateSecurity">
+    <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/icons/icon-192.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -71,6 +82,15 @@
         @keyframes fadeInFast {
             from { opacity: 0; transform: translateY(-3px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        /* Touch and mobile form input zoom prevention (minimum 16px font-size) */
+        @media screen and (max-width: 768px) {
+            input, select, textarea {
+                font-size: 16px !important;
+            }
+        }
+        .safe-pb {
+            padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
         }
     </style>
     {% block extra_head %}{% endblock %}
@@ -229,6 +249,74 @@
                     </div>
                     {% endif %}
 
+                    <!-- Notification Bell Dropdown -->
+                    <div class="relative dropdown-container shrink-0">
+                        <button onclick="toggleDropdown('notifDropdownMenu')" class="relative p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center" title="{{ T.notif_center }}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                            {% if total_alert_notifications > 0 %}
+                            <span class="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-600 px-1 text-[9px] font-black text-white shadow-md animate-pulse">
+                                {{ total_alert_notifications }}
+                            </span>
+                            {% endif %}
+                        </button>
+                        <div id="notifDropdownMenu" class="dropdown-menu absolute {% if is_rtl %}left-0{% else %}right-0{% endif %} mt-2 w-80 sm:w-96 bg-navy-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden hidden z-50 text-xs">
+                            <div class="px-4 py-3 bg-slate-800/80 border-b border-slate-700/80 flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm">🔔</span>
+                                    <span class="font-extrabold text-white text-xs">{{ T.notif_center }}</span>
+                                </div>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold {% if total_alert_notifications > 0 %}bg-rose-500/20 text-rose-300 border border-rose-500/40{% else %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/40{% endif %}">
+                                    {{ total_alert_notifications }} Active
+                                </span>
+                            </div>
+
+                            <!-- Push Notification Permission Banner / Button -->
+                            <div class="px-4 py-2 bg-indigo-950/40 border-b border-indigo-900/50 flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-1.5 text-[11px] text-indigo-200">
+                                    <span id="pushStatusIcon">📲</span>
+                                    <span id="pushStatusText">{{ T.notif_enable_push }}</span>
+                                </div>
+                                <button id="pushPermissionBtn" onclick="requestPushNotification()" class="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px] shadow transition">
+                                    Enable
+                                </button>
+                            </div>
+
+                            <!-- Live Alerts List -->
+                            <div class="max-h-72 overflow-y-auto divide-y divide-slate-800/80">
+                                {% if live_alerts %}
+                                    {% for alert in live_alerts %}
+                                    <a href="{{ alert.url }}" class="flex items-start gap-3 px-4 py-3 hover:bg-slate-800/60 transition group">
+                                        <span class="text-base shrink-0 mt-0.5">{{ alert.icon }}</span>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center justify-between gap-1">
+                                                <span class="font-extrabold text-white truncate text-xs group-hover:text-emerald-400 transition">{{ alert.title }}</span>
+                                                <span class="text-[9px] font-mono text-slate-400 shrink-0">{{ alert.time|timesince }} ago</span>
+                                            </div>
+                                            <p class="text-[11px] text-slate-400 mt-0.5 line-clamp-2 leading-relaxed">{{ alert.desc }}</p>
+                                        </div>
+                                    </a>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="p-6 text-center text-slate-400 space-y-1">
+                                        <span class="text-2xl block">✅</span>
+                                        <p class="text-xs font-semibold text-slate-300">{{ T.notif_no_alerts }}</p>
+                                        <p class="text-[10px] text-slate-500">All checkpoints & passes currently in order.</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Footer: Test Notification Button -->
+                            <div class="px-4 py-2 bg-slate-800/60 border-t border-slate-700/80 flex items-center justify-between">
+                                <span class="text-[10px] text-slate-400 font-mono">Web Notification API</span>
+                                <button onclick="triggerTestNotification()" class="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 hover:underline">
+                                    <span>⚡</span> {{ T.notif_test_btn }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Language Switcher Button (1-Click EN / عربي) -->
                     <a href="{% url 'set_language' %}?lang={{ T.switch_lang_target }}" class="px-2 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition flex items-center gap-1 shrink-0" title="Switch Language">
                         <span>🌐</span>
@@ -328,6 +416,27 @@
         </div>
     </header>
 
+    <!-- PWA Install Prompt Banner -->
+    <div id="pwaInstallBanner" class="hidden bg-gradient-to-r from-emerald-950 via-slate-900 to-navy-900 border-b border-emerald-500/30 text-white px-4 py-2.5 shadow-lg">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-3 text-xs">
+            <div class="flex items-center gap-2.5">
+                <span class="text-lg">📲</span>
+                <div>
+                    <strong class="font-extrabold text-emerald-400">{{ T.install_app }}</strong>
+                    <span class="hidden sm:inline text-slate-300 ml-1.5">— {{ T.install_sub }}</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="dismissPwaInstall()" class="px-2.5 py-1 text-[11px] text-slate-400 hover:text-white transition">
+                    ✕
+                </button>
+                <button onclick="triggerPwaInstall()" class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-md transition">
+                    {{ T.install_app }}
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Global Flash Messages -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full">
         {% if messages %}
@@ -346,7 +455,7 @@
     </div>
 
     <!-- Main Content Area -->
-    <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+    <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-24 sm:pb-8 w-full">
         {% block content %}{% endblock %}
     </main>
 
@@ -356,10 +465,208 @@
             <p>© 2026 {{ T.app_title }} — Hotel & Facility Command System</p>
             <div class="flex items-center gap-3 font-mono text-[11px]">
                 {% if current_property %}<span class="text-slate-400">Facility: <strong class="text-slate-700 dark:text-slate-200">[{{ current_property.code }}]</strong></span>{% endif %}
-                <span class="text-emerald-500 font-bold">● Operational (Port 7000)</span>
+                <span class="text-emerald-500 font-bold">● Operational (TLS Secured)</span>
             </div>
         </div>
     </footer>
+
+    {% if user.is_authenticated %}
+    <!-- Mobile Ergonomic Bottom Quick-Action Dock (Fixed) -->
+    <nav class="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-navy-900/95 backdrop-blur-md border-t border-slate-800 px-1 py-1.5 flex items-center justify-around text-slate-400 safe-pb shadow-2xl">
+        <a href="{% url 'dashboard' %}" class="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition {% if request.resolver_match.url_name == 'dashboard' %}text-emerald-400 font-bold bg-slate-800/80{% else %}hover:text-white{% endif %}">
+            <span class="text-base">📊</span>
+            <span class="text-[9px] mt-0.5">{{ T.bottom_nav_home }}</span>
+        </a>
+        <a href="{% url 'gatepass_list' %}" class="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition {% if 'gatepass' in request.path %}text-emerald-400 font-bold bg-slate-800/80{% else %}hover:text-white{% endif %} relative">
+            <span class="text-base">🎫</span>
+            <span class="text-[9px] mt-0.5">{{ T.bottom_nav_passes }}</span>
+            {% if active_greencards_count > 0 %}
+            <span class="absolute top-0.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500"></span>
+            {% endif %}
+        </a>
+        <a href="{% url 'visitor_checkin' %}" class="flex flex-col items-center justify-center -mt-4 py-2 px-3 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-lg shadow-emerald-900/50 hover:scale-105 transition" title="{{ T.bottom_nav_checkin }}">
+            <span class="text-lg">➕</span>
+            <span class="text-[9px] font-black mt-0.5">{{ T.bottom_nav_checkin }}</span>
+        </a>
+        <a href="{% url 'visitor_list' %}" class="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition {% if 'visitor' in request.path and not 'check-in' in request.path %}text-emerald-400 font-bold bg-slate-800/80{% else %}hover:text-white{% endif %} relative">
+            <span class="text-base">🛂</span>
+            <span class="text-[9px] mt-0.5">{{ T.bottom_nav_visitors }}</span>
+            {% if active_visitors_count > 0 %}
+            <span class="absolute top-0.5 right-1.5 w-2 h-2 rounded-full bg-sky-500"></span>
+            {% endif %}
+        </a>
+        <button onclick="toggleMobileNav()" class="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl hover:text-white transition">
+            <span class="text-base">☰</span>
+            <span class="text-[9px] mt-0.5">{{ T.bottom_nav_menu }}</span>
+        </button>
+    </nav>
+    {% endif %}
+
+    <!-- In-App Visual Alert Toast Notification -->
+    <div id="inAppToast" class="fixed top-20 right-4 z-50 transform translate-x-full opacity-0 transition-all duration-300 pointer-events-none max-w-sm w-full bg-navy-900 border border-slate-700 text-white rounded-2xl p-4 shadow-2xl flex items-start gap-3">
+        <span class="text-2xl shrink-0" id="toastIcon">🔔</span>
+        <div class="flex-1 min-w-0">
+            <div class="font-extrabold text-xs text-white" id="toastTitle">Security Notification</div>
+            <div class="text-[11px] text-slate-300 mt-0.5" id="toastBody">Alert message</div>
+        </div>
+        <button onclick="hideToast()" class="text-slate-400 hover:text-white text-xs">✕</button>
+    </div>
+
+    <!-- PWA & Push Notification Scripts -->
+    <script>
+        // 1. Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                    .then(function(reg) {
+                        console.log('Security PWA ServiceWorker active with scope:', reg.scope);
+                    })
+                    .catch(function(err) {
+                        console.warn('Security PWA ServiceWorker registration failed:', err);
+                    });
+            });
+        }
+
+        // 2. PWA Install Prompt Handler
+        let deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', function(e) {
+            e.preventDefault();
+            deferredPrompt = e;
+            const banner = document.getElementById('pwaInstallBanner');
+            if (banner && !sessionStorage.getItem('pwa_banner_dismissed')) {
+                banner.classList.remove('hidden');
+            }
+        });
+
+        function triggerPwaInstall() {
+            const banner = document.getElementById('pwaInstallBanner');
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(function(choiceResult) {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User installed Security PWA');
+                    }
+                    deferredPrompt = null;
+                    if (banner) banner.classList.add('hidden');
+                });
+            } else {
+                alert('To install on iOS/Safari: tap the Share button and select "Add to Home Screen". On Chrome/Android, tap the menu and select "Install App".');
+                if (banner) banner.classList.add('hidden');
+            }
+        }
+
+        function dismissPwaInstall() {
+            const banner = document.getElementById('pwaInstallBanner');
+            if (banner) banner.classList.add('hidden');
+            sessionStorage.setItem('pwa_banner_dismissed', 'true');
+        }
+
+        // 3. Audio Chime Synthesizer (Web Audio API - No external mp3 file required)
+        function playSecurityChime() {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'sine';
+                const now = ctx.currentTime;
+                osc.frequency.setValueAtTime(587.33, now); // Tone 1: D5
+                osc.frequency.setValueAtTime(880.00, now + 0.12); // Tone 2: A5
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            } catch (e) {
+                console.log('Audio chime error or blocked by autoplay policy:', e);
+            }
+        }
+
+        // 4. In-App Toast Controller
+        let toastTimeout = null;
+        function showToast(title, body, icon = '🔔') {
+            const toast = document.getElementById('inAppToast');
+            if (!toast) return;
+            document.getElementById('toastTitle').innerText = title;
+            document.getElementById('toastBody').innerText = body;
+            document.getElementById('toastIcon').innerText = icon;
+            toast.classList.remove('translate-x-full', 'opacity-0', 'pointer-events-none');
+            toast.classList.add('translate-x-0', 'opacity-100', 'pointer-events-auto');
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(hideToast, 4500);
+        }
+
+        function hideToast() {
+            const toast = document.getElementById('inAppToast');
+            if (!toast) return;
+            toast.classList.remove('translate-x-0', 'opacity-100', 'pointer-events-auto');
+            toast.classList.add('translate-x-full', 'opacity-0', 'pointer-events-none');
+        }
+
+        // 5. Browser Web Notification Handler
+        function updatePushStatusUI() {
+            const btn = document.getElementById('pushPermissionBtn');
+            const text = document.getElementById('pushStatusText');
+            const icon = document.getElementById('pushStatusIcon');
+            if (!btn || !('Notification' in window)) return;
+
+            if (Notification.permission === 'granted') {
+                if (text) text.innerText = 'Push Notifications: Active';
+                if (icon) icon.innerText = '🔔';
+                btn.innerText = 'Active ✓';
+                btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-500');
+                btn.classList.add('bg-emerald-600', 'hover:bg-emerald-500');
+                btn.disabled = true;
+            } else if (Notification.permission === 'denied') {
+                if (text) text.innerText = 'Notifications: Blocked in Browser';
+                if (icon) icon.innerText = '🔕';
+                btn.innerText = 'Blocked';
+                btn.disabled = true;
+            }
+        }
+
+        function requestPushNotification() {
+            if (!('Notification' in window)) {
+                alert('Web Notifications are not supported by your current browser.');
+                return;
+            }
+            Notification.requestPermission().then(function(permission) {
+                updatePushStatusUI();
+                if (permission === 'granted') {
+                    playSecurityChime();
+                    showToast('Notifications Enabled', 'You will now receive security alerts for overdue passes & visitors.', '✅');
+                    new Notification('Gate Security Alert Center', {
+                        body: 'Push notifications are successfully active for this terminal.',
+                        icon: '/static/icons/icon-192.png',
+                    });
+                }
+            });
+        }
+
+        function triggerTestNotification() {
+            playSecurityChime();
+            showToast('Test Alert Dispatched', 'Audio chime and visual security alert verified successfully.', '⚡');
+
+            if ('Notification' in window && Notification.permission === 'granted') {
+                try {
+                    new Notification('🚨 Security Alert (Test)', {
+                        body: 'Overdue Gate Pass #GP-DEMO-01 flagged at Main Gate.',
+                        icon: '/static/icons/icon-192.png',
+                    });
+                } catch (e) {
+                    console.warn('Native notification failed:', e);
+                }
+            } else if ('Notification' in window && Notification.permission !== 'denied') {
+                requestPushNotification();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updatePushStatusUI();
+        });
+    </script>
 
     {% block scripts %}{% endblock %}
 </body>

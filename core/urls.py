@@ -27,4 +27,6 @@ urlpatterns = [
     path('super-admin/users/create/', views_admin.user_create_view, name='user_create'),
     path('super-admin/users/<int:user_id>/edit/', views_admin.user_edit_view, name='user_edit'),
     path('subscription-suspended/', views.subscription_suspended_view, name='subscription_suspended'),
+    path('sw.js', views.service_worker_view, name='service_worker'),
+    path('manifest.json', views.manifest_view, name='manifest_json'),
 ]

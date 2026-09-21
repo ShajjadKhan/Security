@@ -122,55 +122,57 @@
 </div>
 
 <!-- Modal: Add New Gate -->
-<div id="addGateModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-navy-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-lg w-full p-6 space-y-4">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+<div id="addGateModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white dark:bg-navy-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-lg w-full flex flex-col max-h-[85vh] my-auto overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 shrink-0 bg-white dark:bg-navy-900">
             <div class="flex items-center gap-2">
                 <span class="text-xl">🚧</span>
                 <h3 class="text-base font-bold text-slate-900 dark:text-white">{{ T.add_gate_btn }}</h3>
             </div>
-            <button onclick="document.getElementById('addGateModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+            <button type="button" onclick="document.getElementById('addGateModal').classList.add('hidden')" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition">✕</button>
         </div>
 
-        <form method="POST" class="space-y-4">
+        <form method="POST" class="flex flex-col flex-1 overflow-hidden m-0">
             {% csrf_token %}
-            <div>
-                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.gate_name_en }} <span class="text-rose-500">*</span></label>
-                <input type="text" name="name" required placeholder="e.g. Gate 5 - South Parking Gate" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
-            </div>
-
-            <div>
-                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.gate_name_ar }} <span class="text-slate-400">(العربية)</span></label>
-                <input type="text" name="name_ar" placeholder="مثال: بوابة 5 - مواقف السيارات الجنوبية" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
+            <div class="p-6 overflow-y-auto space-y-4 text-xs flex-1">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.gate_code }} <span class="text-rose-500">*</span></label>
-                    <input type="text" name="code" required placeholder="GATE-05" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs uppercase font-mono font-bold">
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.gate_name_en }} <span class="text-rose-500">*</span></label>
+                    <input type="text" name="name" required placeholder="e.g. Gate 5 - South Parking Gate" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
                 </div>
+
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.gate_type }}</label>
-                    <select name="gate_type" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
-                        <option value="service">{{ T.gate_type_service }}</option>
-                        <option value="main">{{ T.gate_type_main }}</option>
-                        <option value="staff">{{ T.gate_type_staff }}</option>
-                        <option value="basement">{{ T.gate_type_basement }}</option>
-                        <option value="vip">{{ T.gate_type_vip }}</option>
-                    </select>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.gate_name_ar }} <span class="text-slate-400">(العربية)</span></label>
+                    <input type="text" name="name_ar" placeholder="مثال: بوابة 5 - مواقف السيارات الجنوبية" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.gate_code }} <span class="text-rose-500">*</span></label>
+                        <input type="text" name="code" required placeholder="GATE-05" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs uppercase font-mono font-bold">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.gate_type }}</label>
+                        <select name="gate_type" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold">
+                            <option value="service">{{ T.gate_type_service }}</option>
+                            <option value="main">{{ T.gate_type_main }}</option>
+                            <option value="staff">{{ T.gate_type_staff }}</option>
+                            <option value="basement">{{ T.gate_type_basement }}</option>
+                            <option value="vip">{{ T.gate_type_vip }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Description / Notes</label>
+                    <input type="text" name="description" placeholder="e.g. Equipped with automatic barrier and cargo scale" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
                 </div>
             </div>
 
-            <div>
-                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Description / Notes</label>
-                <input type="text" name="description" placeholder="e.g. Equipped with automatic barrier and cargo scale" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
-            </div>
-
-            <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
-                <button type="button" onclick="document.getElementById('addGateModal').classList.add('hidden')" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">
+            <div class="flex items-center justify-end gap-2 px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 shrink-0 bg-slate-50 dark:bg-navy-950/80">
+                <button type="button" onclick="document.getElementById('addGateModal').classList.add('hidden')" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition">
                     {{ T.cancel }}
                 </button>
-                <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md">
+                <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md transition">
                     {{ T.gate_save_btn }}
                 </button>
             </div>
@@ -179,60 +181,62 @@
 </div>
 
 <!-- Modal: Edit Gate -->
-<div id="editGateModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-navy-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-lg w-full p-6 space-y-4">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+<div id="editGateModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white dark:bg-navy-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-lg w-full flex flex-col max-h-[85vh] my-auto overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 shrink-0 bg-white dark:bg-navy-900">
             <div class="flex items-center gap-2">
                 <span class="text-xl">✏️</span>
                 <h3 class="text-base font-bold text-slate-900 dark:text-white">{{ T.edit_gate_title }}</h3>
             </div>
-            <button onclick="document.getElementById('editGateModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+            <button type="button" onclick="document.getElementById('editGateModal').classList.add('hidden')" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition">✕</button>
         </div>
 
-        <form id="editGateForm" method="POST" class="space-y-4">
+        <form id="editGateForm" method="POST" class="flex flex-col flex-1 overflow-hidden m-0">
             {% csrf_token %}
-            <div>
-                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.gate_name_en }} <span class="text-rose-500">*</span></label>
-                <input type="text" name="name" id="editGateName" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
-            </div>
-
-            <div>
-                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.gate_name_ar }} <span class="text-slate-400">(العربية)</span></label>
-                <input type="text" name="name_ar" id="editGateNameAr" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
+            <div class="p-6 overflow-y-auto space-y-4 text-xs flex-1">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.gate_code }} <span class="text-rose-500">*</span></label>
-                    <input type="text" name="code" id="editGateCode" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs uppercase font-mono font-bold">
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.gate_name_en }} <span class="text-rose-500">*</span></label>
+                    <input type="text" name="name" id="editGateName" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
                 </div>
+
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.gate_type }}</label>
-                    <select name="gate_type" id="editGateType" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
-                        <option value="service">{{ T.gate_type_service }}</option>
-                        <option value="main">{{ T.gate_type_main }}</option>
-                        <option value="staff">{{ T.gate_type_staff }}</option>
-                        <option value="basement">{{ T.gate_type_basement }}</option>
-                        <option value="vip">{{ T.gate_type_vip }}</option>
-                    </select>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.gate_name_ar }} <span class="text-slate-400">(العربية)</span></label>
+                    <input type="text" name="name_ar" id="editGateNameAr" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.gate_code }} <span class="text-rose-500">*</span></label>
+                        <input type="text" name="code" id="editGateCode" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs uppercase font-mono font-bold">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{{ T.gate_type }}</label>
+                        <select name="gate_type" id="editGateType" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold">
+                            <option value="service">{{ T.gate_type_service }}</option>
+                            <option value="main">{{ T.gate_type_main }}</option>
+                            <option value="staff">{{ T.gate_type_staff }}</option>
+                            <option value="basement">{{ T.gate_type_basement }}</option>
+                            <option value="vip">{{ T.gate_type_vip }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Description / Notes</label>
+                    <input type="text" name="description" id="editGateDesc" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" name="is_active" id="editGateActive" class="rounded text-emerald-600 focus:ring-emerald-500">
+                    <label for="editGateActive" class="text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer">{{ T.gate_active }}</label>
                 </div>
             </div>
 
-            <div>
-                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Description / Notes</label>
-                <input type="text" name="description" id="editGateDesc" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs">
-            </div>
-
-            <div class="flex items-center gap-2">
-                <input type="checkbox" name="is_active" id="editGateActive" class="rounded text-emerald-600 focus:ring-emerald-500">
-                <label for="editGateActive" class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ T.gate_active }}</label>
-            </div>
-
-            <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
-                <button type="button" onclick="document.getElementById('editGateModal').classList.add('hidden')" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">
+            <div class="flex items-center justify-end gap-2 px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 shrink-0 bg-slate-50 dark:bg-navy-950/80">
+                <button type="button" onclick="document.getElementById('editGateModal').classList.add('hidden')" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition">
                     {{ T.cancel }}
                 </button>
-                <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md">
+                <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md transition">
                     {{ T.gate_save_btn }}
                 </button>
             </div>
@@ -241,34 +245,36 @@
 </div>
 
 <!-- Modal: Delete Gate -->
-<div id="deleteGateModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-navy-900 rounded-3xl border-2 border-rose-500 shadow-2xl max-w-lg w-full p-6 space-y-4">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+<div id="deleteGateModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white dark:bg-navy-900 rounded-2xl sm:rounded-3xl border-2 border-rose-500 shadow-2xl max-w-lg w-full flex flex-col max-h-[85vh] my-auto overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 shrink-0 bg-white dark:bg-navy-900">
             <div class="flex items-center gap-2 text-rose-600 font-bold">
                 <span class="text-xl">⚠️</span>
                 <h3>{{ T.delete_gate_title }}</h3>
             </div>
-            <button onclick="document.getElementById('deleteGateModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+            <button type="button" onclick="document.getElementById('deleteGateModal').classList.add('hidden')" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition">✕</button>
         </div>
 
-        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed" id="deleteGateWarningText">
-            {{ T.delete_gate_warning }}
-        </p>
-
-        <form id="deleteGateForm" method="POST" class="space-y-4">
+        <form id="deleteGateForm" method="POST" class="flex flex-col flex-1 overflow-hidden m-0">
             {% csrf_token %}
-            <div>
-                <label class="block text-xs font-black text-slate-700 dark:text-slate-300 mb-1">
-                    {{ T.delete_reason_label }} <span class="text-rose-500">*</span>
-                </label>
-                <input type="text" name="deletion_reason" required placeholder="e.g. Gate barrier closed for renovation" class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs focus:ring-2 focus:ring-rose-500">
+            <div class="p-6 overflow-y-auto space-y-4 text-xs flex-1">
+                <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed" id="deleteGateWarningText">
+                    {{ T.delete_gate_warning }}
+                </p>
+
+                <div>
+                    <label class="block text-xs font-black text-slate-700 dark:text-slate-300 mb-1">
+                        {{ T.delete_reason_label }} <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="text" name="deletion_reason" required placeholder="e.g. Gate barrier closed for renovation" class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs focus:ring-2 focus:ring-rose-500">
+                </div>
             </div>
 
-            <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
-                <button type="button" onclick="document.getElementById('deleteGateModal').classList.add('hidden')" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">
+            <div class="flex items-center justify-end gap-2 px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 shrink-0 bg-slate-50 dark:bg-navy-950/80">
+                <button type="button" onclick="document.getElementById('deleteGateModal').classList.add('hidden')" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition">
                     {{ T.cancel }}
                 </button>
-                <button type="submit" class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md">
+                <button type="submit" class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md transition">
                     {{ T.btn_delete }}
                 </button>
             </div>

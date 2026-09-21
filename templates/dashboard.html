@@ -4,6 +4,34 @@
 {% block content %}
 <div class="space-y-6">
 
+    {% if is_admin_user and all_properties|length == 0 %}
+    <!-- Clean Database / Onboarding Hero Banner -->
+    <div class="bg-gradient-to-r from-navy-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white border border-indigo-700/50 shadow-2xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="flex items-start sm:items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 flex items-center justify-center text-3xl shrink-0">
+                🏢
+            </div>
+            <div>
+                <div class="flex items-center gap-2 mb-1 flex-wrap">
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        Zero Demo Data • Clean System
+                    </span>
+                    <span class="text-xs text-indigo-300/80 font-mono">Super Admin Ready</span>
+                </div>
+                <h2 class="text-lg sm:text-xl font-black text-white tracking-tight">
+                    Welcome to Security Command — Onboard Your First Property
+                </h2>
+                <p class="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
+                    All demo properties, gates, and visitor passes have been purged. You are logged in as Super Admin. Proceed to the SaaS platform hub to onboard your real hotel or facility, set up its perimeter gates, and provision director accounts.
+                </p>
+            </div>
+        </div>
+        <a href="{% url 'super_admin_dashboard' %}" class="px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black shadow-lg shadow-emerald-700/30 transition flex items-center gap-2 whitespace-nowrap self-start md:self-auto shrink-0">
+            <span>🏢</span> Onboard Facility & Provision Director →
+        </a>
+    </div>
+    {% endif %}
+
     <!-- Top Action Bar (Clean, Big Buttons) -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-navy-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <div>

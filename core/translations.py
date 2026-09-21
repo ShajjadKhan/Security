@@ -295,6 +295,19 @@ TRANSLATIONS = {
         'subscription_suspended_title': 'Service Suspended — Payment Required',
         'subscription_suspended_sub': 'Access to the security operations portal for this facility has been temporarily locked due to an overdue monthly subscription fee. Please contact the platform vendor to settle your invoice and restore immediate access.',
         'vendor_support_contact': 'Contact Software Vendor / Platform Owner',
+        # PWA & Notifications
+        'notif_center': 'Security Alerts & Notifications',
+        'notif_enable_push': 'Enable Push Notifications',
+        'notif_push_active': 'Push Active',
+        'notif_test_btn': 'Send Test Alert',
+        'notif_no_alerts': 'All Clear — No active security alerts',
+        'install_app': 'Install Security App',
+        'install_sub': 'Add to Home Screen for fast mobile gate access',
+        'bottom_nav_home': 'Home',
+        'bottom_nav_passes': 'Passes',
+        'bottom_nav_checkin': 'Check-In',
+        'bottom_nav_visitors': 'Visitors',
+        'bottom_nav_menu': 'Menu',
 
     },
     'ar': {
@@ -591,6 +604,19 @@ TRANSLATIONS = {
         'subscription_suspended_title': 'الخدمة معلقة — مطلوب سداد الاشتراك',
         'subscription_suspended_sub': 'تم تعليق الوصول لمركز العمليات الأمنية لهذه المنشأة مؤقتاً بسبب تأخر سداد الاشتراك الشهري. يُرجى التواصل مع مزود ومطور النظام لتسوية المستحقات وإعادة فتح المنظومة فوراً.',
         'vendor_support_contact': 'التواصل مع مطور ومزود النظام',
+        # PWA & Notifications
+        'notif_center': 'التنبيهات والإشعارات الأمنية',
+        'notif_enable_push': 'تفعيل إشعارات المتصفح والجوال',
+        'notif_push_active': 'الإشعارات مفعلة',
+        'notif_test_btn': 'إرسال تنبيه تجريبي',
+        'notif_no_alerts': 'الوضع آمن — لا توجد تنبيهات أمنية حالياً',
+        'install_app': 'تثبيت تطبيق الأمن',
+        'install_sub': 'إضافة للشاشة الرئيسية لسرعة الاستخدام الميداني',
+        'bottom_nav_home': 'الرئيسية',
+        'bottom_nav_passes': 'التصاريح',
+        'bottom_nav_checkin': 'تسجيل',
+        'bottom_nav_visitors': 'الزوار',
+        'bottom_nav_menu': 'المزيد',
 
     }
 }
