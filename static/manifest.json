@@ -1,6 +1,6 @@
 {
-  "name": "Antigravity Security Suite",
-  "short_name": "Security Suite",
+  "name": "Security Dept",
+  "short_name": "Security Dept",
   "description": "Enterprise Security Department, Visitor Access & Gate Pass Management",
   "start_url": "/",
   "scope": "/",

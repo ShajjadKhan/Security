@@ -12,122 +12,131 @@
 
         <div class="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
-                <div class="flex items-center gap-3 mb-2.5 flex-wrap">
-                    <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-gradient-to-r from-indigo-500/30 to-purple-500/30 text-indigo-300 border border-indigo-400/40 flex items-center gap-1.5 shadow-sm">
+                <div class="flex items-center gap-2.5 mb-2 flex-wrap">
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 flex items-center gap-1.5 shadow-sm">
                         <span>👑</span> {{ T.saas_badge }}
                     </span>
-                    <span class="text-xs text-indigo-300/80 font-mono">B2B Security SaaS Platform Owner Hub</span>
+                    <span class="text-xs text-indigo-300/80 font-mono">Enterprise Control Center</span>
                 </div>
-                <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white">
+                <h1 class="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-white">
                     {{ T.saas_vendor_title }}
                 </h1>
-                <p class="text-xs sm:text-sm text-slate-300 mt-1.5 max-w-3xl font-medium leading-relaxed">
+                <p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-3xl font-normal leading-relaxed">
                     {{ T.saas_vendor_sub }}
                 </p>
             </div>
 
             <!-- Global Action Buttons -->
-            <div class="flex flex-wrap items-center gap-2.5 shrink-0">
-                <a href="{% url 'generate_monthly_invoices' %}" class="px-4 py-2.5 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-amber-300 hover:text-amber-200 text-xs font-bold border border-slate-700 shadow-md transition flex items-center gap-2" title="Generate current month subscription invoices for all active clients">
+            <div class="flex flex-wrap items-center gap-2 shrink-0">
+                <a href="{% url 'generate_monthly_invoices' %}" class="px-3.5 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-amber-300 text-xs font-bold border border-slate-700 shadow-sm transition flex items-center gap-1.5" title="Generate current month subscription invoices for all active clients">
                     <span>⚡</span> {{ T.generate_invoices_btn }}
                 </a>
-                <button onclick="openModal('createPropertyModal')" class="px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black shadow-lg shadow-emerald-700/30 transition flex items-center gap-2">
+                <button onclick="openModal('createPropertyModal')" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black shadow-md transition flex items-center gap-1.5">
                     <span>🏢</span> {{ T.onboard_client_btn }}
                 </button>
             </div>
         </div>
 
-        <!-- SaaS Financial & Commercial Revenue Telemetry Cards -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 mt-7 pt-6 border-t border-indigo-900/60">
+        <!-- Financial & Operational Telemetry Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mt-6 pt-5 border-t border-indigo-900/60">
             
             <!-- MRR Card -->
-            <div class="bg-indigo-950/50 backdrop-blur-sm rounded-2xl p-3.5 border border-indigo-800/50 shadow-sm hover:border-indigo-500/50 transition">
-                <div class="flex items-center justify-between text-[11px] text-indigo-300 font-semibold">
-                    <span>{{ T.mrr_title }}</span>
+            <div class="bg-indigo-950/50 backdrop-blur-sm rounded-2xl p-3 border border-indigo-800/50 shadow-sm hover:border-indigo-500/50 transition">
+                <div class="flex items-center justify-between text-[10px] text-indigo-300 font-semibold">
+                    <span>MRR</span>
                     <span>📈</span>
                 </div>
-                <div class="flex items-baseline gap-1 mt-1.5">
-                    <span class="text-xl sm:text-2xl font-black text-emerald-400 font-mono tracking-tight">{{ total_mrr|floatformat:0 }}</span>
-                    <span class="text-[11px] font-bold text-emerald-500/90 font-mono">SAR/mo</span>
+                <div class="flex items-baseline gap-1 mt-1">
+                    <span class="text-lg sm:text-xl font-black text-emerald-400 font-mono tracking-tight">{{ total_mrr|floatformat:0 }}</span>
+                    <span class="text-[10px] font-bold text-emerald-500/90 font-mono">SAR/mo</span>
                 </div>
-                <span class="text-[10px] text-slate-400 block mt-1 truncate">{{ active_subscriptions }} paying properties</span>
+                <span class="text-[10px] text-slate-400 block mt-0.5 truncate">{{ active_subscriptions }} paying</span>
             </div>
 
             <!-- Total Collected -->
-            <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-3.5 border border-slate-700/50 shadow-sm hover:border-slate-600 transition">
-                <div class="flex items-center justify-between text-[11px] text-slate-300 font-semibold">
-                    <span>{{ T.total_collected_title }}</span>
+            <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-3 border border-slate-700/50 shadow-sm hover:border-slate-600 transition">
+                <div class="flex items-center justify-between text-[10px] text-slate-300 font-semibold">
+                    <span>Total Collected</span>
                     <span>💰</span>
                 </div>
-                <div class="flex items-baseline gap-1 mt-1.5">
-                    <span class="text-xl sm:text-2xl font-black text-white font-mono tracking-tight">{{ total_collected|floatformat:0 }}</span>
-                    <span class="text-[11px] font-bold text-slate-400 font-mono">SAR</span>
+                <div class="flex items-baseline gap-1 mt-1">
+                    <span class="text-lg sm:text-xl font-black text-white font-mono tracking-tight">{{ total_collected|floatformat:0 }}</span>
+                    <span class="text-[10px] font-bold text-slate-400 font-mono">SAR</span>
                 </div>
-                <span class="text-[10px] text-slate-400 block mt-1 truncate">Invoices paid to date</span>
+                <span class="text-[10px] text-slate-400 block mt-0.5 truncate">Paid to date</span>
             </div>
 
             <!-- Overdue / Due Dues -->
-            <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-3.5 border {% if total_due > 0 %}border-amber-500/50 bg-amber-950/30{% else %}border-slate-700/50{% endif %} shadow-sm transition">
-                <div class="flex items-center justify-between text-[11px] {% if total_due > 0 %}text-amber-300 font-bold{% else %}text-slate-300 font-semibold{% endif %}">
-                    <span>{{ T.total_due_title }}</span>
+            <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-3 border {% if total_due > 0 %}border-amber-500/50 bg-amber-950/30{% else %}border-slate-700/50{% endif %} shadow-sm transition">
+                <div class="flex items-center justify-between text-[10px] {% if total_due > 0 %}text-amber-300 font-bold{% else %}text-slate-300 font-semibold{% endif %}">
+                    <span>Pending Due</span>
                     <span>⚠️</span>
                 </div>
-                <div class="flex items-baseline gap-1 mt-1.5">
-                    <span class="text-xl sm:text-2xl font-black {% if total_due > 0 %}text-amber-400{% else %}text-slate-400{% endif %} font-mono tracking-tight">{{ total_due|floatformat:0 }}</span>
-                    <span class="text-[11px] font-bold {% if total_due > 0 %}text-amber-400{% else %}text-slate-500{% endif %} font-mono">SAR</span>
+                <div class="flex items-baseline gap-1 mt-1">
+                    <span class="text-lg sm:text-xl font-black {% if total_due > 0 %}text-amber-400{% else %}text-slate-400{% endif %} font-mono tracking-tight">{{ total_due|floatformat:0 }}</span>
+                    <span class="text-[10px] font-bold {% if total_due > 0 %}text-amber-400{% else %}text-slate-500{% endif %} font-mono">SAR</span>
                 </div>
-                <span class="text-[10px] {% if total_due > 0 %}text-amber-300/80{% else %}text-slate-400{% endif %} block mt-1 truncate">
-                    {% if past_due_subscriptions > 0 %}{{ past_due_subscriptions }} clients past due{% else %}All accounts in good standing{% endif %}
+                <span class="text-[10px] {% if total_due > 0 %}text-amber-300/80{% else %}text-slate-400{% endif %} block mt-0.5 truncate">
+                    {% if past_due_subscriptions > 0 %}{{ past_due_subscriptions }} past due{% else %}All in order{% endif %}
                 </span>
             </div>
 
             <!-- Active Subscriptions -->
-            <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-3.5 border border-slate-700/50 shadow-sm">
-                <span class="text-[11px] text-slate-300 block font-semibold">{{ T.active_subscriptions_title }}</span>
-                <div class="flex items-baseline gap-1.5 mt-1.5">
-                    <span class="text-xl sm:text-2xl font-black text-indigo-400 font-mono">{{ active_subscriptions }}</span>
-                    <span class="text-[11px] text-slate-400 font-mono">/ {{ total_properties }}</span>
+            <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-3 border border-slate-700/50 shadow-sm">
+                <div class="flex items-center justify-between text-[10px] text-slate-300 font-semibold">
+                    <span>Subscriptions</span>
+                    <span>🏢</span>
                 </div>
-                <span class="text-[10px] text-slate-400 block mt-1">
-                    {% if suspended_subscriptions > 0 %}<strong class="text-rose-400">{{ suspended_subscriptions }} suspended</strong>{% else %}0 locked{% endif %}
+                <div class="flex items-baseline gap-1.5 mt-1">
+                    <span class="text-lg sm:text-xl font-black text-indigo-400 font-mono">{{ active_subscriptions }}</span>
+                    <span class="text-[10px] text-slate-400 font-mono">/ {{ total_properties }}</span>
+                </div>
+                <span class="text-[10px] text-slate-400 block mt-0.5">
+                    {% if suspended_subscriptions > 0 %}<strong class="text-rose-400">{{ suspended_subscriptions }} locked</strong>{% else %}0 locked{% endif %}
                 </span>
             </div>
 
             <!-- Hosted Users (Personnel) -->
-            <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-3.5 border border-slate-700/50 shadow-sm">
-                <span class="text-[11px] text-slate-300 block font-semibold">{{ T.total_hosted_users_title }}</span>
-                <div class="flex items-baseline gap-1.5 mt-1.5">
-                    <span class="text-xl sm:text-2xl font-black text-sky-400 font-mono">{{ total_users }}</span>
-                    <span class="text-[11px] text-slate-400 font-mono">users</span>
+            <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-3 border border-slate-700/50 shadow-sm">
+                <div class="flex items-center justify-between text-[10px] text-slate-300 font-semibold">
+                    <span>Personnel</span>
+                    <span>👤</span>
                 </div>
-                <span class="text-[10px] text-slate-400 block mt-1">{{ on_duty_users }} currently on duty</span>
+                <div class="flex items-baseline gap-1.5 mt-1">
+                    <span class="text-lg sm:text-xl font-black text-sky-400 font-mono">{{ total_users }}</span>
+                    <span class="text-[10px] text-slate-400 font-mono">users</span>
+                </div>
+                <span class="text-[10px] text-slate-400 block mt-0.5">{{ on_duty_users }} on duty</span>
             </div>
 
             <!-- Security Footprint (Gates & Passes) -->
-            <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-3.5 border border-slate-700/50 shadow-sm">
-                <span class="text-[11px] text-slate-300 block font-semibold">Security Gates Managed</span>
-                <div class="flex items-baseline gap-1.5 mt-1.5">
-                    <span class="text-xl sm:text-2xl font-black text-emerald-400 font-mono">{{ total_gates }}</span>
-                    <span class="text-[11px] text-slate-400 font-mono">checkpoints</span>
+            <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-3 border border-slate-700/50 shadow-sm">
+                <div class="flex items-center justify-between text-[10px] text-slate-300 font-semibold">
+                    <span>Checkpoints</span>
+                    <span>🚧</span>
                 </div>
-                <span class="text-[10px] text-slate-400 block mt-1">{{ total_active_visitors }} visitors on-premises</span>
+                <div class="flex items-baseline gap-1.5 mt-1">
+                    <span class="text-lg sm:text-xl font-black text-emerald-400 font-mono">{{ total_gates }}</span>
+                    <span class="text-[10px] text-slate-400 font-mono">gates</span>
+                </div>
+                <span class="text-[10px] text-slate-400 block mt-0.5">{{ total_active_visitors }} visitors</span>
             </div>
 
         </div>
     </div>
 
     <!-- Navigation Tabs Bar -->
-    <div class="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2 text-xs font-bold overflow-x-auto">
-        <button onclick="switchTab('tab-properties')" id="btn-tab-properties" class="tab-btn active-tab px-4 py-2.5 rounded-xl transition flex items-center gap-2 bg-indigo-600 text-white shadow-sm shrink-0">
+    <div class="flex items-center gap-1.5 border-b border-slate-200 dark:border-slate-800 pb-2 text-xs font-bold overflow-x-auto">
+        <button onclick="switchTab('tab-properties')" id="btn-tab-properties" class="tab-btn active-tab px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 bg-indigo-600 text-white shadow-sm shrink-0">
             <span>🏢</span> {{ T.tab_clients }} ({{ total_properties }})
         </button>
-        <button onclick="switchTab('tab-billing')" id="btn-tab-billing" class="tab-btn px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition flex items-center gap-2 shrink-0">
+        <button onclick="switchTab('tab-billing')" id="btn-tab-billing" class="tab-btn px-3.5 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition flex items-center gap-1.5 shrink-0">
             <span>💳</span> {{ T.tab_billing }} ({{ invoices_list|length }})
         </button>
-        <button onclick="switchTab('tab-users')" id="btn-tab-users" class="tab-btn px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition flex items-center gap-2 shrink-0">
+        <button onclick="switchTab('tab-users')" id="btn-tab-users" class="tab-btn px-3.5 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition flex items-center gap-1.5 shrink-0">
             <span>👤</span> {{ T.tab_first_admins }} ({{ users_list|length }})
         </button>
-        <button onclick="switchTab('tab-audit')" id="btn-tab-audit" class="tab-btn px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition flex items-center gap-2 shrink-0">
+        <button onclick="switchTab('tab-audit')" id="btn-tab-audit" class="tab-btn px-3.5 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition flex items-center gap-1.5 shrink-0">
             <span>🛡️</span> {{ T.tab_saas_audit }} ({{ admin_audits|length }})
         </button>
     </div>

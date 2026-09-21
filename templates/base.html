@@ -11,7 +11,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="GateSecurity">
+    <meta name="apple-mobile-web-app-title" content="Security Dept">
     <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="/static/icons/icon-192.png">
 
@@ -160,12 +160,6 @@
                 {% if user.is_authenticated %}
                 <!-- Center: Navigation Tabs (Concise, Clean, High-Contrast) -->
                 <nav class="hidden lg:flex items-center gap-1 text-xs font-bold shrink-0">
-                    {% if is_saas_owner %}
-                    <a href="{% url 'super_admin_dashboard' %}" class="px-2.5 py-1.5 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap {% if 'super-admin' in request.path %}bg-indigo-600 text-white shadow-sm{% else %}text-indigo-300 hover:bg-indigo-950/60 hover:text-white border border-indigo-700/40{% endif %}">
-                        <span>👑</span> <span>{{ T.saas_vendor_hub }}</span>
-                    </a>
-                    {% endif %}
-
                     <a href="{% url 'dashboard' %}" class="px-2.5 py-1.5 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap {% if request.resolver_match.url_name == 'dashboard' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
                         <span>📊</span> <span>{{ T.nav_dashboard }}</span>
                     </a>
@@ -184,39 +178,22 @@
                         <span>🚧</span> <span>{{ T.nav_gates }}</span>
                     </a>
 
+                    {% if is_saas_owner %}
+                    <a href="{% url 'super_admin_dashboard' %}" class="px-2.5 py-1.5 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap {% if 'super-admin' in request.path %}bg-indigo-600 text-white shadow-sm{% else %}text-indigo-300 hover:bg-indigo-950/60 hover:text-white border border-indigo-700/40{% endif %}">
+                        <span>👑</span> <span>{{ T.saas_vendor_hub }}</span>
+                    </a>
+                    {% endif %}
+
                     {% if is_admin_user %}
-                    <!-- Admin & Audit Dropdown Pill -->
-                    <div class="relative dropdown-container">
-                        <button onclick="toggleDropdown('adminNavMenu')" class="px-2.5 py-1.5 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap {% if 'super-admin' in request.path or request.resolver_match.url_name == 'audit_log' %}bg-indigo-600 text-white shadow-sm{% else %}text-indigo-300 hover:bg-indigo-950/60 border border-indigo-800/40{% endif %}">
-                            <span>👑</span> <span>{{ T.nav_admin }}</span> <span class="text-[9px] text-indigo-400">▼</span>
-                        </button>
-                        <div id="adminNavMenu" class="dropdown-menu absolute {% if is_rtl %}right-0{% else %}left-0{% endif %} mt-1.5 w-52 bg-navy-900 border border-slate-700 rounded-2xl shadow-2xl py-2 hidden z-50 text-xs">
-                            {% if is_admin_user %}
-                            <a href="{% url 'super_admin_dashboard' %}" class="flex items-center gap-2 px-3.5 py-2 hover:bg-slate-800 text-indigo-300 font-bold transition">
-                                <span>👑</span> {{ T.super_admin_hub }}
-                            </a>
-                            {% endif %}
-                            <a href="{% url 'audit_log' %}" class="flex items-center gap-2 px-3.5 py-2 hover:bg-slate-800 text-slate-300 transition">
-                                <span>🔒</span> {{ T.shift_audit }}
-                            </a>
-                            <a href="{% url 'gates_list' %}" class="flex items-center gap-2 px-3.5 py-2 hover:bg-slate-800 text-slate-300 transition">
-                                <span>🚧</span> {{ T.gates_management }}
-                            </a>
-                        </div>
-                    </div>
+                    <a href="{% url 'audit_log' %}" class="px-2.5 py-1.5 rounded-xl transition flex items-center gap-1.5 whitespace-nowrap {% if request.resolver_match.url_name == 'audit_log' %}bg-indigo-600 text-white shadow-sm{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                        <span>🔒</span> <span>{{ T.shift_audit }}</span>
+                    </a>
                     {% endif %}
                 </nav>
 
                 <!-- Right: Duty Station Pill, Language Toggle, Dark Mode, Profile Dropdown -->
                 <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                    
-                    {% if is_saas_owner %}
-                    <!-- SaaS Platform Owner Pill -->
-                    <a href="{% url 'super_admin_dashboard' %}" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600/30 to-purple-600/30 text-indigo-300 border border-indigo-500/40 text-xs font-bold transition hover:border-indigo-400 shadow-sm" title="SaaS Platform Owner & Commercial Billing Hub">
-                        <span class="text-xs">👑</span>
-                        <span class="text-[11px] font-extrabold tracking-tight">{{ T.saas_badge }}</span>
-                    </a>
-                    {% else %}
+                    {% if not is_saas_owner %}
                     <!-- Duty Gate Station Selector Pill -->
                     <div class="relative dropdown-container hidden xl:block">
                         <button onclick="toggleDropdown('gateDropdownMenu')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-xs font-bold text-slate-200 transition max-w-[120px]" title="Active Duty Gate Station">
