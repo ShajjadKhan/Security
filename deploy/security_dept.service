@@ -1,0 +1,21 @@
+[Unit]
+Description=Antigravity Security Department Suite Daemon
+After=network.target
+
+[Service]
+Type=simple
+User=shajjad
+Group=shajjad
+WorkingDirectory=/home/shajjad/security_dept
+EnvironmentFile=-/home/shajjad/security_dept/.env
+Environment="PATH=/home/shajjad/security_venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONUNBUFFERED=1"
+Environment="GUNICORN_BIND=127.0.0.1:8001"
+ExecStart=/home/shajjad/security_venv/bin/gunicorn config.wsgi:application -c /home/shajjad/security_dept/gunicorn.conf.py
+Restart=always
+RestartSec=5
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

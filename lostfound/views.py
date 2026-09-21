@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.db.models import Q
 from .models import LostFoundItem, ItemPhoto
 from core.models import Property, SecurityAuditLog
+from core.utils import is_safe_image
 
 def accessible_properties_for(user):
     if hasattr(user, 'get_accessible_properties'):
@@ -97,13 +98,16 @@ def lostfound_create(request):
         )
         
         if 'primary_photo' in request.FILES:
-            item.primary_photo = request.FILES['primary_photo']
-            item.save()
+            photo = request.FILES['primary_photo']
+            if is_safe_image(photo):
+                item.primary_photo = photo
+                item.save()
             
         # Additional gallery photos
         extra_photos = request.FILES.getlist('extra_photos')
         for p in extra_photos:
-            ItemPhoto.objects.create(item=item, photo=p)
+            if is_safe_image(p):
+                ItemPhoto.objects.create(item=item, photo=p)
             
         SecurityAuditLog.objects.create(
             user=request.user,
@@ -145,7 +149,9 @@ def lostfound_claim(request, pk):
         item.released_by = request.user
         
         if 'claimant_signature_photo' in request.FILES:
-            item.claimant_signature_photo = request.FILES['claimant_signature_photo']
+            sig = request.FILES['claimant_signature_photo']
+            if is_safe_image(sig):
+                item.claimant_signature_photo = sig
         item.save()
         
         SecurityAuditLog.objects.create(

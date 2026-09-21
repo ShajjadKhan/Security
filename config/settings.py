@@ -1,10 +1,25 @@
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-security-dept-tserver-prod-key-2026-secure-suite'
-DEBUG = True
-ALLOWED_HOSTS = ['*']
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    import secrets
+    # Fallback to ephemeral 64-char key if env not provided
+    SECRET_KEY = secrets.token_urlsafe(64)
+
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False').lower() in ('true', '1', 'yes')
+
+ALLOWED_HOSTS = [
+    'security.shajjadkhan.com',
+    'security.tawreedflow.com',
+    '127.0.0.1',
+    'localhost',
+]
+EXTRA_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '')
+if EXTRA_HOSTS:
+    ALLOWED_HOSTS.extend([h.strip() for h in EXTRA_HOSTS.split(',') if h.strip()])
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -77,10 +92,32 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 CSRF_TRUSTED_ORIGINS = [
-    'http://100.66.112.67:7000',
-    'http://127.0.0.1:7000',
-    'http://localhost:7000',
+    'https://security.shajjadkhan.com',
+    'https://security.tawreedflow.com',
 ]
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+
+# Security & Cookie Hardening
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False
+SESSION_COOKIE_AGE = 43200  # 12 hours timeout
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = 'DENY'
+
+# HTTP Strict Transport Security (HSTS)
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_SSL_REDIRECT = True
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

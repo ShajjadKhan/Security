@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.db.models import Q
 from .models import Visitor, DepartmentHost
 from core.models import Property, SecurityGate, SecurityAuditLog
+from core.utils import is_safe_image
 
 def accessible_properties_for(user):
     if hasattr(user, 'get_accessible_properties'):
@@ -118,9 +119,13 @@ def visitor_checkin(request):
         )
         
         if 'id_photo' in request.FILES:
-            visitor.id_photo = request.FILES['id_photo']
+            photo = request.FILES['id_photo']
+            if is_safe_image(photo):
+                visitor.id_photo = photo
         if 'visitor_photo' in request.FILES:
-            visitor.visitor_photo = request.FILES['visitor_photo']
+            photo = request.FILES['visitor_photo']
+            if is_safe_image(photo):
+                visitor.visitor_photo = photo
         visitor.save()
         
         # Log audit

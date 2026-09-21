@@ -6,3 +6,6 @@ media/
 staticfiles/
 *.log
 .DS_Store
+.env
+*.env
+SECURE_CREDENTIALS.txt

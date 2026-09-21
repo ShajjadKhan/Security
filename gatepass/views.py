@@ -6,6 +6,7 @@ from django.db.models import Q
 from .models import GatePass, GatePassItem
 from visitors.models import DepartmentHost
 from core.models import Property, SecurityAuditLog, SecurityGate
+from core.utils import is_safe_image
 
 def accessible_properties_for(user):
     if hasattr(user, 'get_accessible_properties'):
@@ -162,8 +163,10 @@ def gatepass_create(request):
         )
 
         if 'exit_cargo_photo' in request.FILES:
-            gate_pass.exit_cargo_photo = request.FILES['exit_cargo_photo']
-            gate_pass.save()
+            photo = request.FILES['exit_cargo_photo']
+            if is_safe_image(photo):
+                gate_pass.exit_cargo_photo = photo
+                gate_pass.save()
 
         # Parse Cart Items
         item_names = request.POST.getlist('item_name[]')
@@ -236,7 +239,9 @@ def gatepass_return(request, pk):
                 all_returned = False
 
         if 'return_cargo_photo' in request.FILES:
-            pass_card.return_cargo_photo = request.FILES['return_cargo_photo']
+            photo = request.FILES['return_cargo_photo']
+            if is_safe_image(photo):
+                pass_card.return_cargo_photo = photo
 
         pass_card.actual_return_date = timezone.now()
         pass_card.received_by = request.user
@@ -311,7 +316,9 @@ def gatepass_edit(request, pk):
             pass_card.expected_return_date = timezone.now() + timezone.timedelta(days=days_loan)
 
         if 'exit_cargo_photo' in request.FILES:
-            pass_card.exit_cargo_photo = request.FILES['exit_cargo_photo']
+            photo = request.FILES['exit_cargo_photo']
+            if is_safe_image(photo):
+                pass_card.exit_cargo_photo = photo
 
         pass_card.save()
 
