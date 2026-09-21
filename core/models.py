@@ -139,7 +139,13 @@ class User(AbstractUser):
 
     @property
     def is_cluster_director(self):
-        return self.is_superuser or self.role in ('director', 'cluster_director', 'saas_owner') or self.cluster_properties.exists()
+        """
+        True only for client-side Cluster Directors managing multiple assigned properties.
+        Super Admin (SaaS Owner) is NOT a cluster director; they are the platform administrator.
+        """
+        if self.is_superuser or self.role == 'saas_owner':
+            return False
+        return self.role == 'cluster_director' or (self.role == 'director' and self.cluster_properties.exists())
 
     def get_accessible_properties(self):
         """

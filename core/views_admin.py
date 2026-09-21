@@ -21,7 +21,7 @@ def is_security_manager(user):
     )
 
 def is_super_admin(user):
-    return is_security_manager(user)
+    return is_platform_admin(user)
 
 def accessible_properties_for(user):
     if hasattr(user, 'get_accessible_properties'):
@@ -170,7 +170,7 @@ def super_admin_dashboard_view(request):
 
 @login_required
 def property_create_view(request):
-    if not is_security_manager(request.user):
+    if not is_platform_admin(request.user):
         messages.error(request, "Access Restricted: You do not have permission to onboard client properties.")
         return redirect('dashboard')
 
@@ -534,9 +534,15 @@ def property_toggle_view(request, property_id):
 def property_switch_view(request, property_id):
     """Switch active property context across the whole application session."""
     if str(property_id).upper() == 'ALL':
+        if not (request.user.is_superuser or request.user.role == 'saas_owner' or getattr(request.user, 'is_cluster_director', False)):
+            messages.error(request, "Access Restricted: Single-property accounts cannot switch to multi-facility view.")
+            return redirect('dashboard')
         request.session['current_property_id'] = 'ALL'
         request.session.pop('current_gate_id', None)
-        messages.info(request, "Switched to Global Portfolio Mode: Viewing all properties.")
+        if request.user.role == 'saas_owner' or request.user.is_superuser:
+            messages.info(request, "Switched to SaaS Portfolio Mode: Viewing all client facilities.")
+        else:
+            messages.info(request, "Switched to Cluster Overview Mode: Viewing all your assigned facilities.")
     else:
         prop = get_object_or_404(accessible_properties_for(request.user), pk=property_id, is_active=True)
         request.session['current_property_id'] = prop.id

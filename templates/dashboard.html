@@ -144,7 +144,7 @@
                 </div>
             </div>
             
-            {% if is_admin_user %}
+            {% if is_saas_owner %}
             <a href="{% url 'super_admin_dashboard' %}" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1.5 self-start sm:self-auto border border-slate-700">
                 <span>👑</span> {{ T.super_admin_hub }} →
             </a>
