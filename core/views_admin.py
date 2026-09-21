@@ -322,8 +322,8 @@ def property_create_view(request):
 
 @login_required
 def property_edit_view(request, property_id):
-    if not is_security_manager(request.user):
-        messages.error(request, "Access Restricted: You do not have permission to edit properties.")
+    if not is_platform_admin(request.user):
+        messages.error(request, "Access Restricted: Property contract and subscription editing is restricted to Platform Administrators.")
         return redirect('dashboard')
 
     prop = require_accessible_property(request.user, property_id)
@@ -507,8 +507,8 @@ def generate_monthly_invoices_view(request):
 
 @login_required
 def property_toggle_view(request, property_id):
-    if not is_security_manager(request.user):
-        messages.error(request, "Access Restricted.")
+    if not is_platform_admin(request.user):
+        messages.error(request, "Access Restricted: Property status modification is restricted to Platform Administrators.")
         return redirect('dashboard')
 
     prop = require_accessible_property(request.user, property_id)
@@ -586,11 +586,11 @@ def user_create_view(request):
 
         if not username or not password:
             messages.error(request, "Username and temporary password are required to create a security account.")
-            return redirect('super_admin_dashboard')
+            return redirect('super_admin_dashboard' if is_platform_admin(request.user) else 'dashboard')
 
         if User.objects.filter(username=username).exists():
             messages.error(request, f"Username '{username}' already exists. Please select another username.")
-            return redirect('super_admin_dashboard')
+            return redirect('super_admin_dashboard' if is_platform_admin(request.user) else 'dashboard')
 
         user = User(
             username=username,
@@ -632,7 +632,7 @@ def user_create_view(request):
 
         messages.success(request, f"Security personnel '{user.get_full_name() or user.username}' ({user.badge_number}) provisioned successfully!")
 
-    return redirect('super_admin_dashboard')
+    return redirect('super_admin_dashboard' if is_platform_admin(request.user) else 'dashboard')
 
 
 @login_required
@@ -642,10 +642,12 @@ def user_edit_view(request, user_id):
         return redirect('dashboard')
 
     accessible_props = accessible_properties_for(request.user)
-    target_user = get_object_or_404(
-        User.objects.filter(Q(assigned_property__in=accessible_props) | Q(cluster_properties__in=accessible_props)).distinct(),
-        pk=user_id
-    )
+    target_user_qs = User.objects.filter(
+        Q(assigned_property__in=accessible_props) | Q(cluster_properties__in=accessible_props)
+    ).distinct()
+    if not is_platform_admin(request.user):
+        target_user_qs = target_user_qs.exclude(role='saas_owner').exclude(is_superuser=True)
+    target_user = get_object_or_404(target_user_qs, pk=user_id)
 
     if request.method == 'POST':
         target_user.first_name = request.POST.get('first_name', target_user.first_name).strip()
@@ -694,4 +696,4 @@ def user_edit_view(request, user_id):
 
         messages.success(request, f"User '{target_user.username}' profile updated successfully!")
 
-    return redirect('super_admin_dashboard')
+    return redirect('super_admin_dashboard' if is_platform_admin(request.user) else 'dashboard')

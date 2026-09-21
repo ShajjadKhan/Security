@@ -79,7 +79,23 @@ def dashboard_view(request):
     recent_gatepasses_qs = GatePass.objects.select_related('from_department', 'property').all()
     recent_visitors_qs = Visitor.objects.select_related('property').all()
     recent_lostfound_qs = LostFoundItem.objects.select_related('property').all()
-    recent_audits_qs = SecurityAuditLog.objects.select_related('property', 'gate').all()
+    recent_audits_qs = SecurityAuditLog.objects.select_related('property', 'gate', 'user').all()
+
+    PLATFORM_ACTIONS = [
+        'PROPERTY_CREATED', 'PROPERTY_EDITED', 'PROPERTY_DEACTIVATED',
+        'CLIENT_ONBOARDED', 'FEE_COLLECTED', 'SUBSCRIPTION_SUSPENDED',
+        'SUBSCRIPTION_REACTIVATED', 'INVOICE_GENERATED'
+    ]
+    is_super = request.user.is_superuser or getattr(request.user, 'role', '') == 'saas_owner'
+
+    if not is_super:
+        recent_audits_qs = recent_audits_qs.exclude(
+            action__in=PLATFORM_ACTIONS
+        ).exclude(
+            user__role='saas_owner'
+        ).exclude(
+            user__is_superuser=True
+        )
 
     # Apply property scoping if not Global/Cluster ALL mode
     if current_prop:
@@ -195,9 +211,40 @@ def audit_log_view(request):
         return redirect('dashboard')
 
     action_filter = request.GET.get('action', 'ALL')
-    queryset = SecurityAuditLog.objects.select_related('user', 'gate').all()
+    queryset = SecurityAuditLog.objects.select_related('user', 'gate', 'property').all()
     accessible_properties = request.user.get_accessible_properties() if hasattr(request.user, 'get_accessible_properties') else Property.objects.none()
-    queryset = queryset.filter(Q(property__in=accessible_properties) | Q(gate__property__in=accessible_properties) | Q(property__isnull=True, gate__isnull=True))
+
+    PLATFORM_ACTIONS = [
+        'PROPERTY_CREATED', 'PROPERTY_EDITED', 'PROPERTY_DEACTIVATED',
+        'CLIENT_ONBOARDED', 'FEE_COLLECTED', 'SUBSCRIPTION_SUSPENDED',
+        'SUBSCRIPTION_REACTIVATED', 'INVOICE_GENERATED'
+    ]
+    is_super = request.user.is_superuser or getattr(request.user, 'role', '') == 'saas_owner'
+
+    if not is_super:
+        # Cluster Directors, Directors, and Supervisors ONLY see operational logs for their assigned properties
+        # They MUST NEVER see SaaS platform actions, commercial/billing details, or secadmin activity
+        queryset = queryset.filter(
+            Q(property__in=accessible_properties) | Q(gate__property__in=accessible_properties)
+        ).exclude(
+            action__in=PLATFORM_ACTIONS
+        ).exclude(
+            user__role='saas_owner'
+        ).exclude(
+            user__is_superuser=True
+        )
+    else:
+        # Platform Admin / SaaS Owner sees all logs
+        queryset = queryset.filter(
+            Q(property__in=accessible_properties) | Q(gate__property__in=accessible_properties) | Q(property__isnull=True, gate__isnull=True)
+        )
+
+    # Scoping by active property if viewing a single facility
+    current_prop_id = request.session.get('current_property_id')
+    if current_prop_id and current_prop_id != 'ALL':
+        current_prop = accessible_properties.filter(id=current_prop_id).first()
+        if current_prop:
+            queryset = queryset.filter(Q(property=current_prop) | Q(gate__property=current_prop))
 
     if action_filter == 'DELETIONS':
         queryset = queryset.filter(action__in=['PASS_DELETED', 'GATE_DELETED'])
@@ -313,6 +360,7 @@ def gates_list_view(request):
             )
             SecurityAuditLog.objects.create(
                 user=request.user,
+                property=new_gate.property,
                 gate=new_gate,
                 action='GATE_ADDED',
                 reference=new_gate.code,
@@ -367,6 +415,7 @@ def gate_edit_view(request, gate_id):
 
         SecurityAuditLog.objects.create(
             user=request.user,
+            property=gate.property,
             gate=gate,
             action='GATE_EDITED',
             reference=gate.code,
@@ -385,6 +434,7 @@ def gate_delete_view(request, gate_id):
         reason = request.POST.get('deletion_reason', '').strip() or 'Deactivated by administrator'
         gate_code = gate.code
         gate_name = gate.name
+        gate_property = gate.property
 
         # If gate has passes or visitors, safely deactivate it to maintain historical integrity
         has_passes = gate.gate_passes.exists() or gate.visitors.exists()
@@ -398,12 +448,13 @@ def gate_delete_view(request, gate_id):
 
         SecurityAuditLog.objects.create(
             user=request.user,
+            property=gate_property,
             action='GATE_DELETED',
             reference=gate_code,
             details=action_desc,
             ip_address=request.META.get('REMOTE_ADDR')
         )
-        messages.success(request, f"Gate {gate_code} has been deactivated/removed. Audit trail entry created.")
+        messages.success(request, f"Gate {gate_code} ({gate_name}) successfully removed from property.")
     return redirect('gates_list')
 
 
